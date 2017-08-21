@@ -1,0 +1,28 @@
+FsApiToken = "<your FullStory API token>"
+Backoff = "30s"
+BackoffStepsMax = 8
+CheckInterval = "30m"
+TmpDir = "/tmp"
+Warehouse="redshift"
+
+[s3]
+# bucket that will be used to stage files into Redshift
+Bucket = ""
+# region of the above bucket
+Region = "us-east-2"
+# timeout for copying export files from the local machine to S3
+Timeout = "5m"
+
+[redshift]
+User = "<your user>"
+Password = "<password>"
+Host = "<redshift host details>.redshift.amazonaws.com"
+Port = "5439"
+DB = "dev"
+# the table where the export data will be written
+ExportTable = "fsexport"
+# metadata table that holds info on export history
+SyncTable   = "fssync"
+# IAM role associated with redshift
+Credentials = "aws_iam_role=arn:aws:iam::<...>"
+VarCharMax = 65535

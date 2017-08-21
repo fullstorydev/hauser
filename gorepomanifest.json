@@ -1,0 +1,32 @@
+{
+ "github.com/BurntSushi/toml": {
+  "git-remote": "https://github.com/BurntSushi/toml",
+  "current-version-git-hash": "a368813c5e648fee92e5f6c30e3944ff9d5e8895",
+  "content-hash": "718111a5886ff2638a027b52144311044795604d"
+ },
+ "github.com/aws/aws-sdk-go": {
+  "git-remote": "https://github.com/aws/aws-sdk-go",
+  "current-version-git-hash": "ce0ac9c36bff5e2ad4c5fefae43d735fd337f6fb",
+  "content-hash": "8915aa2a21e092c45b3b2068bcbaa2b9c0c43c7f"
+ },
+ "github.com/fullstorydev/gorepoman": {
+  "git-remote": "https://github.com/fullstorydev/gorepoman",
+  "current-version-git-hash": "f376fb566d6d78f01d48590154b08f439de27228",
+  "content-hash": "65d38b62343aebcf36cd0dd1e03ce428ac390264"
+ },
+ "github.com/lib/pq": {
+  "git-remote": "https://github.com/lib/pq",
+  "current-version-git-hash": "e42267488fe361b9dc034be7a6bffef5b195bceb",
+  "content-hash": "53ec6f03d6b58ab5ba5e1ca8240d101a89c5739d"
+ },
+ "github.com/nishanths/fullstory": {
+  "git-remote": "https://github.com/nishanths/fullstory",
+  "current-version-git-hash": "51ce73fdee4fa3b736c1ec309e244202f47cf3c8",
+  "content-hash": "7c9f371a0d6f9de60b9d59e0f59848a969b04a0b"
+ },
+ "github.com/pkg/errors": {
+  "git-remote": "https://github.com/pkg/errors",
+  "current-version-git-hash": "c605e284fe17294bda444b34710735b29d1a9d90",
+  "content-hash": "638278763f6afad4752ca17dddca17404782c1e9"
+ }
+}
