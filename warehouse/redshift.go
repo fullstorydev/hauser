@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"time"
 
 	"../config"
@@ -29,6 +30,10 @@ var (
 
 func NewRedshift(c *config.Config) *Redshift {
 	return &Redshift{conf: c}
+}
+
+func (rs *Redshift) VarCharMaxLen() (int, bool) {
+	return rs.conf.Redshift.VarCharMax, true
 }
 
 func (rs *Redshift) MakeRedshfitConnection() (*sql.DB, error) {
@@ -136,11 +141,11 @@ func (rs *Redshift) CopyInData(s3file string) error {
 func (rs *Redshift) CreateExportTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.ExportTable)
 	var buf bytes.Buffer
-	for _, f := range ExportSchema {
-		buf.WriteString(f.String())
+	for _, f := range ExportTableSchema {
+		buf.WriteString(toColumnDef(f))
 		buf.WriteString(",")
 	}
-	buf.WriteString(CustomVars.String())
+	buf.WriteString(toColumnDef(CustomVars))
 
 	stmt := fmt.Sprintf("create table %s(%s);", rs.conf.Redshift.ExportTable, buf.String())
 	_, err := rs.conn.Exec(stmt)
@@ -151,7 +156,7 @@ func (rs *Redshift) CreateSyncTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.SyncTable)
 	var buf bytes.Buffer
 	for n, f := range SyncTableSchema {
-		buf.WriteString(f.String())
+		buf.WriteString(toColumnDef(f))
 		if n < len(SyncTableSchema)-1 {
 			buf.WriteString(",")
 		}
@@ -245,4 +250,24 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 		log.Fatal(err)
 	}
 	return (exists != 0)
+}
+
+func toColumnDef(field Field) string {
+	var dbType string
+	switch field.DataType().Kind() {
+	case reflect.Int64:
+		dbType = "BIGINT"
+	case reflect.String:
+		dbType = "varchar(max)"
+	case reflect.Struct:
+		if field.IsTime() {
+			dbType = "TIMESTAMP"
+		} else {
+			log.Fatalf("Don't know how to map database type %q for struct field %q", field.DataType().String(), field.Name)
+		}
+	default:
+		log.Fatalf("Don't know how to map database type %q for field %q", field.DataType().String(), field.Name)
+	}
+
+	return fmt.Sprintf("%s %s", field.Name(), dbType)
 }

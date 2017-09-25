@@ -26,9 +26,9 @@ var (
 // Represents a single export row in the export file
 type Record map[string]interface{}
 
-func ValueToString(val interface{}, f warehouse.Field) string {
+func ValueToString(wh warehouse.Warehouse, val interface{}, f warehouse.Field) string {
 	s := fmt.Sprintf("%v", val)
-	if f.DBType == "TIMESTAMP" {
+	if f.IsTime() {
 		t, _ := time.Parse(time.RFC3339Nano, s)
 		return t.String()
 	}
@@ -36,18 +36,20 @@ func ValueToString(val interface{}, f warehouse.Field) string {
 	s = strings.Replace(s, "\n", " ", -1)
 	s = strings.Replace(s, "\x00", "", -1)
 
-	if len(s) >= conf.Redshift.VarCharMax {
-		s = s[:conf.Redshift.VarCharMax-1]
+	if maxlen, ok := wh.VarCharMaxLen(); ok == true {
+		if len(s) >= maxlen {
+			s = s[:maxlen-1]
+		}
 	}
 	return s
 }
 
-func TransformExportJsonRecord(rec map[string]interface{}) ([]string, error) {
+func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
-	for _, field := range warehouse.ExportSchema {
-		if val, ok := rec[field.Name]; ok {
-			line = append(line, ValueToString(val, field))
-			delete(rec, field.Name)
+	for _, field := range warehouse.ExportTableSchema {
+		if val, ok := rec[field.Name()]; ok {
+			line = append(line, ValueToString(wh, val, field))
+			delete(rec, field.Name())
 		} else {
 			line = append(line, "")
 		}
@@ -116,7 +118,7 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
 				log.Printf("failed json decode of record: %s", err)
 				return 0, err
 			}
-			line, err := TransformExportJsonRecord(r)
+			line, err := TransformExportJsonRecord(wh, r)
 			if err != nil {
 				log.Printf("Failed object transform, bundle %d; skipping record. %s", e.ID, err)
 				continue

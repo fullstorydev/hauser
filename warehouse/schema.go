@@ -1,53 +1,90 @@
 package warehouse
 
-import "fmt"
+import (
+	"reflect"
+	"time"
+)
 
-type Field struct {
-	Name   string
-	DBType string
+type Field interface {
+	Name() string
+	DataType() reflect.Type
+	IsTime() bool
 }
 
-func (f Field) String() string {
-	return fmt.Sprintf("%s %s", f.Name, f.DBType)
+type dataField struct {
+	name     string
+	dataType reflect.Type
+	isTime   bool
+}
+
+func (f *dataField) Name() string {
+	return f.name
+}
+
+func (f *dataField) DataType() reflect.Type {
+	return f.dataType
+}
+
+func (f *dataField) IsTime() bool {
+	return f.dataType.Kind() == reflect.Struct && f.dataType.PkgPath() == "time" && f.dataType.Name() == "Time"
 }
 
 var (
-	ExportSchema = []Field{
-		Field{"EventStart", "TIMESTAMP"},
-		Field{"EventType", "varchar(max)"},
-		Field{"EventTargetText", "varchar(max)"},
-		Field{"EventTargetSelectorTok", "varchar(max)"},
-		Field{"EventModFrustrated", "BIGINT"},
-		Field{"EventModDead", "BIGINT"},
-		Field{"EventModError", "BIGINT"},
-		Field{"EventModSuspicious", "BIGINT"},
-		Field{"IndvId", "BIGINT"},
-		Field{"PageUrl", "varchar(max)"},
-		Field{"PageDuration", "BIGINT"},
-		Field{"PageActiveDuration", "BIGINT"},
-		Field{"PageRefererUrl", "varchar(max)"},
-		Field{"PageLatLong", "varchar(max)"},
-		Field{"PageAgent", "varchar(max)"},
-		Field{"PageIp", "varchar(max)"},
-		Field{"PageBrowser", "varchar(max)"},
-		Field{"PageDevice", "varchar(max)"},
-		Field{"PageOperatingSystem", "varchar(max)"},
-		Field{"PageNumInfos", "BIGINT"},
-		Field{"PageNumWarnings", "BIGINT"},
-		Field{"PageNumErrors", "BIGINT"},
-		Field{"SessionId", "BIGINT"},
-		Field{"PageId", "BIGINT"},
-		Field{"UserAppKey", "varchar(max)"},
-		Field{"UserEmail", "varchar(max)"},
-		Field{"UserDisplayName", "varchar(max)"},
-		Field{"UserId", "BIGINT"},
-	}
-
-	CustomVars = Field{"CustomVars", "varchar(max)"}
-
-	SyncTableSchema = []Field{
-		Field{"ID", "BIGINT"},
-		Field{"Processed", "TIMESTAMP"},
-		Field{"BundleEndTime", "TIMESTAMP"},
-	}
+	ExportTableSchema = toFieldSlice(reflect.TypeOf(exportSchema{}))
+	CustomVars        = toFieldSlice(reflect.TypeOf(customVars{}))[0]
+	SyncTableSchema   = toFieldSlice(reflect.TypeOf(syncTable{}))
 )
+
+type exportSchema struct {
+	EventStart             time.Time
+	EventType              string
+	EventTargetText        string
+	EventTargetSelectorTok string
+	EventModFrustrated     int64
+	EventModDead           int64
+	EventModError          int64
+	EventModSuspicious     int64
+	IndvId                 int64
+	PageUrl                string
+	PageDuration           int64
+	PageActiveDuration     int64
+	PageRefererUrl         string
+	PageLatLong            string
+	PageAgent              string
+	PageIp                 string
+	PageBrowser            string
+	PageDevice             string
+	PageOperatingSystem    string
+	PageNumInfos           int64
+	PageNumWarnings        int64
+	PageNumErrors          int64
+	SessionId              int64
+	PageId                 int64
+	UserAppKey             string
+	UserEmail              string
+	UserDisplayName        string
+	UserId                 int64
+}
+
+type customVars struct {
+	CustomVars string
+}
+
+type syncTable struct {
+	ID            int64
+	Processed     time.Time
+	BundleEndTime time.Time
+}
+
+func toFieldSlice(t reflect.Type) []Field {
+	result := make([]Field, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+
+		result[i] = &dataField{
+			name:     t.Field(i).Name,
+			dataType: t.Field(i).Type,
+			isTime:   t.Field(i).Type.Kind() == reflect.Struct && t.Field(i).Type.PkgPath() == "time" && t.Field(i).Type.Name() == "Time",
+		}
+	}
+	return result
+}
