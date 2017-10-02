@@ -36,7 +36,6 @@ func TestRedshiftValueToString(t *testing.T) {
 			},
 		},
 	}
-	ts := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 
 	var testCases = []struct {
 		input    interface{}
@@ -48,7 +47,7 @@ func TestRedshiftValueToString(t *testing.T) {
 		{"no\nnew\nlines", &dataField{dataType: reflect.TypeOf("")}, "no new lines"},
 		{"no\x00null\x00chars", &dataField{dataType: reflect.TypeOf("")}, "nonullchars"},
 		{5, &dataField{dataType: reflect.TypeOf(5)}, "5"},
-		{"2009-11-10T23:00:00.000Z", &dataField{dataType: reflect.TypeOf(ts), isTime: true}, "2009-11-10 23:00:00 +0000 UTC"},
+		{"2009-11-10T23:00:00.000Z", &dataField{dataType: reflect.TypeOf(time.Now()), isTime: true}, "2009-11-10 23:00:00 +0000 UTC"},
 	}
 
 	for _, testCase := range testCases {
