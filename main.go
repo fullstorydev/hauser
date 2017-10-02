@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"./config"
@@ -26,29 +25,11 @@ var (
 // Represents a single export row in the export file
 type Record map[string]interface{}
 
-func ValueToString(wh warehouse.Warehouse, val interface{}, f warehouse.Field) string {
-	s := fmt.Sprintf("%v", val)
-	if f.IsTime() {
-		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.String()
-	}
-
-	s = strings.Replace(s, "\n", " ", -1)
-	s = strings.Replace(s, "\x00", "", -1)
-
-	if maxlen, ok := wh.VarCharMaxLen(); ok == true {
-		if len(s) >= maxlen {
-			s = s[:maxlen-1]
-		}
-	}
-	return s
-}
-
 func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	for _, field := range warehouse.ExportTableSchema {
 		if val, ok := rec[field.Name()]; ok {
-			line = append(line, ValueToString(wh, val, field))
+			line = append(line, wh.ValueToString(val, field))
 			delete(rec, field.Name())
 		} else {
 			line = append(line, "")

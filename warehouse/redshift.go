@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"time"
 
 	"../config"
@@ -32,8 +33,20 @@ func NewRedshift(c *config.Config) *Redshift {
 	return &Redshift{conf: c}
 }
 
-func (rs *Redshift) VarCharMaxLen() (int, bool) {
-	return rs.conf.Redshift.VarCharMax, true
+func (rs *Redshift) ValueToString(val interface{}, f Field) string {
+	s := fmt.Sprintf("%v", val)
+	if f.IsTime() {
+		t, _ := time.Parse(time.RFC3339Nano, s)
+		return t.String()
+	}
+
+	s = strings.Replace(s, "\n", " ", -1)
+	s = strings.Replace(s, "\x00", "", -1)
+
+	if len(s) >= rs.conf.Redshift.VarCharMax {
+		s = s[:rs.conf.Redshift.VarCharMax-1]
+	}
+	return s
 }
 
 func (rs *Redshift) MakeRedshfitConnection() (*sql.DB, error) {
@@ -258,7 +271,7 @@ func toColumnDef(field Field) string {
 	case reflect.Int64:
 		dbType = "BIGINT"
 	case reflect.String:
-		dbType = "varchar(max)"
+		dbType = "VARCHAR(max)"
 	case reflect.Struct:
 		if field.IsTime() {
 			dbType = "TIMESTAMP"

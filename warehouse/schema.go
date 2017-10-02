@@ -26,7 +26,15 @@ func (f *dataField) DataType() reflect.Type {
 }
 
 func (f *dataField) IsTime() bool {
-	return f.dataType.Kind() == reflect.Struct && f.dataType.PkgPath() == "time" && f.dataType.Name() == "Time"
+	return f.isTime
+}
+
+func newDataField(f reflect.StructField) *dataField {
+	return &dataField{
+		name:     f.Name,
+		dataType: f.Type,
+		isTime:   (f.Type == reflect.TypeOf(time.Time{})),
+	}
 }
 
 var (
@@ -79,12 +87,7 @@ type syncTable struct {
 func toFieldSlice(t reflect.Type) []Field {
 	result := make([]Field, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
-
-		result[i] = &dataField{
-			name:     t.Field(i).Name,
-			dataType: t.Field(i).Type,
-			isTime:   t.Field(i).Type.Kind() == reflect.Struct && t.Field(i).Type.PkgPath() == "time" && t.Field(i).Type.Name() == "Time",
-		}
+		result[i] = newDataField(t.Field(i))
 	}
 	return result
 }
