@@ -27,15 +27,20 @@ type Record map[string]interface{}
 
 func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
-	for _, field := range warehouse.ExportTableSchema {
-		if val, ok := rec[field.Name()]; ok {
+	for _, field := range wh.ExportTableSchema() {
+		if field.IsCustomVars {
+			continue
+		}
+
+		if val, ok := rec[field.Name]; ok {
 			line = append(line, wh.ValueToString(val, field))
-			delete(rec, field.Name())
+			delete(rec, field.Name)
 		} else {
 			line = append(line, "")
 		}
 	}
 
+	// custom variables will be whatever is left after all well-known fields are accounted for
 	customVars, err := json.Marshal(rec)
 	if err != nil {
 		return nil, err

@@ -1,14 +1,12 @@
 package warehouse
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"time"
 
@@ -21,21 +19,36 @@ import (
 )
 
 type Redshift struct {
-	conn *sql.DB
-	conf *config.Config
+	conn         *sql.DB
+	conf         *config.Config
+	exportSchema Schema
+	syncSchema   Schema
 }
 
 var (
+	RedshiftTypeMap = FieldTypeMapper{
+		"int64":     "BIGINT",
+		"string":    "VARCHAR(max)",
+		"time.Time": "TIMESTAMP",
+	}
 	beginningOfTime = time.Date(2015, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
 func NewRedshift(c *config.Config) *Redshift {
-	return &Redshift{conf: c}
+	return &Redshift{
+		conf: c,
+		exportSchema: ExportTableSchema(RedshiftTypeMap),
+		syncSchema: SyncTableSchema(RedshiftTypeMap),
+	}
+}
+
+func (rs *Redshift) ExportTableSchema() Schema {
+	return rs.exportSchema
 }
 
 func (rs *Redshift) ValueToString(val interface{}, f Field) string {
 	s := fmt.Sprintf("%v", val)
-	if f.IsTime() {
+	if f.IsTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
 		return t.String()
 	}
@@ -153,29 +166,16 @@ func (rs *Redshift) CopyInData(s3file string) error {
 
 func (rs *Redshift) CreateExportTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.ExportTable)
-	var buf bytes.Buffer
-	for _, f := range ExportTableSchema {
-		buf.WriteString(toColumnDef(f))
-		buf.WriteString(",")
-	}
-	buf.WriteString(toColumnDef(CustomVars))
 
-	stmt := fmt.Sprintf("create table %s(%s);", rs.conf.Redshift.ExportTable, buf.String())
+	stmt := fmt.Sprintf("create table %s(%s);", rs.conf.Redshift.ExportTable, rs.exportSchema.String())
 	_, err := rs.conn.Exec(stmt)
 	return err
 }
 
 func (rs *Redshift) CreateSyncTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.SyncTable)
-	var buf bytes.Buffer
-	for n, f := range SyncTableSchema {
-		buf.WriteString(toColumnDef(f))
-		if n < len(SyncTableSchema)-1 {
-			buf.WriteString(",")
-		}
-	}
 
-	stmt := fmt.Sprintf("create table %s(%s);", rs.conf.Redshift.SyncTable, buf.String())
+	stmt := fmt.Sprintf("create table %s(%s);", rs.conf.Redshift.SyncTable, rs.syncSchema.String())
 	_, err := rs.conn.Exec(stmt)
 	return err
 }
@@ -228,6 +228,13 @@ func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 			t = syncTime.Time
 		}
 
+		if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+			if err := rs.CreateExportTable(); err != nil {
+				log.Printf("Couldn't create export table: %s", err)
+				return t, err
+			}
+		}
+
 		// Find the time of the latest export record...if it's after
 		// the time in the sync table, then there must have been a failure
 		// after some records have been loaded, but before the sync record
@@ -263,24 +270,4 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 		log.Fatal(err)
 	}
 	return (exists != 0)
-}
-
-func toColumnDef(field Field) string {
-	var dbType string
-	switch field.DataType().Kind() {
-	case reflect.Int64:
-		dbType = "BIGINT"
-	case reflect.String:
-		dbType = "VARCHAR(max)"
-	case reflect.Struct:
-		if field.IsTime() {
-			dbType = "TIMESTAMP"
-		} else {
-			log.Fatalf("Don't know how to map database type %q for struct field %q", field.DataType().String(), field.Name)
-		}
-	default:
-		log.Fatalf("Don't know how to map database type %q for field %q", field.DataType().String(), field.Name)
-	}
-
-	return fmt.Sprintf("%s %s", field.Name(), dbType)
 }

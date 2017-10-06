@@ -1,46 +1,11 @@
 package warehouse
 
 import (
+	"fmt"
+	"log"
 	"reflect"
+	"strings"
 	"time"
-)
-
-type Field interface {
-	Name() string
-	DataType() reflect.Type
-	IsTime() bool
-}
-
-type dataField struct {
-	name     string
-	dataType reflect.Type
-	isTime   bool
-}
-
-func (f *dataField) Name() string {
-	return f.name
-}
-
-func (f *dataField) DataType() reflect.Type {
-	return f.dataType
-}
-
-func (f *dataField) IsTime() bool {
-	return f.isTime
-}
-
-func newDataField(f reflect.StructField) *dataField {
-	return &dataField{
-		name:     f.Name,
-		dataType: f.Type,
-		isTime:   (f.Type == reflect.TypeOf(time.Time{})),
-	}
-}
-
-var (
-	ExportTableSchema = toFieldSlice(reflect.TypeOf(exportSchema{}))
-	CustomVars        = toFieldSlice(reflect.TypeOf(customVars{}))[0]
-	SyncTableSchema   = toFieldSlice(reflect.TypeOf(syncTable{}))
 )
 
 type exportSchema struct {
@@ -72,10 +37,7 @@ type exportSchema struct {
 	UserEmail              string
 	UserDisplayName        string
 	UserId                 int64
-}
-
-type customVars struct {
-	CustomVars string
+	CustomVars             string
 }
 
 type syncTable struct {
@@ -84,10 +46,55 @@ type syncTable struct {
 	BundleEndTime time.Time
 }
 
-func toFieldSlice(t reflect.Type) []Field {
-	result := make([]Field, t.NumField())
+type Field struct {
+	Name         string
+	DBType       string
+	IsTime       bool
+	IsCustomVars bool
+}
+
+func (f Field) String() string {
+	return fmt.Sprintf("%s %s", f.Name, f.DBType)
+}
+
+type Schema []Field
+
+func (s Schema) String() string {
+	ss := make([]string, len(s))
+	for i, f := range s {
+		ss[i] = f.String()
+	}
+	return strings.Join(ss, ",")
+}
+
+type FieldTypeMapper map[string]string
+
+func ExportTableSchema(ftm FieldTypeMapper) Schema {
+	return structToSchema(exportSchema{}, ftm)
+}
+
+func SyncTableSchema(ftm FieldTypeMapper) Schema {
+	return structToSchema(syncTable{}, ftm)
+}
+
+func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
+	t := reflect.TypeOf(i)
+	result := make(Schema, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
-		result[i] = newDataField(t.Field(i))
+		result[i] = Field{
+			Name:   t.Field(i).Name,
+			DBType: convertType(ftm, t.Field(i).Type),
+			IsTime: t.Field(i).Type == reflect.TypeOf(time.Time{}),
+			IsCustomVars: t.Field(i).Name == "CustomVars",
+		}
 	}
 	return result
+}
+
+func convertType(ftm FieldTypeMapper, t reflect.Type) string {
+	dbtype, ok := ftm[t.String()]
+	if !ok {
+		log.Fatal("Type %s is not present in FieldTypeMapper", t)
+	}
+	return dbtype
 }
