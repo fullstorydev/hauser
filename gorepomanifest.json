@@ -1,4 +1,9 @@
 {
+ "cloud.google.com/go": {
+  "git-remote": "https://code.googlesource.com/gocloud",
+  "current-version-git-hash": "da30b6d6aeb462b223228cc0b4e7952cba499d90",
+  "content-hash": "47754e544543cc4a7491074e60b87e5e231e031a"
+ },
  "github.com/BurntSushi/toml": {
   "git-remote": "https://github.com/BurntSushi/toml",
   "current-version-git-hash": "a368813c5e648fee92e5f6c30e3944ff9d5e8895",
@@ -14,6 +19,16 @@
   "current-version-git-hash": "f376fb566d6d78f01d48590154b08f439de27228",
   "content-hash": "65d38b62343aebcf36cd0dd1e03ce428ac390264"
  },
+ "github.com/golang/protobuf": {
+  "git-remote": "https://github.com/golang/protobuf",
+  "current-version-git-hash": "130e6b02ab059e7b717a096f397c5b60111cae74",
+  "content-hash": "2879df840582fc010136d722be31be1326130b00"
+ },
+ "github.com/googleapis/gax-go": {
+  "git-remote": "https://github.com/googleapis/gax-go",
+  "current-version-git-hash": "317e0006254c44a0ac427cc52a0e083ff0b9622f",
+  "content-hash": "6b130a27234d285f7a2fe3f59e4e46fe11013b4e"
+ },
  "github.com/lib/pq": {
   "git-remote": "https://github.com/lib/pq",
   "current-version-git-hash": "e42267488fe361b9dc034be7a6bffef5b195bceb",
@@ -28,5 +43,35 @@
   "git-remote": "https://github.com/pkg/errors",
   "current-version-git-hash": "c605e284fe17294bda444b34710735b29d1a9d90",
   "content-hash": "638278763f6afad4752ca17dddca17404782c1e9"
+ },
+ "golang.org/x/net": {
+  "git-remote": "https://go.googlesource.com/net",
+  "current-version-git-hash": "0744d001aa8470aaa53df28d32e5ceeb8af9bd70",
+  "content-hash": "0e2f66133cb2b442952d426d0569bcaec10996aa"
+ },
+ "golang.org/x/oauth2": {
+  "git-remote": "https://go.googlesource.com/oauth2",
+  "current-version-git-hash": "13449ad91cb26cb47661c1b080790392170385fd",
+  "content-hash": "361e8f2666760579192243e78f89b7a4064c7ace"
+ },
+ "golang.org/x/text": {
+  "git-remote": "https://go.googlesource.com/text",
+  "current-version-git-hash": "1cbadb444a806fd9430d14ad08967ed91da4fa0a",
+  "content-hash": "a35ef86c096ee7c226d918433968e6cf22cba337"
+ },
+ "google.golang.org/api": {
+  "git-remote": "https://code.googlesource.com/google-api-go-client",
+  "current-version-git-hash": "cec5cc05d57604ba2d2eaaf5381d3248fac4814d",
+  "content-hash": "acb39eb7d0fde702da6b27e5f73f9376ddde584e"
+ },
+ "google.golang.org/genproto": {
+  "git-remote": "https://github.com/google/go-genproto",
+  "current-version-git-hash": "1e559d0a00eef8a9a43151db4665280bd8dd5886",
+  "content-hash": "026c92ef6b538ba4477cd7037c418e7379186d96"
+ },
+ "google.golang.org/grpc": {
+  "git-remote": "https://github.com/grpc/grpc-go",
+  "current-version-git-hash": "d4b75ebd4f9f8c4a2b1cdadbdbe0d7920431ccca",
+  "content-hash": "578cefb04d02a847df0ff116973855f275694743"
  }
 }
