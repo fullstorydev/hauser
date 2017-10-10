@@ -15,6 +15,7 @@ type Config struct {
 	CheckInterval   duration
 	TmpDir          string
 	ListExportLimit int
+	GroupFilesByDay bool
 
 	// for debug only; can point to localhost
 	ExportURL string
