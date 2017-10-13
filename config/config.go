@@ -28,6 +28,7 @@ type S3Config struct {
 	Bucket  string
 	Region  string
 	Timeout duration
+	S3Only  bool
 }
 
 type RedshiftConfig struct {

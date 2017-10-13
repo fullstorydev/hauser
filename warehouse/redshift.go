@@ -135,22 +135,27 @@ func (rs *Redshift) LoadToWarehouse(file string) error {
 		log.Printf("Failed to upload file %s to s3: %s", file, err)
 		return err
 	}
-	defer rs.RemoveS3Object(s3obj)
 
-	rs.conn, err = rs.MakeRedshfitConnection()
-	if err != nil {
-		return err
-	}
-	defer rs.conn.Close()
+	if rs.conf.S3.S3Only {
+		log.Printf("Config flag S3Only is on, skipping load to Redshift")
+	} else {
+		defer rs.RemoveS3Object(s3obj)
 
-	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
-		if err := rs.CreateExportTable(); err != nil {
+		rs.conn, err = rs.MakeRedshfitConnection()
+		if err != nil {
 			return err
 		}
-	}
+		defer rs.conn.Close()
 
-	if err := rs.CopyInData(s3obj); err != nil {
-		return err
+		if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+			if err := rs.CreateExportTable(); err != nil {
+				return err
+			}
+		}
+
+		if err := rs.CopyInData(s3obj); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -228,28 +233,8 @@ func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 			t = syncTime.Time
 		}
 
-		if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
-			if err := rs.CreateExportTable(); err != nil {
-				log.Printf("Couldn't create export table: %s", err)
-				return t, err
-			}
-		}
-
-		// Find the time of the latest export record...if it's after
-		// the time in the sync table, then there must have been a failure
-		// after some records have been loaded, but before the sync record
-		// was written. Use this as the latest sync time, and don't load
-		// any records before this point to prevent duplication
-		var exportTime pq.NullTime
-		q = fmt.Sprintf("SELECT max(EventStart) FROM %s;", rs.conf.Redshift.ExportTable)
-		if err := rs.conn.QueryRow(q).Scan(&exportTime); err != nil {
-			log.Printf("Couldn't get max(EventStart): %s", err)
+		if err := rs.RemoveOrphanedRecords(syncTime); err != nil {
 			return t, err
-		}
-		if exportTime.Valid && exportTime.Time.After(syncTime.Time) {
-			log.Printf("Export record timestamp after sync time (%s vs %s); cleaning",
-				exportTime.Time, syncTime.Time)
-			rs.DeleteExportRecordsAfter(syncTime.Time)
 		}
 
 	} else {
@@ -259,6 +244,39 @@ func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 		}
 	}
 	return t, nil
+}
+
+func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
+	if rs.conf.S3.S3Only {
+		// no need to check for orphaned records, as we're not loading to the export table
+		return nil
+	}
+
+	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+		if err := rs.CreateExportTable(); err != nil {
+			log.Printf("Couldn't create export table: %s", err)
+			return err
+		}
+	}
+
+	// Find the time of the latest export record...if it's after
+	// the time in the sync table, then there must have been a failure
+	// after some records have been loaded, but before the sync record
+	// was written. Use this as the latest sync time, and don't load
+	// any records before this point to prevent duplication
+	var exportTime pq.NullTime
+	q := fmt.Sprintf("SELECT max(EventStart) FROM %s;", rs.conf.Redshift.ExportTable)
+	if err := rs.conn.QueryRow(q).Scan(&exportTime); err != nil {
+		log.Printf("Couldn't get max(EventStart): %s", err)
+		return err
+	}
+	if exportTime.Valid && exportTime.Time.After(lastSync.Time) {
+		log.Printf("Export record timestamp after sync time (%s vs %s); cleaning",
+			exportTime.Time, lastSync.Time)
+		rs.DeleteExportRecordsAfter(lastSync.Time)
+	}
+
+	return nil
 }
 
 func (rs *Redshift) DoesTableExist(name string) bool {

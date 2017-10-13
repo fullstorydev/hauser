@@ -12,6 +12,8 @@ Bucket = ""
 Region = "us-east-2"
 # timeout for copying export files from the local machine to S3
 Timeout = "5m"
+# upload data file only (i.e. skip load to Redshift)?
+S3Only = true
 
 [redshift]
 User = "<your user>"
