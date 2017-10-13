@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"./config"
@@ -26,33 +25,22 @@ var (
 // Represents a single export row in the export file
 type Record map[string]interface{}
 
-func ValueToString(val interface{}, f warehouse.Field) string {
-	s := fmt.Sprintf("%v", val)
-	if f.DBType == "TIMESTAMP" {
-		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.String()
-	}
-
-	s = strings.Replace(s, "\n", " ", -1)
-	s = strings.Replace(s, "\x00", "", -1)
-
-	if len(s) >= conf.Redshift.VarCharMax {
-		s = s[:conf.Redshift.VarCharMax-1]
-	}
-	return s
-}
-
-func TransformExportJsonRecord(rec map[string]interface{}) ([]string, error) {
+func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
-	for _, field := range warehouse.ExportSchema {
+	for _, field := range wh.ExportTableSchema() {
+		if field.IsCustomVar {
+			continue
+		}
+
 		if val, ok := rec[field.Name]; ok {
-			line = append(line, ValueToString(val, field))
+			line = append(line, wh.ValueToString(val, field))
 			delete(rec, field.Name)
 		} else {
 			line = append(line, "")
 		}
 	}
 
+	// custom variables will be whatever is left after all well-known fields are accounted for
 	customVars, err := json.Marshal(rec)
 	if err != nil {
 		return nil, err
@@ -116,7 +104,7 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
 				log.Printf("failed json decode of record: %s", err)
 				return 0, err
 			}
-			line, err := TransformExportJsonRecord(r)
+			line, err := TransformExportJsonRecord(wh, r)
 			if err != nil {
 				log.Printf("Failed object transform, bundle %d; skipping record. %s", e.ID, err)
 				continue
