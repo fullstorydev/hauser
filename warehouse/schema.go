@@ -47,10 +47,10 @@ type syncTable struct {
 }
 
 type Field struct {
-	Name         string
-	DBType       string
-	IsTime       bool
-	IsCustomVars bool
+	Name        string
+	DBType      string
+	IsTime      bool
+	IsCustomVar bool
 }
 
 func (f Field) String() string {
@@ -82,10 +82,10 @@ func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
 	result := make(Schema, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		result[i] = Field{
-			Name:   t.Field(i).Name,
-			DBType: convertType(ftm, t.Field(i).Type),
-			IsTime: t.Field(i).Type == reflect.TypeOf(time.Time{}),
-			IsCustomVars: t.Field(i).Name == "CustomVars",
+			Name:        t.Field(i).Name,
+			DBType:      convertType(ftm, t.Field(i).Type),
+			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
+			IsCustomVar: t.Field(i).Name == "CustomVars",
 		}
 	}
 	return result

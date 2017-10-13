@@ -28,7 +28,7 @@ type Record map[string]interface{}
 func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	for _, field := range wh.ExportTableSchema() {
-		if field.IsCustomVars {
+		if field.IsCustomVar {
 			continue
 		}
 
