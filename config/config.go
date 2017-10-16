@@ -23,6 +23,10 @@ type Config struct {
 	// aws: s3 + redshift
 	S3       S3Config
 	Redshift RedshiftConfig
+
+	// gcloud: GCS + BigQuery
+	GCS      GCSConfig
+	BigQuery BigQueryConfig
 }
 
 type S3Config struct {
@@ -41,6 +45,19 @@ type RedshiftConfig struct {
 	ExportTable string
 	SyncTable   string
 	Credentials string
+	VarCharMax  int
+}
+
+type GCSConfig struct {
+	Bucket  string
+	GCSOnly bool
+}
+
+type BigQueryConfig struct {
+	Project     string
+	Dataset     string
+	ExportTable string
+	SyncTable   string
 	VarCharMax  int
 }
 

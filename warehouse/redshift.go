@@ -128,7 +128,7 @@ func (rs *Redshift) RemoveS3Object(s3obj string) {
 	}
 }
 
-func (rs *Redshift) LoadToWarehouse(file string) error {
+func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) error {
 	var s3obj string
 	var err error
 

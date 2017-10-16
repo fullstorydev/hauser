@@ -29,3 +29,14 @@ SyncTable   = "fssync"
 # IAM role associated with redshift
 Credentials = "aws_iam_role=arn:aws:iam::<...>"
 VarCharMax = 65535
+
+[gcs]
+Bucket = "<your bucket>"
+GCSOnly = false
+
+[bigquery]
+Project = "<your project>"
+Dataset = "<your dataset>"
+ExportTable = "<your export table>"
+SyncTable = "<your sync table>"
+VarCharMax = 65535

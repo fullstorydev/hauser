@@ -86,7 +86,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, expo
 			return 0, err
 		}
 
-		if err := wh.LoadToWarehouse(filename); err != nil {
+		if err := wh.LoadToWarehouse(filename, e); err != nil {
 			log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
 			return 0, err
 		}
@@ -147,7 +147,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 		processedBundles = append(processedBundles, e)
 	}
 
-	if err := wh.LoadToWarehouse(filename); err != nil {
+	if err := wh.LoadToWarehouse(filename, processedBundles...); err != nil {
 		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
 		return 0, err
 	}
@@ -247,6 +247,8 @@ func main() {
 	switch conf.Warehouse {
 	case "redshift":
 		wh = warehouse.NewRedshift(conf)
+	case "bigquery":
+		wh = warehouse.NewBigQuery(conf)
 	default:
 		if len(conf.Warehouse) == 0 {
 			log.Fatal("Warehouse type must be specified in configuration")
