@@ -36,7 +36,9 @@ type BigQuery struct {
 var _ Warehouse = &BigQuery{}
 
 func NewBigQuery(c *config.Config) *BigQuery {
-	log.Printf("Config flag GCSOnly is on, data will not be loaded to BigQuery")
+	if c.GCS.GCSOnly {
+		log.Printf("Config flag GCSOnly is on, data will not be loaded to BigQuery")
+	}
 	return &BigQuery{
 		conf:              c,
 		exportTableSchema: ExportTableSchema(BigQueryTypeMap),
