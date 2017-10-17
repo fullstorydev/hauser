@@ -35,7 +35,9 @@ var (
 )
 
 func NewRedshift(c *config.Config) *Redshift {
-	log.Printf("Config flag S3Only is on, data will not be loaded to Redshift")
+	if c.S3.S3Only {
+		log.Printf("Config flag S3Only is on, data will not be loaded to Redshift")
+	}
 	return &Redshift{
 		conf: c,
 		exportSchema: ExportTableSchema(RedshiftTypeMap),
