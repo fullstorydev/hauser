@@ -35,6 +35,7 @@ var (
 )
 
 func NewRedshift(c *config.Config) *Redshift {
+	log.Printf("Config flag S3Only is on, data will not be loaded to Redshift")
 	return &Redshift{
 		conf: c,
 		exportSchema: ExportTableSchema(RedshiftTypeMap),
@@ -137,25 +138,25 @@ func (rs *Redshift) LoadToWarehouse(file string) error {
 	}
 
 	if rs.conf.S3.S3Only {
-		log.Printf("Config flag S3Only is on, skipping load to Redshift")
-	} else {
-		defer rs.RemoveS3Object(s3obj)
+		return nil
+	}
 
-		rs.conn, err = rs.MakeRedshfitConnection()
-		if err != nil {
+	defer rs.RemoveS3Object(s3obj)
+
+	rs.conn, err = rs.MakeRedshfitConnection()
+	if err != nil {
+		return err
+	}
+	defer rs.conn.Close()
+
+	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+		if err := rs.CreateExportTable(); err != nil {
 			return err
 		}
-		defer rs.conn.Close()
+	}
 
-		if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
-			if err := rs.CreateExportTable(); err != nil {
-				return err
-			}
-		}
-
-		if err := rs.CopyInData(s3obj); err != nil {
-			return err
-		}
+	if err := rs.CopyInData(s3obj); err != nil {
+		return err
 	}
 
 	return nil
