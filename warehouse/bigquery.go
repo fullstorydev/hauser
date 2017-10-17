@@ -36,6 +36,7 @@ type BigQuery struct {
 var _ Warehouse = &BigQuery{}
 
 func NewBigQuery(c *config.Config) *BigQuery {
+	log.Printf("Config flag GCSOnly is on, data will not be loaded to BigQuery")
 	return &BigQuery{
 		conf:              c,
 		exportTableSchema: ExportTableSchema(BigQueryTypeMap),
@@ -149,48 +150,48 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	}
 
 	if bq.conf.GCS.GCSOnly {
-		log.Printf("Config flag GCSOnly is on, skipping load to BigQuery")
-	} else {
-		defer bq.deleteFromGCS(objName)
+		return nil
+	}
 
-		if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
-			if err := bq.createExportTable(); err != nil {
-				return err
-			}
-		}
+	defer bq.deleteFromGCS(objName)
 
-		// create loader to load from file into export table
-		gcsURI := fmt.Sprintf("gs://%s/%s", bq.conf.GCS.Bucket, objName)
-		gcsRef := bigquery.NewGCSReference(gcsURI) // defaults to CSV
-		gcsRef.FileConfig.IgnoreUnknownValues = true
-		start := bundles[0].Start.UTC()
-		partitionTable := bq.conf.BigQuery.ExportTable + "$" + start.Format("20060102")
-		log.Printf("Loading GCS file: %s into table %s", gcsURI, partitionTable)
-
-		loader := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(partitionTable).LoaderFrom(gcsRef)
-		loader.CreateDisposition = bigquery.CreateNever
-		if start.Equal(start.Truncate(24 * time.Hour)) {
-			// this is the first file of the partition, truncate the partition in case there is leftover data from previous failed loads
-			log.Printf("Detected first bundle of the day (start: %s), using WriteTruncate to replace any existing data in partition", start)
-			loader.WriteDisposition = bigquery.WriteTruncate
-		}
-
-		// start and wait on loading job
-		job, err := loader.Run(bq.ctx)
-		if err != nil {
-			log.Printf("Could not start BQ load job for file %s", filename)
+	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
+		if err := bq.createExportTable(); err != nil {
 			return err
 		}
-		status, err := job.Wait(bq.ctx)
-		if err != nil {
-			log.Printf("Waiting on BQ load job for file %s failed", filename)
-			return err
-		}
-		if status.Err() != nil {
-			log.Printf("BQ load job for file %s failed", filename)
-			logJobErrors(status)
-			return status.Err()
-		}
+	}
+
+	// create loader to load from file into export table
+	gcsURI := fmt.Sprintf("gs://%s/%s", bq.conf.GCS.Bucket, objName)
+	gcsRef := bigquery.NewGCSReference(gcsURI) // defaults to CSV
+	gcsRef.FileConfig.IgnoreUnknownValues = true
+	start := bundles[0].Start.UTC()
+	partitionTable := bq.conf.BigQuery.ExportTable + "$" + start.Format("20060102")
+	log.Printf("Loading GCS file: %s into table %s", gcsURI, partitionTable)
+
+	loader := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(partitionTable).LoaderFrom(gcsRef)
+	loader.CreateDisposition = bigquery.CreateNever
+	if start.Equal(start.Truncate(24 * time.Hour)) {
+		// this is the first file of the partition, truncate the partition in case there is leftover data from previous failed loads
+		log.Printf("Detected first bundle of the day (start: %s), using WriteTruncate to replace any existing data in partition", start)
+		loader.WriteDisposition = bigquery.WriteTruncate
+	}
+
+	// start and wait on loading job
+	job, err := loader.Run(bq.ctx)
+	if err != nil {
+		log.Printf("Could not start BQ load job for file %s", filename)
+		return err
+	}
+	status, err := job.Wait(bq.ctx)
+	if err != nil {
+		log.Printf("Waiting on BQ load job for file %s failed", filename)
+		return err
+	}
+	if status.Err() != nil {
+		log.Printf("BQ load job for file %s failed", filename)
+		logJobErrors(status)
+		return status.Err()
 	}
 
 	return nil
