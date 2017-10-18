@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/lib/pq"
+	"github.com/nishanths/fullstory"
 )
 
 type Redshift struct {
@@ -39,9 +40,9 @@ func NewRedshift(c *config.Config) *Redshift {
 		log.Printf("Config flag S3Only is on, data will not be loaded to Redshift")
 	}
 	return &Redshift{
-		conf: c,
+		conf:         c,
 		exportSchema: ExportTableSchema(RedshiftTypeMap),
-		syncSchema: SyncTableSchema(RedshiftTypeMap),
+		syncSchema:   SyncTableSchema(RedshiftTypeMap),
 	}
 }
 
@@ -188,7 +189,7 @@ func (rs *Redshift) CreateSyncTable() error {
 	return err
 }
 
-func (rs *Redshift) SaveSyncPoint(id int, stop time.Time) error {
+func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	var err error
 	rs.conn, err = rs.MakeRedshfitConnection()
 	if err != nil {
@@ -197,10 +198,15 @@ func (rs *Redshift) SaveSyncPoint(id int, stop time.Time) error {
 	}
 	defer rs.conn.Close()
 
-	insert := fmt.Sprintf("insert into %s values (%d, '%s', '%s')",
-		rs.conf.Redshift.SyncTable, id, time.Now().Format(time.RFC3339), stop.Format(time.RFC3339))
-	_, err = rs.conn.Exec(insert)
-	return err
+	for _, e := range bundles {
+		insert := fmt.Sprintf("insert into %s values (%d, '%s', '%s')",
+			rs.conf.Redshift.SyncTable, e.ID, time.Now().Format(time.RFC3339), e.Stop.Format(time.RFC3339))
+		if _, err := rs.conn.Exec(insert); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (rs *Redshift) DeleteExportRecordsAfter(end time.Time) error {

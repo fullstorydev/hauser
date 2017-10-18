@@ -25,6 +25,8 @@ var (
 // Represents a single export row in the export file
 type Record map[string]interface{}
 
+type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
+
 func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	for _, field := range wh.ExportTableSchema() {
@@ -49,7 +51,7 @@ func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{
 	return line, nil
 }
 
-func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
+func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, exportProcessor ExportProcessor) (int, error) {
 	log.Printf("Checking for new export files since %s", since)
 
 	fs := fullstory.NewClient(conf.FsApiToken)
@@ -62,8 +64,14 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
 		return 0, err
 	}
 
+	return exportProcessor(wh, fs, exports)
+}
+
+// ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
+// occurs, or until they are all processed.
+func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
 	for _, e := range exports {
-		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start, e.Stop)
+		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
 		filename := filepath.Join(conf.TmpDir, fmt.Sprintf("%d.csv", e.ID))
 		mark := time.Now()
 		outfile, err := os.Create(filename)
@@ -75,57 +83,17 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
 		defer outfile.Close()
 		csvOut := csv.NewWriter(outfile)
 
-		stream, err := fs.ExportData(e.ID)
+		recordCount, err := WriteBundleToCSV(fs, e.ID, csvOut, wh)
 		if err != nil {
-			log.Printf("Failed to fetch bundle %d: %s", e.ID, err)
 			return 0, err
 		}
-		defer stream.Close()
-
-		gzstream, err := gzip.NewReader(stream)
-		if err != nil {
-			log.Printf("Failed gzip reader: %s", err)
-			return 0, err
-		}
-
-		decoder := json.NewDecoder(gzstream)
-		decoder.UseNumber()
-
-		// skip array open delimiter
-		if _, err := decoder.Token(); err != nil {
-			log.Printf("Failed json decode of array token: %s", err)
-			return 0, err
-		}
-
-		var recordCount int
-		for decoder.More() {
-			var r Record
-			if err := decoder.Decode(&r); err != nil {
-				log.Printf("failed json decode of record: %s", err)
-				return 0, err
-			}
-			line, err := TransformExportJsonRecord(wh, r)
-			if err != nil {
-				log.Printf("Failed object transform, bundle %d; skipping record. %s", e.ID, err)
-				continue
-			}
-			csvOut.Write(line)
-			recordCount++
-		}
-
-		if _, err := decoder.Token(); err != nil {
-			log.Printf("Failed json decode of array token: %s", err)
-			return 0, err
-		}
-
-		csvOut.Flush()
 
 		if err := wh.LoadToWarehouse(filename); err != nil {
 			log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
 			return 0, err
 		}
 
-		if err := wh.SaveSyncPoint(e.ID, e.Stop); err != nil {
+		if err := wh.SaveSyncPoints(e); err != nil {
 			// If we've already copied in the data but fail to save the sync point, we're
 			// still okay - the next call to LastSyncPoint() will see that there are export
 			// records beyond the sync point and remove them - ie, we will reprocess the
@@ -140,6 +108,110 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
 
 	// return how many files were processed
 	return len(exports), nil
+}
+
+// ProcessFilesByDay creates a single intermediate CSV file for all the export bundles on a given day.  It assumes the
+// day to be processed is the day from the first export bundle's Start value.  When all the bundles with that same day
+// have been written to the CSV file, it is loaded to the warehouse, and the function quits without attempting to
+// process remaining bundles (they'll get picked up on the next call to ProcessExportsSince)
+func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+	if len(exports) == 0 {
+		return 0, nil
+	}
+
+	log.Printf("Creating group file starting with bundle %d (start: %s)", exports[0].ID, exports[0].Start.UTC())
+	filename := filepath.Join(conf.TmpDir, fmt.Sprintf("%d-%s.csv", exports[0].ID, exports[0].Start.UTC().Format("20060102")))
+	mark := time.Now()
+	outfile, err := os.Create(filename)
+	if err != nil {
+		log.Printf("Failed to create tmp file: %s", err)
+		return 0, err
+	}
+	defer os.Remove(filename)
+	defer outfile.Close()
+	csvOut := csv.NewWriter(outfile)
+
+	var processedBundles []fullstory.ExportMeta
+	var totalRecords int
+	groupDay := exports[0].Start.UTC().Truncate(24 * time.Hour)
+	for _, e := range exports {
+		if !groupDay.Equal(e.Start.UTC().Truncate(24 * time.Hour)) {
+			break
+		}
+
+		recordCount, err := WriteBundleToCSV(fs, e.ID, csvOut, wh)
+		if err != nil {
+			return 0, err
+		}
+
+		log.Printf("Wrote bundle %d (%d records, start: %s, stop: %s)", e.ID, recordCount, e.Start.UTC(), e.Stop.UTC())
+		totalRecords += recordCount
+		processedBundles = append(processedBundles, e)
+	}
+
+	if err := wh.LoadToWarehouse(filename); err != nil {
+		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
+		return 0, err
+	}
+
+	if err := wh.SaveSyncPoints(processedBundles...); err != nil {
+		log.Printf("Failed to save sync points for bundles ending with %d: %s", processedBundles[len(processedBundles)].ID, err)
+		return 0, err
+	}
+
+	log.Printf("Processing of %d bundles (%d records) took %s", len(processedBundles), totalRecords,
+		time.Since(mark))
+
+	// return how many files were processed
+	return len(processedBundles), nil
+}
+
+func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
+	stream, err := fs.ExportData(bundleID)
+	if err != nil {
+		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)
+		return 0, err
+	}
+	defer stream.Close()
+
+	gzstream, err := gzip.NewReader(stream)
+	if err != nil {
+		log.Printf("Failed gzip reader: %s", err)
+		return 0, err
+	}
+
+	decoder := json.NewDecoder(gzstream)
+	decoder.UseNumber()
+
+	// skip array open delimiter
+	if _, err := decoder.Token(); err != nil {
+		log.Printf("Failed json decode of array open token: %s", err)
+		return 0, err
+	}
+
+	var recordCount int
+	for decoder.More() {
+		var r Record
+		if err := decoder.Decode(&r); err != nil {
+			log.Printf("failed json decode of record: %s", err)
+			return recordCount, err
+		}
+		line, err := TransformExportJsonRecord(wh, r)
+		if err != nil {
+			log.Printf("Failed object transform, bundle %d; skipping record. %s", bundleID, err)
+			continue
+		}
+		csvOut.Write(line)
+		recordCount++
+	}
+
+	if _, err := decoder.Token(); err != nil {
+		log.Printf("Failed json decode of array close token: %s", err)
+		return recordCount, err
+	}
+
+	csvOut.Flush()
+	return recordCount, nil
 }
 
 func BackoffOnError(err error) bool {
@@ -166,6 +238,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	exportProcessor := ProcessFilesIndividually
+	if conf.GroupFilesByDay {
+		exportProcessor = ProcessFilesByDay
+	}
+
 	var wh warehouse.Warehouse
 	switch conf.Warehouse {
 	case "redshift":
@@ -184,7 +261,7 @@ func main() {
 			continue
 		}
 
-		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord)
+		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord, exportProcessor)
 		if BackoffOnError(err) {
 			continue
 		}

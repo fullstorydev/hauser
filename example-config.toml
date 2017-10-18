@@ -4,6 +4,7 @@ BackoffStepsMax = 8
 CheckInterval = "30m"
 TmpDir = "/tmp"
 Warehouse="redshift"
+GroupFilesByDay = false
 
 [s3]
 # bucket that will be used to stage files into Redshift
