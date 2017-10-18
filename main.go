@@ -25,6 +25,8 @@ var (
 // Represents a single export row in the export file
 type Record map[string]interface{}
 
+type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
+
 func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	for _, field := range wh.ExportTableSchema() {
@@ -49,7 +51,7 @@ func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{
 	return line, nil
 }
 
-func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, processFunc func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)) (int, error) {
+func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, exportProcessor ExportProcessor) (int, error) {
 	log.Printf("Checking for new export files since %s", since)
 
 	fs := fullstory.NewClient(conf.FsApiToken)
@@ -62,7 +64,7 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, processFunc fu
 		return 0, err
 	}
 
-	return processFunc(wh, fs, exports)
+	return exportProcessor(wh, fs, exports)
 }
 
 // ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
@@ -236,11 +238,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var processFunc func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
+	exportProcessor := ProcessFilesIndividually
 	if conf.GroupFilesByDay {
-		processFunc = ProcessFilesByDay
-	} else {
-		processFunc = ProcessFilesIndividually
+		exportProcessor = ProcessFilesByDay
 	}
 
 	var wh warehouse.Warehouse
@@ -261,7 +261,7 @@ func main() {
 			continue
 		}
 
-		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord, processFunc)
+		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord, exportProcessor)
 		if BackoffOnError(err) {
 			continue
 		}
