@@ -49,7 +49,7 @@ func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{
 	return line, nil
 }
 
-func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
+func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, processFunc func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)) (int, error) {
 	log.Printf("Checking for new export files since %s", since)
 
 	fs := fullstory.NewClient(conf.FsApiToken)
@@ -62,17 +62,13 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time) (int, error) {
 		return 0, err
 	}
 
-	if conf.GroupFilesByDay {
-		return LoadFilesGrouped(wh, fs, exports)
-	} else {
-		return LoadFilesSingly(wh, fs, exports)
-	}
+	return processFunc(wh, fs, exports)
 }
 
-// LoadFilesSingly iterates over the list of available export files and processes them one by one, until an error
+// ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
 // occurs, or until they are all processed.
-func LoadFilesSingly(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
-	for i, e := range exports {
+func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
 		filename := filepath.Join(conf.TmpDir, fmt.Sprintf("%d.csv", e.ID))
 		mark := time.Now()
@@ -95,7 +91,7 @@ func LoadFilesSingly(wh warehouse.Warehouse, fs *fullstory.Client, exports []ful
 			return 0, err
 		}
 
-		if err := wh.SaveSyncPoints(exports[i : i+1]); err != nil {
+		if err := wh.SaveSyncPoints(e); err != nil {
 			// If we've already copied in the data but fail to save the sync point, we're
 			// still okay - the next call to LastSyncPoint() will see that there are export
 			// records beyond the sync point and remove them - ie, we will reprocess the
@@ -112,11 +108,11 @@ func LoadFilesSingly(wh warehouse.Warehouse, fs *fullstory.Client, exports []ful
 	return len(exports), nil
 }
 
-// LoadFilesGrouped creates a single intermediate CSV file for all the export bundles on a given day.  It assumes the
+// ProcessFilesByDay creates a single intermediate CSV file for all the export bundles on a given day.  It assumes the
 // day to be processed is the day from the first export bundle's Start value.  When all the bundles with that same day
 // have been written to the CSV file, it is loaded to the warehouse, and the function quits without attempting to
 // process remaining bundles (they'll get picked up on the next call to ProcessExportsSince)
-func LoadFilesGrouped(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
 	if len(exports) == 0 {
 		return 0, nil
 	}
@@ -156,7 +152,7 @@ func LoadFilesGrouped(wh warehouse.Warehouse, fs *fullstory.Client, exports []fu
 		return 0, err
 	}
 
-	if err := wh.SaveSyncPoints(processedBundles); err != nil {
+	if err := wh.SaveSyncPoints(processedBundles...); err != nil {
 		log.Printf("Failed to save sync points for bundles ending with %d: %s", processedBundles[len(processedBundles)].ID, err)
 		return 0, err
 	}
@@ -187,7 +183,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh
 
 	// skip array open delimiter
 	if _, err := decoder.Token(); err != nil {
-		log.Printf("Failed json decode of array token: %s", err)
+		log.Printf("Failed json decode of array open token: %s", err)
 		return 0, err
 	}
 
@@ -208,7 +204,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh
 	}
 
 	if _, err := decoder.Token(); err != nil {
-		log.Printf("Failed json decode of array token: %s", err)
+		log.Printf("Failed json decode of array close token: %s", err)
 		return recordCount, err
 	}
 
@@ -240,6 +236,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var processFunc func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
+	if conf.GroupFilesByDay {
+		processFunc = ProcessFilesByDay
+	} else {
+		processFunc = ProcessFilesIndividually
+	}
+
 	var wh warehouse.Warehouse
 	switch conf.Warehouse {
 	case "redshift":
@@ -258,7 +261,7 @@ func main() {
 			continue
 		}
 
-		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord)
+		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord, processFunc)
 		if BackoffOnError(err) {
 			continue
 		}

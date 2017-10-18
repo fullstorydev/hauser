@@ -186,7 +186,7 @@ func (rs *Redshift) CreateSyncTable() error {
 	return err
 }
 
-func (rs *Redshift) SaveSyncPoints(bundles []fullstory.ExportMeta) error {
+func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	var err error
 	rs.conn, err = rs.MakeRedshfitConnection()
 	if err != nil {
