@@ -39,4 +39,3 @@ Project = "<your project>"
 Dataset = "<your dataset>"
 ExportTable = "<your export table>"
 SyncTable = "<your sync table>"
-VarCharMax = 65535

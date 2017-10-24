@@ -58,7 +58,6 @@ type BigQueryConfig struct {
 	Dataset     string
 	ExportTable string
 	SyncTable   string
-	VarCharMax  int
 }
 
 type duration struct {

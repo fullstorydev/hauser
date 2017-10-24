@@ -14,7 +14,6 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
-	"github.com/lib/pq"
 	"github.com/nishanths/fullstory"
 )
 
@@ -57,44 +56,42 @@ func (bq *BigQuery) LastSyncPoint() (time.Time, error) {
 	}
 	defer bq.bqClient.Close()
 
-	if bq.doesTableExist(bq.conf.BigQuery.SyncTable) {
-		var syncTime pq.NullTime
-		q := fmt.Sprintf("SELECT max(BundleEndTime) FROM %s.%s;", bq.conf.BigQuery.Dataset, bq.conf.BigQuery.SyncTable)
-		if err := bq.fetchTimeVal(q, &syncTime); err != nil {
-			log.Printf("Couldn't get max(BundleEndTime): %s", err)
+	if !bq.doesTableExist(bq.conf.BigQuery.SyncTable) {
+		err := bq.createSyncTable()
+		if err != nil {
+			log.Printf("Could not create sync table: %s", err)
+		}
+		return t, err
+	}
+
+	q := fmt.Sprintf("SELECT max(BundleEndTime) FROM %s.%s;", bq.conf.BigQuery.Dataset, bq.conf.BigQuery.SyncTable)
+	t, err := bq.fetchTimeVal(q)
+	if err != nil {
+		log.Printf("Couldn't get max(BundleEndTime): %s", err)
+		return t, err
+	}
+
+	if !bq.conf.GCS.GCSOnly {
+		// Find the time of the latest export record...if it's after
+		// the time in the sync table, then there must have been a failure
+		// after some records have been loaded, but before the sync record
+		// was written. Use this as the latest sync time, and don't load
+		// any records before this point to prevent duplication
+		exportTime, err := bq.latestEventStart()
+		if err != nil {
+			log.Printf("Couldn't get max(EventStart): %s", err)
 			return t, err
 		}
-		if syncTime.Valid {
-			t = syncTime.Time
-		}
 
-		if !bq.conf.GCS.GCSOnly {
-			// Find the time of the latest export record...if it's after
-			// the time in the sync table, then there must have been a failure
-			// after some records have been loaded, but before the sync record
-			// was written. Use this as the latest sync time, and don't load
-			// any records before this point to prevent duplication
-			var exportTime pq.NullTime
-			if err := bq.latestEventStart(&exportTime); err != nil {
-				log.Printf("Couldn't get max(EventStart): %s", err)
+		if !exportTime.IsZero() && exportTime.After(t) {
+			// Partitioned tables cannot be dropped, so loading must restart with the first bundle of the day on
+			// which leftover records were found.  The last sync point should be backtracked to the first instant of the day.
+			// Data "cleanup" will occur on load, as the first bundle of the day always uses WRITE_TRUNCATE
+			log.Printf("Export record timestamp after sync time (%s vs %s); starting from beginning of the day", exportTime, t)
+			t = t.Truncate(24 * time.Hour)
+			if err := bq.removeSyncPointsAfter(t); err != nil {
 				return t, err
 			}
-
-			if exportTime.Valid && syncTime.Valid && exportTime.Time.After(syncTime.Time) {
-				// Partitioned tables cannot be dropped, so loading must restart with the first bundle of the day on
-				// which leftover records were found.  The last sync point should be backtracked to the first instant of the day.
-				// Data "cleanup" will occur on load, as the first bundle of the day always uses WRITE_TRUNCATE
-				log.Printf("Export record timestamp after sync time (%s vs %s); starting from beginning of the day", exportTime.Time, syncTime.Time)
-				t = syncTime.Time.Truncate(24 * time.Hour)
-				if err := bq.removeSyncPointsAfter(t); err != nil {
-					return t, err
-				}
-			}
-		}
-	} else {
-		if err := bq.createSyncTable(); err != nil {
-			log.Printf("Could not create sync table: %s", err)
-			return t, err
 		}
 	}
 
@@ -124,18 +121,7 @@ func (bq *BigQuery) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 		return err
 	}
 
-	status, err := job.Wait(bq.ctx)
-	if err != nil {
-		log.Printf("Failed to wait for job to save sync point %s", err)
-		return err
-	}
-	if status.Err() != nil {
-		log.Printf("Failed to save sync point %s", status.Err())
-		logJobErrors(status)
-		return status.Err()
-	}
-
-	return nil
+	return bq.waitForJob(job)
 }
 
 func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.ExportMeta) error {
@@ -167,6 +153,7 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	gcsURI := fmt.Sprintf("gs://%s/%s", bq.conf.GCS.Bucket, objName)
 	gcsRef := bigquery.NewGCSReference(gcsURI) // defaults to CSV
 	gcsRef.FileConfig.IgnoreUnknownValues = true
+	gcsRef.AllowJaggedRows = true
 	start := bundles[0].Start.UTC()
 	partitionTable := bq.conf.BigQuery.ExportTable + "$" + start.Format("20060102")
 	log.Printf("Loading GCS file: %s into table %s", gcsURI, partitionTable)
@@ -185,18 +172,8 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 		log.Printf("Could not start BQ load job for file %s", filename)
 		return err
 	}
-	status, err := job.Wait(bq.ctx)
-	if err != nil {
-		log.Printf("Waiting on BQ load job for file %s failed", filename)
-		return err
-	}
-	if status.Err() != nil {
-		log.Printf("BQ load job for file %s failed", filename)
-		logJobErrors(status)
-		return status.Err()
-	}
 
-	return nil
+	return bq.waitForJob(job)
 }
 
 func (bq *BigQuery) ValueToString(val interface{}, f Field) string {
@@ -209,9 +186,6 @@ func (bq *BigQuery) ValueToString(val interface{}, f Field) string {
 	s = strings.Replace(s, "\n", " ", -1)
 	s = strings.Replace(s, "\x00", "", -1)
 
-	if len(s) >= bq.conf.BigQuery.VarCharMax {
-		s = s[:bq.conf.BigQuery.VarCharMax-1]
-	}
 	return s
 }
 
@@ -227,27 +201,14 @@ func (bq *BigQuery) connectToBQ() error {
 }
 
 func (bq *BigQuery) doesTableExist(name string) bool {
-	log.Printf("checking if table %s exists", name)
+	log.Printf("Checking if table %s exists", name)
 
-	q := fmt.Sprintf("SELECT COUNT(*) FROM %s.__TABLES_SUMMARY__ WHERE table_id = '%s';", bq.conf.BigQuery.Dataset, name)
-	query := bq.bqClient.Query(q)
-	query.QueryConfig.UseStandardSQL = true
-
-	iter, err := query.Read(bq.ctx)
-	if err != nil {
-		// something is horribly wrong...just give up
-		log.Fatal(err)
+	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(name)
+	if _, err := table.Metadata(bq.ctx); err != nil {
+		return false
 	}
 
-	var row []bigquery.Value
-	err = iter.Next(&row)
-	if err != nil {
-		// not checking for iterator.Done, as count queries should always return at least 1 row
-		log.Fatal(err)
-	}
-
-	cnt := row[0].(int64)
-	return cnt > 0
+	return true
 }
 
 func (bq *BigQuery) createSyncTable() error {
@@ -275,8 +236,10 @@ func (bq *BigQuery) createExportTable() error {
 	}
 
 	// only EventStart and EventType should be required
-	for i := 2; i < len(schema); i++ {
-		schema[i].Required = false
+	for i := range schema {
+		if schema[i].Name != "EventStart" && schema[i].Name != "EventType" {
+			schema[i].Required = false
+		}
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
@@ -288,38 +251,38 @@ func (bq *BigQuery) createExportTable() error {
 	return nil
 }
 
-func (bq *BigQuery) fetchTimeVal(q string, time *pq.NullTime) error {
+func (bq *BigQuery) fetchTimeVal(q string) (time.Time, error) {
 	query := bq.bqClient.Query(q)
 	query.QueryConfig.UseStandardSQL = true
 
 	iter, err := query.Read(bq.ctx)
 	if err != nil {
 		log.Printf("Could not run query %q because: %s", q, err)
-		time.Valid = false
-		return err
+		return time.Time{}, err
 	}
 
 	var row []bigquery.Value
 	err = iter.Next(&row)
 	if err != nil {
 		log.Printf("Could not fetch result for query %q because: %s", q, err)
-		time.Valid = false
-		return err
+		return time.Time{}, err
 	}
 
-	time.Scan(row[0])
-	return nil
+	if row[0] == nil {
+		return time.Time{}, nil
+	}
+
+	return row[0].(time.Time), nil
 }
 
-func (bq *BigQuery) latestEventStart(time *pq.NullTime) error {
+func (bq *BigQuery) latestEventStart() (time.Time, error) {
 	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
-		time.Valid = false
-		return nil
+		return time.Time{}, nil
 	}
 
 	// export table exists, get latest EventStart from it
 	q := fmt.Sprintf("SELECT max(EventStart) FROM %s.%s;", bq.conf.BigQuery.Dataset, bq.conf.BigQuery.ExportTable)
-	return bq.fetchTimeVal(q, time)
+	return bq.fetchTimeVal(q)
 }
 
 func (bq *BigQuery) uploadToGCS(filename string) (string, error) {
@@ -362,12 +325,6 @@ func (bq *BigQuery) deleteFromGCS(objName string) error {
 	return nil
 }
 
-func logJobErrors(status *bigquery.JobStatus) {
-	for _, e := range status.Errors {
-		log.Printf("Error detail: %s", e)
-	}
-}
-
 func (bq *BigQuery) removeSyncPointsAfter(t time.Time) error {
 	q := fmt.Sprintf("DELETE FROM %s.%s WHERE BundleEndTime > TIMESTAMP(\"%s\")", bq.conf.BigQuery.Dataset, bq.conf.BigQuery.SyncTable, t.UTC().Format(time.RFC3339))
 	log.Printf(q)
@@ -380,15 +337,23 @@ func (bq *BigQuery) removeSyncPointsAfter(t time.Time) error {
 		return err
 	}
 
+	return bq.waitForJob(job)
+}
+
+func (bq *BigQuery) waitForJob(job *bigquery.Job) error {
 	status, err := job.Wait(bq.ctx)
 	if err != nil {
-		log.Printf("Failed to wait for query to remove orphaned sync points: %s", err)
+		log.Printf("Failed to wait for job: %s", err)
 		return err
 	}
+
 	if status.Err() != nil {
-		log.Printf("Failed to delete orphaned sync points")
-		logJobErrors(status)
+		log.Printf("Job failed: %s", status.Err())
+		for _, e := range status.Errors {
+			log.Printf("Error detail: %s", e)
+		}
 		return status.Err()
 	}
+
 	return nil
 }
