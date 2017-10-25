@@ -46,13 +46,9 @@ func NewRedshift(c *config.Config) *Redshift {
 	}
 }
 
-func (rs *Redshift) ExportTableSchema() Schema {
-	return rs.exportSchema
-}
-
-func (rs *Redshift) ValueToString(val interface{}, f Field) string {
+func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
-	if f.IsTime {
+	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
 		return t.String()
 	}
@@ -131,7 +127,7 @@ func (rs *Redshift) RemoveS3Object(s3obj string) {
 	}
 }
 
-func (rs *Redshift) LoadToWarehouse(file string) error {
+func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) error {
 	var s3obj string
 	var err error
 

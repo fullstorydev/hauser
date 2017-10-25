@@ -8,7 +8,8 @@ import (
 	"time"
 )
 
-type exportSchema struct {
+// bundleEvent represents a single event, as it's structured inside a FullStory export bundle.
+type bundleEvent struct {
 	EventStart             time.Time
 	EventType              string
 	EventTargetText        string
@@ -40,24 +41,31 @@ type exportSchema struct {
 	CustomVars             string
 }
 
+// syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
 type syncTable struct {
 	ID            int64
 	Processed     time.Time
 	BundleEndTime time.Time
 }
 
-type Field struct {
+// WarehouseField contains metadata for a field/column in the warehouse.
+type WarehouseField struct {
 	Name        string
 	DBType      string
+}
+
+// BundleField contains metadata for an attribute on an event object in an export bundle JSON document.
+type BundleField struct {
+	Name        string
 	IsTime      bool
 	IsCustomVar bool
 }
 
-func (f Field) String() string {
+func (f WarehouseField) String() string {
 	return fmt.Sprintf("%s %s", f.Name, f.DBType)
 }
 
-type Schema []Field
+type Schema []WarehouseField
 
 func (s Schema) String() string {
 	ss := make([]string, len(s))
@@ -69,8 +77,27 @@ func (s Schema) String() string {
 
 type FieldTypeMapper map[string]string
 
+// BundleFields retrieves information about the data fields in a FullStory export bundle. A bundle is
+// a JSON document with contains an array of event data objects.  The fields in the bundle schema
+// reflect the attributes of those event JSON objects.
+func BundleFields() []BundleField {
+	t := reflect.TypeOf(bundleEvent{})
+	result := make([]BundleField, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		result[i] = BundleField{
+			Name:        t.Field(i).Name,
+			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
+			IsCustomVar: t.Field(i).Name == "CustomVars",
+		}
+	}
+	return result
+}
+
+// ExportTableSchema retrieves information abot the fields in the warehouse table into which data will 
+// finally be loaded.  
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
-	return structToSchema(exportSchema{}, ftm)
+	// for now, the export table schema contains the same set of fields as the raw bundles
+	return structToSchema(bundleEvent{}, ftm)
 }
 
 func SyncTableSchema(ftm FieldTypeMapper) Schema {
@@ -81,11 +108,9 @@ func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
 	t := reflect.TypeOf(i)
 	result := make(Schema, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
-		result[i] = Field{
+		result[i] = WarehouseField{
 			Name:        t.Field(i).Name,
 			DBType:      convertType(ftm, t.Field(i).Type),
-			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
-			IsCustomVar: t.Field(i).Name == "CustomVars",
 		}
 	}
 	return result

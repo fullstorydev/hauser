@@ -19,19 +19,19 @@ func TestRedshiftValueToString(t *testing.T) {
 
 	var testCases = []struct {
 		input    interface{}
-		field    Field
+		isTime   bool
 		expected string
 	}{
-		{"short string", Field{IsTime: false}, "short string"},
-		{"I'm too long, truncate me", Field{IsTime: false}, "I'm too long, trunc"},
-		{"no\nnew\nlines", Field{IsTime: false}, "no new lines"},
-		{"no\x00null\x00chars", Field{IsTime: false}, "nonullchars"},
-		{5, Field{IsTime: false}, "5"},
-		{"2009-11-10T23:00:00.000Z", Field{IsTime: true}, "2009-11-10 23:00:00 +0000 UTC"},
+		{"short string", false, "short string"},
+		{"I'm too long, truncate me", false, "I'm too long, trunc"},
+		{"no\nnew\nlines", false, "no new lines"},
+		{"no\x00null\x00chars", false, "nonullchars"},
+		{5, false, "5"},
+		{"2009-11-10T23:00:00.000Z", true, "2009-11-10 23:00:00 +0000 UTC"},
 	}
 
 	for _, testCase := range testCases {
-		if got := wh.ValueToString(testCase.input, testCase.field); got != testCase.expected {
+		if got := wh.ValueToString(testCase.input, testCase.isTime); got != testCase.expected {
 			t.Errorf("Expected value %q, got %q", testCase.expected, got)
 		}
 	}
