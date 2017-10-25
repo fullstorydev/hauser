@@ -26,10 +26,9 @@ var (
 )
 
 type BigQuery struct {
-	conf              *config.Config
-	ctx               context.Context
-	bqClient          *bigquery.Client
-	exportTableSchema Schema
+	conf     *config.Config
+	ctx      context.Context
+	bqClient *bigquery.Client
 }
 
 var _ Warehouse = &BigQuery{}
@@ -39,13 +38,8 @@ func NewBigQuery(c *config.Config) *BigQuery {
 		log.Printf("Config flag GCSOnly is on, data will not be loaded to BigQuery")
 	}
 	return &BigQuery{
-		conf:              c,
-		exportTableSchema: ExportTableSchema(BigQueryTypeMap),
+		conf: c,
 	}
-}
-
-func (bq *BigQuery) ExportTableSchema() Schema {
-	return bq.exportTableSchema
 }
 
 func (bq *BigQuery) LastSyncPoint() (time.Time, error) {
@@ -176,9 +170,9 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	return bq.waitForJob(job)
 }
 
-func (bq *BigQuery) ValueToString(val interface{}, f Field) string {
+func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
-	if f.IsTime {
+	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
 		return t.Format(time.RFC3339)
 	}
@@ -230,7 +224,7 @@ func (bq *BigQuery) createSyncTable() error {
 func (bq *BigQuery) createExportTable() error {
 	log.Printf("Creating table %s", bq.conf.BigQuery.ExportTable)
 
-	schema, err := bigquery.InferSchema(exportSchema{})
+	schema, err := bigquery.InferSchema(bundleSchema{})
 	if err != nil {
 		return err
 	}

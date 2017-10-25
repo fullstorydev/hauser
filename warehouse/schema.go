@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type exportSchema struct {
+type bundleSchema struct {
 	EventStart             time.Time
 	EventType              string
 	EventTargetText        string
@@ -46,18 +46,22 @@ type syncTable struct {
 	BundleEndTime time.Time
 }
 
-type Field struct {
+type WarehouseField struct {
 	Name        string
 	DBType      string
+}
+
+type BundleField struct {
+	Name        string
 	IsTime      bool
 	IsCustomVar bool
 }
 
-func (f Field) String() string {
+func (f WarehouseField) String() string {
 	return fmt.Sprintf("%s %s", f.Name, f.DBType)
 }
 
-type Schema []Field
+type Schema []WarehouseField
 
 func (s Schema) String() string {
 	ss := make([]string, len(s))
@@ -69,8 +73,22 @@ func (s Schema) String() string {
 
 type FieldTypeMapper map[string]string
 
+func BundleSchema() []BundleField {
+	t := reflect.TypeOf(bundleSchema{})
+	result := make([]BundleField, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		result[i] = BundleField{
+			Name:        t.Field(i).Name,
+			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
+			IsCustomVar: t.Field(i).Name == "CustomVars",
+		}
+	}
+	return result
+}
+
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
-	return structToSchema(exportSchema{}, ftm)
+	// for now, the export table schema is an exact copy of the bundle schema
+	return structToSchema(bundleSchema{}, ftm)
 }
 
 func SyncTableSchema(ftm FieldTypeMapper) Schema {
@@ -81,11 +99,9 @@ func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
 	t := reflect.TypeOf(i)
 	result := make(Schema, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
-		result[i] = Field{
+		result[i] = WarehouseField{
 			Name:        t.Field(i).Name,
 			DBType:      convertType(ftm, t.Field(i).Type),
-			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
-			IsCustomVar: t.Field(i).Name == "CustomVars",
 		}
 	}
 	return result

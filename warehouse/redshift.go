@@ -43,13 +43,9 @@ func NewRedshift(c *config.Config) *Redshift {
 	}
 }
 
-func (rs *Redshift) ExportTableSchema() Schema {
-	return rs.exportSchema
-}
-
-func (rs *Redshift) ValueToString(val interface{}, f Field) string {
+func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
-	if f.IsTime {
+	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
 		return t.String()
 	}

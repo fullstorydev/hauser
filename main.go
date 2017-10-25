@@ -20,6 +20,7 @@ import (
 var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
+	bundleFields       = warehouse.BundleSchema()
 )
 
 // Represents a single export row in the export file
@@ -27,13 +28,16 @@ type Record map[string]interface{}
 
 func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
-	for _, field := range wh.ExportTableSchema() {
+
+	// TODO(jess): some configurable way to inject additional transformed fields, for very light/limited ETL
+
+	for _, field := range bundleFields {
 		if field.IsCustomVar {
 			continue
 		}
 
 		if val, ok := rec[field.Name]; ok {
-			line = append(line, wh.ValueToString(val, field))
+			line = append(line, wh.ValueToString(val, field.IsTime))
 			delete(rec, field.Name)
 		} else {
 			line = append(line, "")
