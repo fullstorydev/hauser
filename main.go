@@ -20,7 +20,7 @@ import (
 var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
-	bundleFields       = warehouse.BundleSchema()
+	bundleFields       = warehouse.BundleFields()
 )
 
 // Represents a single export row in the export file

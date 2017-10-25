@@ -8,7 +8,8 @@ import (
 	"time"
 )
 
-type bundleSchema struct {
+// bundleEvent represents a single event, as it's structured inside a FullStory export bundle.
+type bundleEvent struct {
 	EventStart             time.Time
 	EventType              string
 	EventTargetText        string
@@ -40,17 +41,20 @@ type bundleSchema struct {
 	CustomVars             string
 }
 
+// syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
 type syncTable struct {
 	ID            int64
 	Processed     time.Time
 	BundleEndTime time.Time
 }
 
+// WarehouseField contains metadata for a field/column in the warehouse.
 type WarehouseField struct {
 	Name        string
 	DBType      string
 }
 
+// BundleField contains metadata for an attribute on an event object in an export bundle JSON document.
 type BundleField struct {
 	Name        string
 	IsTime      bool
@@ -73,8 +77,11 @@ func (s Schema) String() string {
 
 type FieldTypeMapper map[string]string
 
-func BundleSchema() []BundleField {
-	t := reflect.TypeOf(bundleSchema{})
+// BundleFields retrieves information about the data fields in a FullStory export bundle. A bundle is
+// a JSON document with contains an array of event data objects.  The fields in the bundle schema
+// reflect the attributes of those event JSON objects.
+func BundleFields() []BundleField {
+	t := reflect.TypeOf(bundleEvent{})
 	result := make([]BundleField, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		result[i] = BundleField{
@@ -86,9 +93,11 @@ func BundleSchema() []BundleField {
 	return result
 }
 
+// ExportTableSchema retrieves information abot the fields in the warehouse table into which data will 
+// finally be loaded.  
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
-	// for now, the export table schema is an exact copy of the bundle schema
-	return structToSchema(bundleSchema{}, ftm)
+	// for now, the export table schema contains the same set of fields as the raw bundles
+	return structToSchema(bundleEvent{}, ftm)
 }
 
 func SyncTableSchema(ftm FieldTypeMapper) Schema {

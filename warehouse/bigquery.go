@@ -224,7 +224,7 @@ func (bq *BigQuery) createSyncTable() error {
 func (bq *BigQuery) createExportTable() error {
 	log.Printf("Creating table %s", bq.conf.BigQuery.ExportTable)
 
-	schema, err := bigquery.InferSchema(bundleSchema{})
+	schema, err := bigquery.InferSchema(bundleEvent{})
 	if err != nil {
 		return err
 	}
