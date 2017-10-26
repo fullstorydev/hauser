@@ -3,7 +3,7 @@ package warehouse
 import (
 	"testing"
 
-	"../config"
+	"github.com/fullstorydev/hauser/config"
 )
 
 var _ Warehouse = &Redshift{}

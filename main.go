@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"./config"
-	"./warehouse"
-
 	"github.com/nishanths/fullstory"
+
+	"github.com/fullstorydev/hauser/config"
+	"github.com/fullstorydev/hauser/warehouse"
 )
 
 var (
