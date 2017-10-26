@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"../config"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/lib/pq"
 	"github.com/nishanths/fullstory"
+
+	"github.com/fullstorydev/hauser/config"
 )
 
 type Redshift struct {

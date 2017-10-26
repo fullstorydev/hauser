@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"../config"
-
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
 	"github.com/nishanths/fullstory"
+
+	"github.com/fullstorydev/hauser/config"
 )
 
 var (
