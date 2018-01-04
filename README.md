@@ -3,7 +3,7 @@
 `hauser` is a service to download FullStory data export files and load them into a data warehouse. (Redshift and BigQuery are the only warehouses supported currently. Others are easy to add -- pull requests welcome.)
 
 ## Quick Start
-
+**Note: Requires go 1.7 or higher**
 * Build it (for EC2, for example): ``GOOS=linux GOARCH=amd64 go get github.com/fullstorydev/hauser``
 * Copy the included `example-config.toml` file and customize it for your environment, including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
 * Run it: `./hauser -c <your updated config file>`
