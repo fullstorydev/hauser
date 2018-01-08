@@ -3,7 +3,7 @@
 `hauser` is a service to download FullStory data export files and load them into a data warehouse. (Redshift and BigQuery are the only warehouses supported currently. Others are easy to add -- pull requests welcome.)
 
 ## Quick Start
-**Note: Requires go 1.7 or higher**
+* Make sure you have [installed](https://golang.org/doc/install) Go 1.7 or higher.
 * Build it (for EC2, for example): ``GOOS=linux GOARCH=amd64 go get github.com/fullstorydev/hauser``
 * Copy the included `example-config.toml` file and customize it for your environment, including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
 * Run it: `./hauser -c <your updated config file>`
@@ -13,8 +13,8 @@ When first run, `hauser` will query FullStory's [data export API](http://help.fu
 
 `hauser` will work through all available export files serially. When no further export files are available, `hauser` will sleep until there is a new one available, which will be processed immediately.
 
-Export files may be processed one at a time, or they may be grouped into batches by day using the boolean config option `GroupFilesByDay`.  When grouping is enabled, export files are still processed serially, but all files having the same date (in UTC) will be combined into a single file before upload to the target warehouse.  Grouping files is helpful for loading large amounts of historical data, when the total number of load operations might reach some quota.  BigQuery, for example, limits the number of loads per day on a single table to 1000.  
- 
+Export files may be processed one at a time, or they may be grouped into batches by day using the boolean config option `GroupFilesByDay`.  When grouping is enabled, export files are still processed serially, but all files having the same date (in UTC) will be combined into a single file before upload to the target warehouse.  Grouping files is helpful for loading large amounts of historical data, when the total number of load operations might reach some quota.  BigQuery, for example, limits the number of loads per day on a single table to 1000.
+
 `hauser` can safely be stopped and restarted. For Redshift and BigQuery, it uses the `SyncTable` to keep track of what export files have been processed, and will restart from the last known sync point.
 
 ### Redshift Notes
