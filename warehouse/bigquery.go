@@ -178,6 +178,7 @@ func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
 	}
 
 	s = strings.Replace(s, "\n", " ", -1)
+	s = strings.Replace(s, "\r", " ", -1)
 	s = strings.Replace(s, "\x00", "", -1)
 
 	return s
