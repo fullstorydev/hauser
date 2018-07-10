@@ -1,0 +1,17 @@
+FsApiToken = "$FULLSTORY_API_TOKEN"
+Backoff = "30s"
+BackoffStepsMax = 8
+CheckInterval = "30m"
+TmpDir = "/tmp"
+Warehouse="bigquery"
+GroupFilesByDay = false
+
+[gcs]
+Bucket = "$GCS_BUCKET"
+GCSOnly = false
+
+[bigquery]
+Project = "$BIGQUERY_PROJECT"
+Dataset = "$BIGQUERY_DATASET"
+ExportTable = "$BIGQUERY_EXPORT_TABLE"
+SyncTable = "$BIGQUERY_SYNC_TABLE"
