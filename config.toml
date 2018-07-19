@@ -1,0 +1,41 @@
+FsApiToken = "QjdCMDc6UWpkQ01EYzZObWhXWWxWaUwzbGlZV2RxVW1WTGN6RmFSa1F2V21oSk1UZ3laMGRFSzJsRk5sSkNaekJ3VTFacmJ6MD0="
+Backoff = "30s"
+BackoffStepsMax = 8
+CheckInterval = "30m"
+TmpDir = "/tmp"
+Warehouse="redshift"
+GroupFilesByDay = false
+
+[s3]
+# bucket that will be used to stage files into Redshift
+Bucket = "fullstory-export"
+# region of the above bucket
+Region = "us-east-2"
+# timeout for copying export files from the local machine to S3
+Timeout = "5m"
+# upload data file only (i.e. skip load to Redshift)?
+S3Only = false
+
+[redshift]
+User = "idna"
+Password = "IdnaPass33"
+Host = "fs-try2.cnu2oxs7crxv.us-east-2.redshift.amazonaws.com"
+Port = "5439"
+DB = "dev"
+# the table where the export data will be written
+ExportTable = "fsexport"
+# metadata table that holds info on export history
+SyncTable   = "fssync"
+# IAM role associated with redshift
+Credentials = "aws_iam_role=arn:aws:iam::152057068729:role/redshifty"
+VarCharMax = 65535
+
+[gcs]
+Bucket = "<your bucket>"
+GCSOnly = false
+
+[bigquery]
+Project = "<your project>"
+Dataset = "<your dataset>"
+ExportTable = "<your export table>"
+SyncTable = "<your sync table>"
