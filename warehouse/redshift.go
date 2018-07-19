@@ -149,23 +149,50 @@ func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) erro
 	}
 	defer rs.conn.Close()
 
-	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
-		if err := rs.CreateExportTable(); err != nil {
-			return err
-		}
+	if err = rs.EnsureCorrectExportTable(); err != nil {
+		return err
 	}
 
-	if err := rs.CopyInData(s3obj); err != nil {
+	csvHeaders := rs.getSchemaHeaders(rs.exportSchema)
+	if err = rs.CopyInData(s3obj, csvHeaders); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (rs *Redshift) CopyInData(s3file string) error {
+func (rs *Redshift) EnsureCorrectExportTable() error {
+	var err error
+	if rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+		// make sure all the columns in the csv export exist in the Export table
+		exportTableColumns := rs.getTableColumns(rs.conf.Redshift.ExportTable)
+		missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
+
+		// If some fields are missing from the fsexport table, either we added new fields
+		// or existing expected columns were deleted by the user we add the relevant columns.
+		// Alter the table and add the missing columns.
+		if len(missingFields) > 0 {
+			alterTableStmts := rs.getAlterTableStatements(missingFields, rs.conf.Redshift.ExportTable)
+			for _, alterStmt := range alterTableStmts {
+				// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
+				if _, err = rs.conn.Exec(alterStmt); err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		// if the export table does not exist we create a one with all the columns we expect!
+		if err = rs.CreateExportTable(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (rs *Redshift) CopyInData(s3file string, csvHeaders []string) error {
 	log.Printf("Loading in data from %s", s3file)
-	copy := fmt.Sprintf("copy %s from '%s' credentials '%s' delimiter ',' region '%s' format as csv ACCEPTINVCHARS;",
-		rs.conf.Redshift.ExportTable, s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
+	copy := fmt.Sprintf("COPY %s (%s) FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
+		rs.conf.Redshift.ExportTable, strings.Join(csvHeaders, ","), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
 	_, err := rs.conn.Exec(copy)
 	return err
 }
@@ -285,6 +312,7 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 	return nil
 }
 
+// DoesTableExist checks if a table with a given name exists in the public schema
 func (rs *Redshift) DoesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
 	var exists int
@@ -294,4 +322,61 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 		log.Fatal(err)
 	}
 	return (exists != 0)
+}
+
+func (rs *Redshift) getTableColumns(name string) []string {
+	ctx := context.Background()
+	log.Printf("Fetching columns for table %s", name)
+	rows, err := rs.conn.QueryContext(ctx,
+		"SELECT \"column\" FROM pg_table_def WHERE schemaname = 'public' AND tablename = $1;", name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var columns []string
+
+	defer rows.Close()
+	for rows.Next(){
+		var column string
+		err = rows.Scan(&column)
+		columns = append(columns, column)
+	}
+	err = rows.Err() // get any error encountered during iteration
+	if err != nil {
+		log.Fatal(err)
+	}
+	return columns
+}
+
+func (rs *Redshift) getAlterTableStatements(fields []WarehouseField, tableName string) []string {
+	var alterTableStmts []string
+	for _, f := range fields {
+		alterTableStmts = append(alterTableStmts, fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", tableName, f.Name, f.DBType))
+	}
+
+	return alterTableStmts
+}
+
+func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
+	existingColumns := make(map[string]bool)
+	for _, column := range tableColumns {
+		// Redshift columns are case insensitive
+		existingColumns[strings.ToLower(column)] = true
+	}
+
+	var missingFields []WarehouseField
+	for _, f := range schema {
+		if _, ok := existingColumns[strings.ToLower(f.Name)]; !ok {
+			missingFields = append(missingFields, f)
+		}
+	}
+
+	return missingFields
+}
+
+func(rs *Redshift) getSchemaHeaders(schema Schema) []string {
+	var headers []string
+	for _, f := range schema {
+		headers = append(headers, f.Name)
+	}
+	return headers
 }
