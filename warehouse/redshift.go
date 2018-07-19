@@ -153,8 +153,8 @@ func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) erro
 		return err
 	}
 
-	csvHeaders := rs.getSchemaHeaders(rs.exportSchema)
-	if err = rs.CopyInData(s3obj, csvHeaders); err != nil {
+	schemaHeaders := rs.getSchemaHeaders(rs.exportSchema)
+	if err = rs.CopyInData(s3obj, schemaHeaders); err != nil {
 		return err
 	}
 
@@ -172,6 +172,7 @@ func (rs *Redshift) EnsureCorrectExportTable() error {
 		// or existing expected columns were deleted by the user we add the relevant columns.
 		// Alter the table and add the missing columns.
 		if len(missingFields) > 0 {
+			log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
 			alterTableStmts := rs.getAlterTableStatements(missingFields, rs.conf.Redshift.ExportTable)
 			for _, alterStmt := range alterTableStmts {
 				// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
@@ -182,6 +183,7 @@ func (rs *Redshift) EnsureCorrectExportTable() error {
 		}
 	} else {
 		// if the export table does not exist we create a one with all the columns we expect!
+		log.Printf("Export table %s doesnot exist! Creating one!", rs.conf.Redshift.ExportTable)
 		if err = rs.CreateExportTable(); err != nil {
 			return err
 		}
@@ -189,10 +191,10 @@ func (rs *Redshift) EnsureCorrectExportTable() error {
 	return nil
 }
 
-func (rs *Redshift) CopyInData(s3file string, csvHeaders []string) error {
+func (rs *Redshift) CopyInData(s3file string, headers []string) error {
 	log.Printf("Loading in data from %s", s3file)
 	copy := fmt.Sprintf("COPY %s (%s) FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
-		rs.conf.Redshift.ExportTable, strings.Join(csvHeaders, ","), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
+		rs.conf.Redshift.ExportTable, strings.Join(headers, ","), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
 	_, err := rs.conn.Exec(copy)
 	return err
 }
