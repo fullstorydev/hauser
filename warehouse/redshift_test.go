@@ -63,17 +63,9 @@ func TestGetMissingFields(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		missingFieldNames := getFieldNames(wh.getMissingFields(testCase.schema, testCase.columns))
-		if len(missingFieldNames) != testCase.expected {
-			t.Errorf("Expected %d missing fields, got %d", testCase.expected, len(missingFieldNames))
+		missingFields := wh.getMissingFields(testCase.schema, testCase.columns)
+		if len(missingFields) != testCase.expected {
+			t.Errorf("Expected %d missing fields, got %d", testCase.expected, len(missingFields))
 		}
 	}
-}
-
-func getFieldNames(fields []WarehouseField) []string {
-	var names []string
-	for _, f := range fields {
-		names = append(names, f.Name)
-	}
-	return names
 }
