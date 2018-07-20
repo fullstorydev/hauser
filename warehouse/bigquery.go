@@ -127,7 +127,7 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	log.Printf("Uploading file: %s", filename)
 	objName, err := bq.uploadToGCS(filename)
 	if err != nil {
-		log.Printf("Failed to upload file %s to s3: %s", filename, err)
+		log.Printf("Failed to upload file %s to GCS: %s", filename, err)
 		return err
 	}
 
