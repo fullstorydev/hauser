@@ -173,17 +173,17 @@ func (rs *Redshift) EnsureCorrectExportTable() error {
 		// Alter the table and add the missing columns.
 		if len(missingFields) > 0 {
 			log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
-			alterTableStmts := rs.getAlterTableStatements(missingFields, rs.conf.Redshift.ExportTable)
-			for _, alterStmt := range alterTableStmts {
+			for _, f := range missingFields {
 				// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
+				alterStmt := rs.getAlterTableStatement(f, rs.conf.Redshift.ExportTable)
 				if _, err = rs.conn.Exec(alterStmt); err != nil {
 					return err
 				}
 			}
 		}
 	} else {
-		// if the export table does not exist we create a one with all the columns we expect!
-		log.Printf("Export table %s doesnot exist! Creating one!", rs.conf.Redshift.ExportTable)
+		// if the export table does not exist we create one with all the columns we expect!
+		log.Printf("Export table %s does not exist! Creating one!", rs.conf.Redshift.ExportTable)
 		if err = rs.CreateExportTable(); err != nil {
 			return err
 		}
@@ -342,20 +342,16 @@ func (rs *Redshift) getTableColumns(name string) []string {
 		err = rows.Scan(&column)
 		columns = append(columns, column)
 	}
-	err = rows.Err() // get any error encountered during iteration
-	if err != nil {
+
+	// get any error encountered during iteration
+	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 	return columns
 }
 
-func (rs *Redshift) getAlterTableStatements(fields []WarehouseField, tableName string) []string {
-	var alterTableStmts []string
-	for _, f := range fields {
-		alterTableStmts = append(alterTableStmts, fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", tableName, f.Name, f.DBType))
-	}
-
-	return alterTableStmts
+func (rs *Redshift) getAlterTableStatement(f WarehouseField, tableName string) string {
+	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", tableName, f.Name, f.DBType)
 }
 
 func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
