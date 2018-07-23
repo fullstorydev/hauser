@@ -175,7 +175,7 @@ func (rs *Redshift) EnsureCorrectExportTable() error {
 			log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
 			for _, f := range missingFields {
 				// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
-				alterStmt := rs.getAlterTableStatement(f, rs.conf.Redshift.ExportTable)
+				alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.conf.Redshift.ExportTable, f.Name, f.DBType)
 				if _, err = rs.conn.Exec(alterStmt); err != nil {
 					return err
 				}
@@ -350,15 +350,11 @@ func (rs *Redshift) getTableColumns(name string) []string {
 	return columns
 }
 
-func (rs *Redshift) getAlterTableStatement(f WarehouseField, tableName string) string {
-	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", tableName, f.Name, f.DBType)
-}
-
 func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
-	existingColumns := make(map[string]bool)
+	existingColumns := make(map[string]struct{})
 	for _, column := range tableColumns {
 		// Redshift columns are case insensitive
-		existingColumns[strings.ToLower(column)] = true
+		existingColumns[strings.ToLower(column)] = struct{}{}
 	}
 
 	var missingFields []WarehouseField
