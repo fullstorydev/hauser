@@ -225,7 +225,7 @@ func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*
 	bqSchemaMap := makeSchemaMap(bqSchema)
 	var missingFields []*bigquery.FieldSchema
 	for _, f := range hauserSchema {
-		if _, ok := bqSchemaMap[f.Name]; !ok {
+		if _, ok := bqSchemaMap[strings.ToLower(f.Name)]; !ok {
 			missingFields = append(missingFields, f)
 		}
 	}
@@ -246,7 +246,7 @@ func (bq *BigQuery) AppendToSchema(schema bigquery.Schema, missingFields []*bigq
 func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
 	schemaMap := make(map[string]struct{})
 	for _, f := range schema {
-		schemaMap[f.Name] = struct{}{}
+		schemaMap[strings.ToLower(f.Name)] = struct{}{}
 	}
 	return schemaMap
 }
