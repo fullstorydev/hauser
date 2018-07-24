@@ -137,10 +137,8 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 
 	defer bq.deleteFromGCS(objName)
 
-	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
-		if err := bq.createExportTable(); err != nil {
-			return err
-		}
+	if err := bq.EnsureCorrectExportTable(); err != nil {
+		return err
 	}
 
 	// create loader to load from file into export table
@@ -168,6 +166,71 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	}
 
 	return bq.waitForJob(job)
+}
+
+// EnsureCorrectExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema
+// If the table exists, it compares the schema of the export table in BigQuery to the schema in hauser and adds any missing fields
+// if the table doesn't exist, it creates a new export table with all the fields specified in hauser
+func (bq *BigQuery) EnsureCorrectExportTable() error {
+	// Get Hauser Schema
+	// this is required if we create a new table or if we have to compare to the existing table schema
+	hauserSchema, err := bigquery.InferSchema(bundleEvent{})
+	if err != nil {
+		return err
+	}
+
+	if bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
+		log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
+
+		// get current table schema in BigQuery
+		table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+		md, err := table.Metadata(context.Background())
+		if err != nil {
+			return err
+		}
+		bqSchemaMap := makeSchemaMap(md.Schema)
+
+		// Find the fields from the hauser schema that are missing from the BiqQuery table
+		var missingFields []*bigquery.FieldSchema
+		for _, f := range hauserSchema {
+			if _, ok := bqSchemaMap[f.Name]; !ok {
+				missingFields = append(missingFields, f)
+			}
+		}
+
+		// If fields are missing, we add them to the table schema
+		if len(missingFields) > 0 {
+			log.Printf("Found %d missing fields. Adding the fields to the export table schema.", len(missingFields))
+
+			for _, f := range missingFields {
+				// Need to set required to false since all the older rows will not have any data for the columns we are about to add
+				f.Required = false
+				md.Schema = append(md.Schema, f)
+			}
+
+			// update the table so we update the schema
+			log.Printf("Updating Export table schema")
+			tmd := bigquery.TableMetadataToUpdate {Schema: md.Schema}
+			if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
+				return err
+			}
+		}
+	} else {
+		// Table does not exist, create new table
+		log.Printf("Export table does not exist, creating one.")
+		if err := bq.createExportTable(hauserSchema); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
+	schemaMap := make(map[string]struct{})
+	for _, f := range schema {
+		schemaMap[f.Name] = struct{}{}
+	}
+	return schemaMap
 }
 
 func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
@@ -222,24 +285,20 @@ func (bq *BigQuery) createSyncTable() error {
 	return nil
 }
 
-func (bq *BigQuery) createExportTable() error {
+
+func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	log.Printf("Creating table %s", bq.conf.BigQuery.ExportTable)
 
-	schema, err := bigquery.InferSchema(bundleEvent{})
-	if err != nil {
-		return err
-	}
-
 	// only EventStart and EventType should be required
-	for i := range schema {
-		if schema[i].Name != "EventStart" && schema[i].Name != "EventType" {
-			schema[i].Required = false
+	for i := range hauserSchema {
+		if hauserSchema[i].Name != "EventStart" && hauserSchema[i].Name != "EventType" {
+			hauserSchema[i].Required = false
 		}
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
 	// create export table as date partitioned, with no expiration date (it can be set later)
-	if err := table.Create(bq.ctx, schema, &bigquery.TimePartitioning{}); err != nil {
+	if err := table.Create(bq.ctx, hauserSchema, &bigquery.TimePartitioning{}); err != nil {
 		return err
 	}
 
