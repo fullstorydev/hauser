@@ -188,31 +188,16 @@ func (bq *BigQuery) EnsureCorrectExportTable() error {
 		if err != nil {
 			return err
 		}
-		bqSchemaMap := makeSchemaMap(md.Schema)
 
 		// Find the fields from the hauser schema that are missing from the BiqQuery table
-		var missingFields []*bigquery.FieldSchema
-		for _, f := range hauserSchema {
-			if _, ok := bqSchemaMap[f.Name]; !ok {
-				missingFields = append(missingFields, f)
-			}
-		}
+		missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
 
 		// If fields are missing, we add them to the table schema
 		if len(missingFields) > 0 {
-			log.Printf("Found %d missing fields. Adding the fields to the export table schema.", len(missingFields))
-
-			for _, f := range missingFields {
-				// Need to set required to false since all the older rows will not have any data for the columns we are about to add
-				f.Required = false
-				md.Schema = append(md.Schema, f)
-			}
-
-			// update the table so we update the schema
-			log.Printf("Updating Export table schema")
-			tmd := bigquery.TableMetadataToUpdate {Schema: md.Schema}
-			if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
-				return err
+			// Append missing fields to export table schema
+			md.Schema = bq.AppendToSchema(md.Schema, missingFields)
+			if err := bq.updateTable(table, md.Schema); err != nil {
+				return nil
 			}
 		}
 	} else {
@@ -223,6 +208,39 @@ func (bq *BigQuery) EnsureCorrectExportTable() error {
 		}
 	}
 	return nil
+}
+
+func (bq *BigQuery) updateTable (table *bigquery.Table, schema bigquery.Schema) error {
+	// update the table so we update the schema
+	log.Printf("Updating Export table schema")
+	tmd := bigquery.TableMetadataToUpdate {Schema: schema}
+	if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetMissingFields returns all fields that are present in the hauserSchema, but not in the bqSchema
+func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*bigquery.FieldSchema {
+	bqSchemaMap := makeSchemaMap(bqSchema)
+	var missingFields []*bigquery.FieldSchema
+	for _, f := range hauserSchema {
+		if _, ok := bqSchemaMap[f.Name]; !ok {
+			missingFields = append(missingFields, f)
+		}
+	}
+	return missingFields
+}
+
+// AppendToSchema adds all the missingFields to the schema.
+// It marks the Required field as false so the change can apply to existing tables with data.
+func (bq *BigQuery) AppendToSchema(schema bigquery.Schema, missingFields []*bigquery.FieldSchema) bigquery.Schema {
+	for _, f := range missingFields {
+		// Need to set required to false since all the older rows will not have any data for the columns we are about to add
+		f.Required = false
+		schema = append(schema, f)
+	}
+	return schema
 }
 
 func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
