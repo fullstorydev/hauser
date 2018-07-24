@@ -14,6 +14,9 @@ func TestGetMissingFields(t *testing.T) {
 	requiredField1 := bigquery.FieldSchema {
 		Name: "RequiredField1",
 	}
+	requiredField1Lowercase := bigquery.FieldSchema {
+		Name: "requiredfield1",
+	}
 	requiredField2 := bigquery.FieldSchema {
 		Name: "RequiredField2",
 	}
@@ -56,6 +59,14 @@ func TestGetMissingFields(t *testing.T) {
 			hauserSchema,
 			bigquery.Schema([]*bigquery.FieldSchema {
 				&requiredField1,
+				&requiredField2,
+			}),
+			0,
+		},
+		{
+			hauserSchema,
+			bigquery.Schema([]*bigquery.FieldSchema {
+				&requiredField1Lowercase,
 				&requiredField2,
 			}),
 			0,
