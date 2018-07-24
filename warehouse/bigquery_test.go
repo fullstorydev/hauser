@@ -82,24 +82,24 @@ func TestAppendToSchema(t *testing.T) {
 		Required: false,
 	}
 
-	hauserSchema := bigquery.Schema([]*bigquery.FieldSchema {})
+	emptySchema := bigquery.Schema([]*bigquery.FieldSchema {})
 
 	var testCases = []struct {
 		hauserSchema	bigquery.Schema
 		requiredFields	[]*bigquery.FieldSchema
 	} {
 		{
-			hauserSchema,
+			emptySchema,
 			[]*bigquery.FieldSchema {},
 		},
 		{
-			hauserSchema,
+			emptySchema,
 			[]*bigquery.FieldSchema {
 				&requiredField1,
 			},
 		},
 		{
-			hauserSchema,
+			emptySchema,
 			[]*bigquery.FieldSchema {
 				&requiredField1,
 				&requiredField2,
