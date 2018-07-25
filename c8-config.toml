@@ -3,7 +3,7 @@ Backoff = "30s"
 BackoffStepsMax = 8
 CheckInterval = "30m"
 TmpDir = "/tmp"
-Warehouse="redshift"
+Warehouse="bigquery"
 GroupFilesByDay = false
 
 [s3]
@@ -35,7 +35,7 @@ Bucket = "<your bucket>"
 GCSOnly = false
 
 [bigquery]
-Project = "<your project>"
+Project = "c8-analytics"
 Dataset = "<your dataset>"
 ExportTable = "<your export table>"
 SyncTable = "<your sync table>"
