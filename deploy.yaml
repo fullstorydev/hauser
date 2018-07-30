@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ${app}
+spec:
+  revisionHistoryLimit: 2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ${app}
+    spec:
+      nodeSelector:
+        name: platform-api
+      containers:
+        - image: gcr.io/${project}-${environ}/${app}:${version}
+          imagePullPolicy: Always
+          name: ${app}
+          ports:
+          - containerPort: 8888
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            initialDelaySeconds: 30
+            timeoutSeconds: 5

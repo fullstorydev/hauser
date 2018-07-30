@@ -1,0 +1,6 @@
+*
+!config
+!vendor
+!warehouse
+!main.go
+!c8-config.toml
