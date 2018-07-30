@@ -38,10 +38,10 @@ type bundleEvent struct {
 	UserEmail              string
 	UserDisplayName        string
 	UserId                 int64
-	CustomVars             string
 	LoadDomContentTime     int64
 	LoadFirstPaintTime     int64
 	LoadEventTime          int64
+	CustomVars             string
 }
 
 // syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
