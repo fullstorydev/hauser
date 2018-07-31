@@ -41,7 +41,7 @@ type bundleEvent struct {
 	LoadDomContentTime     int64
 	LoadFirstPaintTime     int64
 	LoadEventTime          int64
-	CustomVars             string
+	CustomVars             string // Note(aneesh): We club all the custom vars as a blob as the last column when we transform the json response to csv
 }
 
 // syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
@@ -96,7 +96,7 @@ func BundleFields() []BundleField {
 	return result
 }
 
-// ExportTableSchema retrieves information abot the fields in the warehouse table into which data will
+// ExportTableSchema retrieves information about the fields in the warehouse table into which data will
 // finally be loaded.
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
 	// for now, the export table schema contains the same set of fields as the raw bundles
