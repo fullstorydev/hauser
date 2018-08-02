@@ -13,4 +13,8 @@ type Warehouse interface {
 	ValueToString(val interface{}, isTime bool) string
 	GetExportTableColumns() []string
 	EnsureCompatibleExportTable() error
+	UploadFile(name string) (string, error)
+	DeleteFile(path string)
+	GetUploadFailedMsg() string
+	IsUploadOnly() bool
 }

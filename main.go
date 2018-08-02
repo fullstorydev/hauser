@@ -110,17 +110,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, expo
 			return 0, err
 		}
 
-		if err := wh.LoadToWarehouse(filename, e); err != nil {
-			log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
-			return 0, err
-		}
-
-		if err := wh.SaveSyncPoints(e); err != nil {
-			// If we've already copied in the data but fail to save the sync point, we're
-			// still okay - the next call to LastSyncPoint() will see that there are export
-			// records beyond the sync point and remove them - ie, we will reprocess the
-			// current export file
-			log.Printf("Failed to save sync point for bundle %d: %s", e.ID, err)
+		if err := LoadBundles(wh, filename, e); err != nil {
 			return 0, err
 		}
 
@@ -171,13 +161,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 		processedBundles = append(processedBundles, e)
 	}
 
-	if err := wh.LoadToWarehouse(filename, processedBundles...); err != nil {
-		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
-		return 0, err
-	}
-
-	if err := wh.SaveSyncPoints(processedBundles...); err != nil {
-		log.Printf("Failed to save sync points for bundles ending with %d: %s", processedBundles[len(processedBundles)].ID, err)
+	if err := LoadBundles(wh, filename, processedBundles...); err != nil {
 		return 0, err
 	}
 
@@ -186,6 +170,32 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 
 	// return how many files were processed
 	return len(processedBundles), nil
+}
+
+func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
+	var objPath string
+	var err error
+	if objPath, err = wh.UploadFile(filename); err != nil {
+		log.Printf(wh.GetUploadFailedMsg(), filename, err)
+		return err
+	}
+
+	if wh.IsUploadOnly() {
+		return nil
+	}
+
+	defer wh.DeleteFile(objPath)
+
+	if err := wh.LoadToWarehouse(objPath, bundles...); err != nil {
+		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
+		return err
+	}
+
+	if err := wh.SaveSyncPoints(bundles...); err != nil {
+		log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
+		return err
+	}
+	return nil
 }
 
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer

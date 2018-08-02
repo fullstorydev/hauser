@@ -96,7 +96,7 @@ func (rs *Redshift) MakeRedshfitConnection() (*sql.DB, error) {
 	return db, nil
 }
 
-func (rs *Redshift) MoveFiletoS3(name string) (string, error) {
+func (rs *Redshift) UploadFile(name string) (string, error) {
 	file, err := os.Open(name)
 	if err != nil {
 		return "", err
@@ -121,7 +121,7 @@ func (rs *Redshift) MoveFiletoS3(name string) (string, error) {
 	return s3path, err
 }
 
-func (rs *Redshift) RemoveS3Object(s3obj string) {
+func (rs *Redshift) DeleteFile(s3obj string) {
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess, aws.NewConfig().WithRegion(rs.conf.S3.Region))
 
@@ -141,21 +141,8 @@ func (rs *Redshift) RemoveS3Object(s3obj string) {
 	}
 }
 
-func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) error {
-	var s3obj string
+func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...fullstory.ExportMeta) error {
 	var err error
-
-	if s3obj, err = rs.MoveFiletoS3(file); err != nil {
-		log.Printf("Failed to upload file %s to s3: %s", file, err)
-		return err
-	}
-
-	if rs.conf.S3.S3Only {
-		return nil
-	}
-
-	defer rs.RemoveS3Object(s3obj)
-
 	rs.conn, err = rs.MakeRedshfitConnection()
 	if err != nil {
 		return err
@@ -387,4 +374,12 @@ func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []War
 	}
 
 	return missingFields
+}
+
+func (rs *Redshift) GetUploadFailedMsg() string {
+	return "Failed to upload file %s to s3: %s"
+}
+
+func (rs *Redshift) IsUploadOnly() bool {
+	return rs.conf.S3.S3Only
 }

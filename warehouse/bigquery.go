@@ -142,24 +142,11 @@ func (bq *BigQuery) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	return bq.waitForJob(job)
 }
 
-func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.ExportMeta) error {
+func (bq *BigQuery) LoadToWarehouse(objName string, bundles ...fullstory.ExportMeta) error {
 	if err := bq.connectToBQ(); err != nil {
 		return err
 	}
 	defer bq.bqClient.Close()
-
-	log.Printf("Uploading file: %s", filename)
-	objName, err := bq.uploadToGCS(filename)
-	if err != nil {
-		log.Printf("Failed to upload file %s to GCS: %s", filename, err)
-		return err
-	}
-
-	if bq.conf.GCS.GCSOnly {
-		return nil
-	}
-
-	defer bq.deleteFromGCS(objName)
 
 	// create loader to load from file into export table
 	gcsURI := fmt.Sprintf("gs://%s/%s", bq.conf.GCS.Bucket, objName)
@@ -181,7 +168,7 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	// start and wait on loading job
 	job, err := loader.Run(bq.ctx)
 	if err != nil {
-		log.Printf("Could not start BQ load job for file %s", filename)
+		log.Printf("Could not start BQ load job for file %s", objName)
 		return err
 	}
 
@@ -381,7 +368,7 @@ func (bq *BigQuery) latestEventStart() (time.Time, error) {
 	return bq.fetchTimeVal(q)
 }
 
-func (bq *BigQuery) uploadToGCS(filename string) (string, error) {
+func (bq *BigQuery) UploadFile(filename string) (string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return "", err
@@ -406,19 +393,17 @@ func (bq *BigQuery) uploadToGCS(filename string) (string, error) {
 	return objName, nil
 }
 
-func (bq *BigQuery) deleteFromGCS(objName string) error {
+func (bq *BigQuery) DeleteFile(objName string) {
+	var err error
 	gcsClient, err := storage.NewClient(bq.ctx)
 	if err != nil {
-		return err
+		log.Printf("Could not remove %s from bucket %s. Failed to obtain a new GCS client", objName, bq.conf.GCS.Bucket)
 	}
 	defer gcsClient.Close()
 
 	if err := gcsClient.Bucket(bq.conf.GCS.Bucket).Object(objName).Delete(bq.ctx); err != nil {
 		log.Printf("Could not remove %s from bucket %s", objName, bq.conf.GCS.Bucket)
-		return err
 	}
-
-	return nil
 }
 
 func (bq *BigQuery) removeSyncPointsAfter(t time.Time) error {
@@ -452,4 +437,12 @@ func (bq *BigQuery) waitForJob(job *bigquery.Job) error {
 	}
 
 	return nil
+}
+
+func (bq *BigQuery) GetUploadFailedMsg() string {
+	return "Failed to upload file %s to GCS: %s"
+}
+
+func (bq *BigQuery) IsUploadOnly() bool {
+	return bq.conf.GCS.GCSOnly
 }
