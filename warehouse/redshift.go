@@ -171,7 +171,6 @@ func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) erro
 
 // EnsureCompatibleExportTable makes sure the export table has all the hauser schema columns
 func (rs *Redshift) EnsureCompatibleExportTable() error {
-	fmt.Println("EnsureCompatibleExportTable")
 	var err error
 	rs.conn, err = rs.MakeRedshfitConnection()
 	if err != nil {
