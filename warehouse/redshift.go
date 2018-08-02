@@ -46,6 +46,19 @@ func NewRedshift(c *config.Config) *Redshift {
 	}
 }
 
+// GetExportTableColumns returns all the columns of the export table.
+// It opens a connection and calls getTableColumns
+func (rs *Redshift) GetExportTableColumns() []string {
+	var err error
+	rs.conn, err = rs.MakeRedshfitConnection()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rs.conn.Close()
+
+	return rs.getTableColumns(rs.conf.Redshift.ExportTable)
+}
+
 func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
 	if isTime {
@@ -149,20 +162,23 @@ func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) erro
 	}
 	defer rs.conn.Close()
 
-	if err = rs.EnsureCorrectExportTable(); err != nil {
-		return err
-	}
-
-	schemaHeaders := rs.getSchemaHeaders(rs.exportSchema)
-	if err = rs.CopyInData(s3obj, schemaHeaders); err != nil {
+	if err = rs.CopyInData(s3obj); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (rs *Redshift) EnsureCorrectExportTable() error {
+// EnsureCompatibleExportTable makes sure the export table has all the hauser schema columns
+func (rs *Redshift) EnsureCompatibleExportTable() error {
+	fmt.Println("EnsureCompatibleExportTable")
 	var err error
+	rs.conn, err = rs.MakeRedshfitConnection()
+	if err != nil {
+		return err
+	}
+	defer rs.conn.Close()
+
 	if rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
 		// make sure all the columns in the csv export exist in the Export table
 		exportTableColumns := rs.getTableColumns(rs.conf.Redshift.ExportTable)
@@ -191,14 +207,15 @@ func (rs *Redshift) EnsureCorrectExportTable() error {
 	return nil
 }
 
-func (rs *Redshift) CopyInData(s3file string, headers []string) error {
-	log.Printf("Loading in data from %s", s3file)
-	copy := fmt.Sprintf("COPY %s (%s) FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
-		rs.conf.Redshift.ExportTable, strings.Join(headers, ","), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
+// CopyInData copies data from the given s3File to the export table
+func (rs *Redshift) CopyInData(s3file string) error {
+	copy := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
+		rs.conf.Redshift.ExportTable, s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
 	_, err := rs.conn.Exec(copy)
 	return err
 }
 
+// CreateExportTable creates an export table with the hauser export table schema
 func (rs *Redshift) CreateExportTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.ExportTable)
 
@@ -207,6 +224,7 @@ func (rs *Redshift) CreateExportTable() error {
 	return err
 }
 
+// CreateSyncTable creates a sync table with the hauser sync table schema
 func (rs *Redshift) CreateSyncTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.SyncTable)
 
@@ -317,6 +335,7 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 // DoesTableExist checks if a table with a given name exists in the public schema
 func (rs *Redshift) DoesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
+
 	var exists int
 	err := rs.conn.QueryRow("SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename = $1;", name).Scan(&exists)
 	if err != nil {
@@ -326,8 +345,11 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 	return (exists != 0)
 }
 
+// Use this function to get a tables columns if you already have an open connection
 func (rs *Redshift) getTableColumns(name string) []string {
 	ctx := context.Background()
+	var err error
+
 	log.Printf("Fetching columns for table %s", name)
 	rows, err := rs.conn.QueryContext(ctx,
 		"SELECT \"column\" FROM pg_table_def WHERE schemaname = 'public' AND tablename = $1;", name)
@@ -350,6 +372,7 @@ func (rs *Redshift) getTableColumns(name string) []string {
 	return columns
 }
 
+// Returns schema fields that are not present in the tableColumns slice
 func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
 	existingColumns := make(map[string]struct{})
 	for _, column := range tableColumns {
@@ -365,12 +388,4 @@ func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []War
 	}
 
 	return missingFields
-}
-
-func(rs *Redshift) getSchemaHeaders(schema Schema) []string {
-	var headers []string
-	for _, f := range schema {
-		headers = append(headers, f.Name)
-	}
-	return headers
 }

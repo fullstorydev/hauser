@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/nishanths/fullstory"
@@ -20,38 +21,55 @@ import (
 var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
-	bundleFields       = warehouse.BundleFields()
+	bundleFieldsMap    = warehouse.BundleFields()
 )
 
-// Represents a single export row in the export file
+// Record represents a single export row in the export file
 type Record map[string]interface{}
 
 type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
 
-func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
+// TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
+// slice of strings. The slice of strings contains values in the same order as the existing export table.
+// For existing export table fields that do not exist in the json record, an empty string is populated.
+func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
+	// Change all record keys to lower case. We do this because columns are case insensitive for most warehouse solutions.
+	// TODO(aneesh): there probably is a better way accomplish this. look into it!
+	rec = getRecordWithLowerCaseKeys(rec)
 
-	// TODO(jess): some configurable way to inject additional transformed fields, for very light/limited ETL
-
-	for _, field := range bundleFields {
-		if field.IsCustomVar {
-			continue
+	// Map of CustomVars
+	customVarsMap := make(map[string]interface{})
+	for key, val := range rec {
+		if field, ok := bundleFieldsMap[key]; !ok && !field.IsCustomVar {
+			customVarsMap[field.Name] = val
 		}
+	}
 
-		if val, ok := rec[field.Name]; ok {
-			line = append(line, wh.ValueToString(val, field.IsTime))
-			delete(rec, field.Name)
+	// Fetch the table columns so can build the csv with a column order that matches the export table
+	tableColumns := wh.GetExportTableColumns()
+	for _, col := range tableColumns {
+		field, isPartOfExportBundle := bundleFieldsMap[col]
+		if isPartOfExportBundle {
+			if field.IsCustomVar {
+				customVars, err := json.Marshal(customVarsMap)
+				if err != nil {
+					return nil, err
+				}
+				line = append(line, string(customVars))
+			} else {
+				val, valExists := rec[col]
+				if valExists {
+					line = append(line, wh.ValueToString(val, field.IsTime))
+				} else {
+					line = append(line, "")
+				}
+			}
 		} else {
+			// Columns in the export table that we are not going to populate
 			line = append(line, "")
 		}
 	}
-
-	// custom variables will be whatever is left after all well-known fields are accounted for
-	customVars, err := json.Marshal(rec)
-	if err != nil {
-		return nil, err
-	}
-	line = append(line, string(customVars))
 	return line, nil
 }
 
@@ -170,6 +188,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 	return len(processedBundles), nil
 }
 
+// WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
 func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
 	stream, err := fs.ExportData(bundleID)
 	if err != nil {
@@ -200,7 +219,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh
 			log.Printf("failed json decode of record: %s", err)
 			return recordCount, err
 		}
-		line, err := TransformExportJsonRecord(wh, r)
+		line, err := TransformExportJSONRecord(wh, r)
 		if err != nil {
 			log.Printf("Failed object transform, bundle %d; skipping record. %s", bundleID, err)
 			continue
@@ -233,6 +252,14 @@ func BackoffOnError(err error) bool {
 	return false
 }
 
+func getRecordWithLowerCaseKeys(rec map[string]interface{}) map[string]interface{} {
+	m := make(map[string]interface{})
+	for k, v := range rec {
+		m[strings.ToLower(k)] = v
+	}
+	return m
+}
+
 func main() {
 	conffile := flag.String("c", "config.toml", "configuration file")
 	flag.Parse()
@@ -259,6 +286,13 @@ func main() {
 		} else {
 			log.Fatalf("Warehouse type '%s' unrecognized", conf.Warehouse)
 		}
+	}
+
+	// TODO(aneesh): Maybe we intelligently do it depending on the sleep duration?
+	// If its too short ~ every x mins, doing this once is sufficient. If its O(hrs) we
+	// may have to do this on every load run
+	if err := wh.EnsureCompatibleExportTable(); err != nil {
+		log.Fatal(err)
 	}
 
 	for {

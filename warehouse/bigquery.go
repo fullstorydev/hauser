@@ -37,9 +37,33 @@ func NewBigQuery(c *config.Config) *BigQuery {
 	if c.GCS.GCSOnly {
 		log.Printf("Config flag GCSOnly is on, data will not be loaded to BigQuery")
 	}
+
 	return &BigQuery{
 		conf: c,
 	}
+}
+
+// GetExportTableColumns returns a slice of the columns in the existing export table
+func (bq *BigQuery) GetExportTableColumns() []string {
+	var columns []string
+	var err error
+	var md *bigquery.TableMetadata
+
+	if err = bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+	defer bq.bqClient.Close()
+
+	var table = bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+	md, err = table.Metadata(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range md.Schema {
+		columns = append(columns, strings.ToLower(f.Name))
+	}
+	return columns
 }
 
 func (bq *BigQuery) LastSyncPoint() (time.Time, error) {
@@ -137,10 +161,6 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 
 	defer bq.deleteFromGCS(objName)
 
-	if err := bq.EnsureCorrectExportTable(); err != nil {
-		return err
-	}
-
 	// create loader to load from file into export table
 	gcsURI := fmt.Sprintf("gs://%s/%s", bq.conf.GCS.Bucket, objName)
 	gcsRef := bigquery.NewGCSReference(gcsURI) // defaults to CSV
@@ -168,10 +188,10 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	return bq.waitForJob(job)
 }
 
-// EnsureCorrectExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema
+// EnsureCompatibleExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema
 // If the table exists, it compares the schema of the export table in BigQuery to the schema in hauser and adds any missing fields
 // if the table doesn't exist, it creates a new export table with all the fields specified in hauser
-func (bq *BigQuery) EnsureCorrectExportTable() error {
+func (bq *BigQuery) EnsureCompatibleExportTable() error {
 	// Get Hauser Schema
 	// this is required if we create a new table or if we have to compare to the existing table schema
 	hauserSchema, err := bigquery.InferSchema(bundleEvent{})
@@ -195,7 +215,7 @@ func (bq *BigQuery) EnsureCorrectExportTable() error {
 		// If fields are missing, we add them to the table schema
 		if len(missingFields) > 0 {
 			// Append missing fields to export table schema
-			md.Schema = bq.AppendToSchema(md.Schema, missingFields)
+			md.Schema = bq.appendToSchema(md.Schema, missingFields)
 			if err := bq.updateTable(table, md.Schema); err != nil {
 				return nil
 			}
@@ -229,12 +249,13 @@ func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*
 			missingFields = append(missingFields, f)
 		}
 	}
+
 	return missingFields
 }
 
-// AppendToSchema adds all the missingFields to the schema.
-// It marks the Required field as false so the change can apply to existing tables with data.
-func (bq *BigQuery) AppendToSchema(schema bigquery.Schema, missingFields []*bigquery.FieldSchema) bigquery.Schema {
+// appendToSchema adds all the missingFields to the schema.
+// It also marks the Required field as false (making the column Nullable) so the change can apply to tables with data.
+func (bq *BigQuery) appendToSchema(schema bigquery.Schema, missingFields []*bigquery.FieldSchema) bigquery.Schema {
 	for _, f := range missingFields {
 		// Need to set required to false since all the older rows will not have any data for the columns we are about to add
 		f.Required = false
@@ -278,7 +299,10 @@ func (bq *BigQuery) connectToBQ() error {
 
 func (bq *BigQuery) doesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
-
+	if err := bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+	defer bq.bqClient.Close()
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(name)
 	if _, err := table.Metadata(bq.ctx); err != nil {
 		return false
