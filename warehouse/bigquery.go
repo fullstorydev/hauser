@@ -137,10 +137,8 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 
 	defer bq.deleteFromGCS(objName)
 
-	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
-		if err := bq.createExportTable(); err != nil {
-			return err
-		}
+	if err := bq.EnsureCorrectExportTable(); err != nil {
+		return err
 	}
 
 	// create loader to load from file into export table
@@ -168,6 +166,89 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	}
 
 	return bq.waitForJob(job)
+}
+
+// EnsureCorrectExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema
+// If the table exists, it compares the schema of the export table in BigQuery to the schema in hauser and adds any missing fields
+// if the table doesn't exist, it creates a new export table with all the fields specified in hauser
+func (bq *BigQuery) EnsureCorrectExportTable() error {
+	// Get Hauser Schema
+	// this is required if we create a new table or if we have to compare to the existing table schema
+	hauserSchema, err := bigquery.InferSchema(bundleEvent{})
+	if err != nil {
+		return err
+	}
+
+	if bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
+		log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
+
+		// get current table schema in BigQuery
+		table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+		md, err := table.Metadata(context.Background())
+		if err != nil {
+			return err
+		}
+
+		// Find the fields from the hauser schema that are missing from the BiqQuery table
+		missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
+
+		// If fields are missing, we add them to the table schema
+		if len(missingFields) > 0 {
+			// Append missing fields to export table schema
+			md.Schema = bq.AppendToSchema(md.Schema, missingFields)
+			if err := bq.updateTable(table, md.Schema); err != nil {
+				return nil
+			}
+		}
+	} else {
+		// Table does not exist, create new table
+		log.Printf("Export table does not exist, creating one.")
+		if err := bq.createExportTable(hauserSchema); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (bq *BigQuery) updateTable (table *bigquery.Table, schema bigquery.Schema) error {
+	// update the table so we update the schema
+	log.Printf("Updating Export table schema")
+	tmd := bigquery.TableMetadataToUpdate {Schema: schema}
+	if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetMissingFields returns all fields that are present in the hauserSchema, but not in the bqSchema
+func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*bigquery.FieldSchema {
+	bqSchemaMap := makeSchemaMap(bqSchema)
+	var missingFields []*bigquery.FieldSchema
+	for _, f := range hauserSchema {
+		if _, ok := bqSchemaMap[strings.ToLower(f.Name)]; !ok {
+			missingFields = append(missingFields, f)
+		}
+	}
+	return missingFields
+}
+
+// AppendToSchema adds all the missingFields to the schema.
+// It marks the Required field as false so the change can apply to existing tables with data.
+func (bq *BigQuery) AppendToSchema(schema bigquery.Schema, missingFields []*bigquery.FieldSchema) bigquery.Schema {
+	for _, f := range missingFields {
+		// Need to set required to false since all the older rows will not have any data for the columns we are about to add
+		f.Required = false
+		schema = append(schema, f)
+	}
+	return schema
+}
+
+func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
+	schemaMap := make(map[string]struct{})
+	for _, f := range schema {
+		schemaMap[strings.ToLower(f.Name)] = struct{}{}
+	}
+	return schemaMap
 }
 
 func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
@@ -222,24 +303,20 @@ func (bq *BigQuery) createSyncTable() error {
 	return nil
 }
 
-func (bq *BigQuery) createExportTable() error {
+
+func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	log.Printf("Creating table %s", bq.conf.BigQuery.ExportTable)
 
-	schema, err := bigquery.InferSchema(bundleEvent{})
-	if err != nil {
-		return err
-	}
-
 	// only EventStart and EventType should be required
-	for i := range schema {
-		if schema[i].Name != "EventStart" && schema[i].Name != "EventType" {
-			schema[i].Required = false
+	for i := range hauserSchema {
+		if hauserSchema[i].Name != "EventStart" && hauserSchema[i].Name != "EventType" {
+			hauserSchema[i].Required = false
 		}
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
 	// create export table as date partitioned, with no expiration date (it can be set later)
-	if err := table.Create(bq.ctx, schema, &bigquery.TimePartitioning{}); err != nil {
+	if err := table.Create(bq.ctx, hauserSchema, &bigquery.TimePartitioning{}); err != nil {
 		return err
 	}
 
