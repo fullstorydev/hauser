@@ -191,32 +191,33 @@ func (bq *BigQuery) EnsureCompatibleExportTable() error {
 	}
 	defer bq.bqClient.Close()
 
-	if bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
-		log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
-
-		// get current table schema in BigQuery
-		table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
-		md, err := table.Metadata(context.Background())
-		if err != nil {
-			return err
-		}
-
-		// Find the fields from the hauser schema that are missing from the BiqQuery table
-		missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
-
-		// If fields are missing, we add them to the table schema
-		if len(missingFields) > 0 {
-			// Append missing fields to export table schema
-			md.Schema = append(md.Schema, missingFields...)
-			if err := bq.updateTable(table, md.Schema); err != nil {
-				return nil
-			}
-		}
-	} else {
+	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
 		// Table does not exist, create new table
 		log.Printf("Export table does not exist, creating one.")
 		if err := bq.createExportTable(hauserSchema); err != nil {
 			return err
+		}
+		return nil
+	}
+
+	log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
+
+	// get current table schema in BigQuery
+	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+	md, err := table.Metadata(context.Background())
+	if err != nil {
+		return err
+	}
+
+	// Find the fields from the hauser schema that are missing from the BiqQuery table
+	missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
+
+	// If fields are missing, we add them to the table schema
+	if len(missingFields) > 0 {
+		// Append missing fields to export table schema
+		md.Schema = append(md.Schema, missingFields...)
+		if err := bq.updateTable(table, md.Schema); err != nil {
+			return nil
 		}
 	}
 	return nil

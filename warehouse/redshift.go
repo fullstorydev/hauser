@@ -165,29 +165,30 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 	}
 	defer rs.conn.Close()
 
-	if rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
-		// make sure all the columns in the csv export exist in the Export table
-		exportTableColumns := rs.getTableColumns(rs.conf.Redshift.ExportTable)
-		missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
-
-		// If some fields are missing from the fsexport table, either we added new fields
-		// or existing expected columns were deleted by the user we add the relevant columns.
-		// Alter the table and add the missing columns.
-		if len(missingFields) > 0 {
-			log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
-			for _, f := range missingFields {
-				// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
-				alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.conf.Redshift.ExportTable, f.Name, f.DBType)
-				if _, err = rs.conn.Exec(alterStmt); err != nil {
-					return err
-				}
-			}
-		}
-	} else {
+	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
 		// if the export table does not exist we create one with all the columns we expect!
 		log.Printf("Export table %s does not exist! Creating one!", rs.conf.Redshift.ExportTable)
 		if err = rs.CreateExportTable(); err != nil {
 			return err
+		}
+		return nil
+	}
+
+	// make sure all the columns in the csv export exist in the Export table
+	exportTableColumns := rs.getTableColumns(rs.conf.Redshift.ExportTable)
+	missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
+
+	// If some fields are missing from the fsexport table, either we added new fields
+	// or existing expected columns were deleted by the user we add the relevant columns.
+	// Alter the table and add the missing columns.
+	if len(missingFields) > 0 {
+		log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
+		for _, f := range missingFields {
+			// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
+			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.conf.Redshift.ExportTable, f.Name, f.DBType)
+			if _, err = rs.conn.Exec(alterStmt); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
