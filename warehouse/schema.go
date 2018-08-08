@@ -81,7 +81,7 @@ func (s Schema) String() string {
 type FieldTypeMapper map[string]string
 
 // BundleFields retrieves information about the data fields in a FullStory export bundle. A bundle is
-// a JSON document with contains an array of event data objects.  The fields in the bundle schema
+// a JSON document that contains an array of event data objects. The fields in the bundle schema
 // reflect the attributes of those event JSON objects.
 func BundleFields() map[string]BundleField {
 	t := reflect.TypeOf(bundleEvent{})
