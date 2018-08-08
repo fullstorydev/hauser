@@ -207,7 +207,7 @@ func (bq *BigQuery) EnsureCompatibleExportTable() error {
 		// If fields are missing, we add them to the table schema
 		if len(missingFields) > 0 {
 			// Append missing fields to export table schema
-			md.Schema = bq.appendToSchema(md.Schema, missingFields)
+			md.Schema = append(md.Schema, missingFields...)
 			if err := bq.updateTable(table, md.Schema); err != nil {
 				return nil
 			}
@@ -238,22 +238,12 @@ func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*
 	var missingFields []*bigquery.FieldSchema
 	for _, f := range hauserSchema {
 		if _, ok := bqSchemaMap[strings.ToLower(f.Name)]; !ok {
+			f.Required = false
 			missingFields = append(missingFields, f)
 		}
 	}
 
 	return missingFields
-}
-
-// appendToSchema adds all the missingFields to the schema.
-// It also marks the Required field as false (making the column Nullable) so the change can apply to tables with data.
-func (bq *BigQuery) appendToSchema(schema bigquery.Schema, missingFields []*bigquery.FieldSchema) bigquery.Schema {
-	for _, f := range missingFields {
-		// Need to set required to false since all the older rows will not have any data for the columns we are about to add
-		f.Required = false
-		schema = append(schema, f)
-	}
-	return schema
 }
 
 func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
