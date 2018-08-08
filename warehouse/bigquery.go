@@ -395,7 +395,6 @@ func (bq *BigQuery) UploadFile(filename string) (string, error) {
 }
 
 func (bq *BigQuery) DeleteFile(objName string) {
-	var err error
 	gcsClient, err := storage.NewClient(bq.ctx)
 	if err != nil {
 		log.Printf("Could not remove %s from bucket %s. Failed to obtain a new GCS client", objName, bq.conf.GCS.Bucket)
