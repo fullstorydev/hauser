@@ -54,7 +54,7 @@ func (bq *BigQuery) GetExportTableColumns() []string {
 	}
 	defer bq.bqClient.Close()
 
-	var table = bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
 	md, err = table.Metadata(context.Background())
 	if err != nil {
 		log.Fatal(err)
@@ -186,6 +186,11 @@ func (bq *BigQuery) EnsureCompatibleExportTable() error {
 		return err
 	}
 
+	if err := bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+	defer bq.bqClient.Close()
+
 	if bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
 		log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
 
@@ -286,10 +291,6 @@ func (bq *BigQuery) connectToBQ() error {
 
 func (bq *BigQuery) doesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
-	if err := bq.connectToBQ(); err != nil {
-		log.Fatal(err)
-	}
-	defer bq.bqClient.Close()
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(name)
 	if _, err := table.Metadata(bq.ctx); err != nil {
 		return false
@@ -439,8 +440,8 @@ func (bq *BigQuery) waitForJob(job *bigquery.Job) error {
 	return nil
 }
 
-func (bq *BigQuery) GetUploadFailedMsg() string {
-	return "Failed to upload file %s to GCS: %s"
+func (bq *BigQuery) GetUploadFailedMsg(filename string, err error) string {
+	return fmt.Sprintf("Failed to upload file %s to GCS: %s", filename, err)
 }
 
 func (bq *BigQuery) IsUploadOnly() bool {

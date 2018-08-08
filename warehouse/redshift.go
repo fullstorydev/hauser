@@ -376,8 +376,8 @@ func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []War
 	return missingFields
 }
 
-func (rs *Redshift) GetUploadFailedMsg() string {
-	return "Failed to upload file %s to s3: %s"
+func (rs *Redshift) GetUploadFailedMsg(filename string, err error) string {
+	return fmt.Sprintf("Failed to upload file %s to s3: %s", filename, err)
 }
 
 func (rs *Redshift) IsUploadOnly() bool {

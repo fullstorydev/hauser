@@ -35,7 +35,6 @@ type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.Ex
 func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	// Change all record keys to lower case. We do this because columns are case insensitive for most warehouse solutions.
-	// TODO(aneesh): there probably is a better way accomplish this. look into it!
 	rec = getRecordWithLowerCaseKeys(rec)
 
 	// Map of CustomVars
@@ -50,24 +49,26 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{
 	tableColumns := wh.GetExportTableColumns()
 	for _, col := range tableColumns {
 		field, isPartOfExportBundle := bundleFieldsMap[col]
-		if isPartOfExportBundle {
-			if field.IsCustomVar {
-				customVars, err := json.Marshal(customVarsMap)
-				if err != nil {
-					return nil, err
-				}
-				line = append(line, string(customVars))
-			} else {
-				val, valExists := rec[col]
-				if valExists {
-					line = append(line, wh.ValueToString(val, field.IsTime))
-				} else {
-					line = append(line, "")
-				}
-			}
-		} else {
-			// Columns in the export table that we are not going to populate
+
+		// These are columns in the export table that we are not going to populate
+		if !isPartOfExportBundle {
 			line = append(line, "")
+			continue;
+		}
+
+
+		if field.IsCustomVar {
+			customVars, err := json.Marshal(customVarsMap)
+			if err != nil {
+				return nil, err
+			}
+			line = append(line, string(customVars))
+		} else {
+			if val, valExists := rec[col]; valExists {
+				line = append(line, wh.ValueToString(val, field.IsTime))
+			} else {
+				line = append(line, "")
+			}
 		}
 	}
 	return line, nil
@@ -176,7 +177,7 @@ func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.
 	var objPath string
 	var err error
 	if objPath, err = wh.UploadFile(filename); err != nil {
-		log.Printf(wh.GetUploadFailedMsg(), filename, err)
+		log.Printf(wh.GetUploadFailedMsg(filename, err))
 		return err
 	}
 
@@ -191,6 +192,10 @@ func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.
 		return err
 	}
 
+	// If we've already copied in the data but fail to save the sync point, we're
+	// still okay - the next call to LastSyncPoint() will see that there are export
+	// records beyond the sync point and remove them - ie, we will reprocess the
+	// current export file
 	if err := wh.SaveSyncPoints(bundles...); err != nil {
 		log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
 		return err
@@ -298,9 +303,6 @@ func main() {
 		}
 	}
 
-	// TODO(aneesh): Maybe we intelligently do it depending on the sleep duration?
-	// If its too short ~ every x mins, doing this once is sufficient. If its O(hrs) we
-	// may have to do this on every load run
 	if err := wh.EnsureCompatibleExportTable(); err != nil {
 		log.Fatal(err)
 	}

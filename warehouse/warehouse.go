@@ -15,6 +15,6 @@ type Warehouse interface {
 	EnsureCompatibleExportTable() error
 	UploadFile(name string) (string, error)
 	DeleteFile(path string)
-	GetUploadFailedMsg() string
+	GetUploadFailedMsg(filename string, err error) string
 	IsUploadOnly() bool
 }

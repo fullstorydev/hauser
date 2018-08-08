@@ -96,7 +96,7 @@ func BundleFields() map[string]BundleField {
 	return result
 }
 
-// ExportTableSchema retrieves information abot the fields in the warehouse table into which data will
+// ExportTableSchema retrieves information about the fields in the warehouse table into which data will
 // finally be loaded.
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
 	// for now, the export table schema contains the same set of fields as the raw bundles
