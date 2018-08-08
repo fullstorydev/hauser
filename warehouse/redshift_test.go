@@ -37,12 +37,16 @@ func TestRedshiftValueToString(t *testing.T) {
 	}
 }
 
-func TestGetMissingFields(t *testing.T) {
+func TestGetMissingFieldsRedshift(t *testing.T) {
 	wh := &Redshift{
 		exportSchema: ExportTableSchema(RedshiftTypeMap),
 	}
 
-	schemaHeaders := wh.getSchemaHeaders(wh.exportSchema)
+	var schemaHeaders []string
+	for _, f := range wh.exportSchema {
+		schemaHeaders = append(schemaHeaders, f.Name)
+	}
+
 	var noHeaders []string
 	var testCases = []struct {
 		schema    Schema

@@ -39,6 +39,9 @@ type bundleEvent struct {
 	UserDisplayName        string
 	UserId                 int64
 	CustomVars             string
+	LoadDomContentTime     int64
+	LoadFirstPaintTime     int64
+	LoadEventTime          int64
 }
 
 // syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
@@ -78,13 +81,13 @@ func (s Schema) String() string {
 type FieldTypeMapper map[string]string
 
 // BundleFields retrieves information about the data fields in a FullStory export bundle. A bundle is
-// a JSON document with contains an array of event data objects.  The fields in the bundle schema
+// a JSON document that contains an array of event data objects. The fields in the bundle schema
 // reflect the attributes of those event JSON objects.
-func BundleFields() []BundleField {
+func BundleFields() map[string]BundleField {
 	t := reflect.TypeOf(bundleEvent{})
-	result := make([]BundleField, t.NumField())
+	result := make(map[string]BundleField, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
-		result[i] = BundleField{
+		result[strings.ToLower(t.Field(i).Name)] = BundleField{
 			Name:        t.Field(i).Name,
 			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
 			IsCustomVar: t.Field(i).Name == "CustomVars",
@@ -93,8 +96,8 @@ func BundleFields() []BundleField {
 	return result
 }
 
-// ExportTableSchema retrieves information abot the fields in the warehouse table into which data will 
-// finally be loaded.  
+// ExportTableSchema retrieves information about the fields in the warehouse table into which data will
+// finally be loaded.
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
 	// for now, the export table schema contains the same set of fields as the raw bundles
 	return structToSchema(bundleEvent{}, ftm)
