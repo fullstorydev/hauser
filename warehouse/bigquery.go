@@ -45,21 +45,18 @@ func NewBigQuery(c *config.Config) *BigQuery {
 
 // GetExportTableColumns returns a slice of the columns in the existing export table
 func (bq *BigQuery) GetExportTableColumns() []string {
-	var columns []string
-	var err error
-	var md *bigquery.TableMetadata
-
-	if err = bq.connectToBQ(); err != nil {
+	if err := bq.connectToBQ(); err != nil {
 		log.Fatal(err)
 	}
 	defer bq.bqClient.Close()
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
-	md, err = table.Metadata(context.Background())
+	md, err := table.Metadata(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	var columns []string
 	for _, f := range md.Schema {
 		columns = append(columns, strings.ToLower(f.Name))
 	}
