@@ -40,7 +40,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{
 	// Map of CustomVars
 	customVarsMap := make(map[string]interface{})
 	for key, val := range rec {
-		if field, ok := bundleFieldsMap[key]; !ok && !field.IsCustomVar {
+		if field, ok := bundleFieldsMap[key]; !ok {
 			customVarsMap[field.Name] = val
 		}
 	}
@@ -55,7 +55,6 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{
 			line = append(line, "")
 			continue;
 		}
-
 
 		if field.IsCustomVar {
 			customVars, err := json.Marshal(customVarsMap)
