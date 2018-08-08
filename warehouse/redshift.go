@@ -332,11 +332,8 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 	return (exists != 0)
 }
 
-// Use this function to get a tables columns if you already have an open connection
 func (rs *Redshift) getTableColumns(name string) []string {
 	ctx := context.Background()
-	var err error
-
 	log.Printf("Fetching columns for table %s", name)
 	rows, err := rs.conn.QueryContext(ctx,
 		"SELECT \"column\" FROM pg_table_def WHERE schemaname = 'public' AND tablename = $1;", name)
@@ -359,7 +356,6 @@ func (rs *Redshift) getTableColumns(name string) []string {
 	return columns
 }
 
-// Returns schema fields that are not present in the tableColumns slice
 func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
 	existingColumns := make(map[string]struct{})
 	for _, column := range tableColumns {
