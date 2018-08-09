@@ -46,6 +46,19 @@ func NewRedshift(c *config.Config) *Redshift {
 	}
 }
 
+// GetExportTableColumns returns all the columns of the export table.
+// It opens a connection and calls getTableColumns
+func (rs *Redshift) GetExportTableColumns() []string {
+	var err error
+	rs.conn, err = rs.MakeRedshfitConnection()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rs.conn.Close()
+
+	return rs.getTableColumns(rs.conf.Redshift.ExportTable)
+}
+
 func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
 	if isTime {
@@ -83,7 +96,7 @@ func (rs *Redshift) MakeRedshfitConnection() (*sql.DB, error) {
 	return db, nil
 }
 
-func (rs *Redshift) MoveFiletoS3(name string) (string, error) {
+func (rs *Redshift) UploadFile(name string) (string, error) {
 	file, err := os.Open(name)
 	if err != nil {
 		return "", err
@@ -108,7 +121,7 @@ func (rs *Redshift) MoveFiletoS3(name string) (string, error) {
 	return s3path, err
 }
 
-func (rs *Redshift) RemoveS3Object(s3obj string) {
+func (rs *Redshift) DeleteFile(s3obj string) {
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess, aws.NewConfig().WithRegion(rs.conf.S3.Region))
 
@@ -128,21 +141,24 @@ func (rs *Redshift) RemoveS3Object(s3obj string) {
 	}
 }
 
-func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) error {
-	var s3obj string
+func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...fullstory.ExportMeta) error {
 	var err error
+	rs.conn, err = rs.MakeRedshfitConnection()
+	if err != nil {
+		return err
+	}
+	defer rs.conn.Close()
 
-	if s3obj, err = rs.MoveFiletoS3(file); err != nil {
-		log.Printf("Failed to upload file %s to s3: %s", file, err)
+	if err = rs.CopyInData(s3obj); err != nil {
 		return err
 	}
 
-	if rs.conf.S3.S3Only {
-		return nil
-	}
+	return nil
+}
 
-	defer rs.RemoveS3Object(s3obj)
-
+// EnsureCompatibleExportTable makes sure the export table has all the hauser schema columns
+func (rs *Redshift) EnsureCompatibleExportTable() error {
+	var err error
 	rs.conn, err = rs.MakeRedshfitConnection()
 	if err != nil {
 		return err
@@ -150,26 +166,43 @@ func (rs *Redshift) LoadToWarehouse(file string, _ ...fullstory.ExportMeta) erro
 	defer rs.conn.Close()
 
 	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
-		if err := rs.CreateExportTable(); err != nil {
+		// if the export table does not exist we create one with all the columns we expect!
+		log.Printf("Export table %s does not exist! Creating one!", rs.conf.Redshift.ExportTable)
+		if err = rs.CreateExportTable(); err != nil {
 			return err
 		}
+		return nil
 	}
 
-	if err := rs.CopyInData(s3obj); err != nil {
-		return err
-	}
+	// make sure all the columns in the csv export exist in the Export table
+	exportTableColumns := rs.getTableColumns(rs.conf.Redshift.ExportTable)
+	missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
 
+	// If some fields are missing from the fsexport table, either we added new fields
+	// or existing expected columns were deleted by the user we add the relevant columns.
+	// Alter the table and add the missing columns.
+	if len(missingFields) > 0 {
+		log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
+		for _, f := range missingFields {
+			// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
+			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.conf.Redshift.ExportTable, f.Name, f.DBType)
+			if _, err = rs.conn.Exec(alterStmt); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
+// CopyInData copies data from the given s3File to the export table
 func (rs *Redshift) CopyInData(s3file string) error {
-	log.Printf("Loading in data from %s", s3file)
-	copy := fmt.Sprintf("copy %s from '%s' credentials '%s' delimiter ',' region '%s' format as csv ACCEPTINVCHARS;",
+	copy := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
 		rs.conf.Redshift.ExportTable, s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
 	_, err := rs.conn.Exec(copy)
 	return err
 }
 
+// CreateExportTable creates an export table with the hauser export table schema
 func (rs *Redshift) CreateExportTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.ExportTable)
 
@@ -178,6 +211,7 @@ func (rs *Redshift) CreateExportTable() error {
 	return err
 }
 
+// CreateSyncTable creates a sync table with the hauser sync table schema
 func (rs *Redshift) CreateSyncTable() error {
 	log.Printf("Creating table %s", rs.conf.Redshift.SyncTable)
 
@@ -285,8 +319,10 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 	return nil
 }
 
+// DoesTableExist checks if a table with a given name exists in the public schema
 func (rs *Redshift) DoesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
+
 	var exists int
 	err := rs.conn.QueryRow("SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename = $1;", name).Scan(&exists)
 	if err != nil {
@@ -294,4 +330,53 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 		log.Fatal(err)
 	}
 	return (exists != 0)
+}
+
+func (rs *Redshift) getTableColumns(name string) []string {
+	ctx := context.Background()
+	log.Printf("Fetching columns for table %s", name)
+	rows, err := rs.conn.QueryContext(ctx,
+		"SELECT \"column\" FROM pg_table_def WHERE schemaname = 'public' AND tablename = $1;", name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var columns []string
+
+	defer rows.Close()
+	for rows.Next(){
+		var column string
+		err = rows.Scan(&column)
+		columns = append(columns, column)
+	}
+
+	// get any error encountered during iteration
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return columns
+}
+
+func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
+	existingColumns := make(map[string]struct{})
+	for _, column := range tableColumns {
+		// Redshift columns are case insensitive
+		existingColumns[strings.ToLower(column)] = struct{}{}
+	}
+
+	var missingFields []WarehouseField
+	for _, f := range schema {
+		if _, ok := existingColumns[strings.ToLower(f.Name)]; !ok {
+			missingFields = append(missingFields, f)
+		}
+	}
+
+	return missingFields
+}
+
+func (rs *Redshift) GetUploadFailedMsg(filename string, err error) string {
+	return fmt.Sprintf("Failed to upload file %s to s3: %s", filename, err)
+}
+
+func (rs *Redshift) IsUploadOnly() bool {
+	return rs.conf.S3.S3Only
 }

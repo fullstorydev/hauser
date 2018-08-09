@@ -37,9 +37,30 @@ func NewBigQuery(c *config.Config) *BigQuery {
 	if c.GCS.GCSOnly {
 		log.Printf("Config flag GCSOnly is on, data will not be loaded to BigQuery")
 	}
+
 	return &BigQuery{
 		conf: c,
 	}
+}
+
+// GetExportTableColumns returns a slice of the columns in the existing export table
+func (bq *BigQuery) GetExportTableColumns() []string {
+	if err := bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+	defer bq.bqClient.Close()
+
+	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+	md, err := table.Metadata(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var columns []string
+	for _, f := range md.Schema {
+		columns = append(columns, strings.ToLower(f.Name))
+	}
+	return columns
 }
 
 func (bq *BigQuery) LastSyncPoint() (time.Time, error) {
@@ -118,30 +139,11 @@ func (bq *BigQuery) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	return bq.waitForJob(job)
 }
 
-func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.ExportMeta) error {
+func (bq *BigQuery) LoadToWarehouse(objName string, bundles ...fullstory.ExportMeta) error {
 	if err := bq.connectToBQ(); err != nil {
 		return err
 	}
 	defer bq.bqClient.Close()
-
-	log.Printf("Uploading file: %s", filename)
-	objName, err := bq.uploadToGCS(filename)
-	if err != nil {
-		log.Printf("Failed to upload file %s to s3: %s", filename, err)
-		return err
-	}
-
-	if bq.conf.GCS.GCSOnly {
-		return nil
-	}
-
-	defer bq.deleteFromGCS(objName)
-
-	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
-		if err := bq.createExportTable(); err != nil {
-			return err
-		}
-	}
 
 	// create loader to load from file into export table
 	gcsURI := fmt.Sprintf("gs://%s/%s", bq.conf.GCS.Bucket, objName)
@@ -163,11 +165,91 @@ func (bq *BigQuery) LoadToWarehouse(filename string, bundles ...fullstory.Export
 	// start and wait on loading job
 	job, err := loader.Run(bq.ctx)
 	if err != nil {
-		log.Printf("Could not start BQ load job for file %s", filename)
+		log.Printf("Could not start BQ load job for file %s", objName)
 		return err
 	}
 
 	return bq.waitForJob(job)
+}
+
+// EnsureCompatibleExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema
+// If the table exists, it compares the schema of the export table in BigQuery to the schema in hauser and adds any missing fields
+// if the table doesn't exist, it creates a new export table with all the fields specified in hauser
+func (bq *BigQuery) EnsureCompatibleExportTable() error {
+	// Get Hauser Schema
+	// this is required if we create a new table or if we have to compare to the existing table schema
+	hauserSchema, err := bigquery.InferSchema(bundleEvent{})
+	if err != nil {
+		return err
+	}
+
+	if err := bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+	defer bq.bqClient.Close()
+
+	if !bq.doesTableExist(bq.conf.BigQuery.ExportTable) {
+		// Table does not exist, create new table
+		log.Printf("Export table does not exist, creating one.")
+		if err := bq.createExportTable(hauserSchema); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
+
+	// get current table schema in BigQuery
+	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+	md, err := table.Metadata(context.Background())
+	if err != nil {
+		return err
+	}
+
+	// Find the fields from the hauser schema that are missing from the BiqQuery table
+	missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
+
+	// If fields are missing, we add them to the table schema
+	if len(missingFields) > 0 {
+		// Append missing fields to export table schema
+		md.Schema = append(md.Schema, missingFields...)
+		if err := bq.updateTable(table, md.Schema); err != nil {
+			return nil
+		}
+	}
+	return nil
+}
+
+func (bq *BigQuery) updateTable (table *bigquery.Table, schema bigquery.Schema) error {
+	// update the table so we update the schema
+	log.Printf("Updating Export table schema")
+	tmd := bigquery.TableMetadataToUpdate {Schema: schema}
+	if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetMissingFields returns all fields that are present in the hauserSchema, but not in the bqSchema
+func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*bigquery.FieldSchema {
+	bqSchemaMap := makeSchemaMap(bqSchema)
+	var missingFields []*bigquery.FieldSchema
+	for _, f := range hauserSchema {
+		if _, ok := bqSchemaMap[strings.ToLower(f.Name)]; !ok {
+			f.Required = false
+			missingFields = append(missingFields, f)
+		}
+	}
+
+	return missingFields
+}
+
+func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
+	schemaMap := make(map[string]struct{})
+	for _, f := range schema {
+		schemaMap[strings.ToLower(f.Name)] = struct{}{}
+	}
+	return schemaMap
 }
 
 func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
@@ -197,7 +279,6 @@ func (bq *BigQuery) connectToBQ() error {
 
 func (bq *BigQuery) doesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
-
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(name)
 	if _, err := table.Metadata(bq.ctx); err != nil {
 		return false
@@ -222,24 +303,20 @@ func (bq *BigQuery) createSyncTable() error {
 	return nil
 }
 
-func (bq *BigQuery) createExportTable() error {
+
+func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	log.Printf("Creating table %s", bq.conf.BigQuery.ExportTable)
 
-	schema, err := bigquery.InferSchema(bundleEvent{})
-	if err != nil {
-		return err
-	}
-
 	// only EventStart and EventType should be required
-	for i := range schema {
-		if schema[i].Name != "EventStart" && schema[i].Name != "EventType" {
-			schema[i].Required = false
+	for i := range hauserSchema {
+		if hauserSchema[i].Name != "EventStart" && hauserSchema[i].Name != "EventType" {
+			hauserSchema[i].Required = false
 		}
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
 	// create export table as date partitioned, with no expiration date (it can be set later)
-	if err := table.Create(bq.ctx, schema, &bigquery.TimePartitioning{}); err != nil {
+	if err := table.Create(bq.ctx, hauserSchema, &bigquery.TimePartitioning{}); err != nil {
 		return err
 	}
 
@@ -280,7 +357,7 @@ func (bq *BigQuery) latestEventStart() (time.Time, error) {
 	return bq.fetchTimeVal(q)
 }
 
-func (bq *BigQuery) uploadToGCS(filename string) (string, error) {
+func (bq *BigQuery) UploadFile(filename string) (string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return "", err
@@ -305,19 +382,16 @@ func (bq *BigQuery) uploadToGCS(filename string) (string, error) {
 	return objName, nil
 }
 
-func (bq *BigQuery) deleteFromGCS(objName string) error {
+func (bq *BigQuery) DeleteFile(objName string) {
 	gcsClient, err := storage.NewClient(bq.ctx)
 	if err != nil {
-		return err
+		log.Printf("Could not remove %s from bucket %s. Failed to obtain a new GCS client", objName, bq.conf.GCS.Bucket)
 	}
 	defer gcsClient.Close()
 
 	if err := gcsClient.Bucket(bq.conf.GCS.Bucket).Object(objName).Delete(bq.ctx); err != nil {
 		log.Printf("Could not remove %s from bucket %s", objName, bq.conf.GCS.Bucket)
-		return err
 	}
-
-	return nil
 }
 
 func (bq *BigQuery) removeSyncPointsAfter(t time.Time) error {
@@ -351,4 +425,12 @@ func (bq *BigQuery) waitForJob(job *bigquery.Job) error {
 	}
 
 	return nil
+}
+
+func (bq *BigQuery) GetUploadFailedMsg(filename string, err error) string {
+	return fmt.Sprintf("Failed to upload file %s to GCS: %s", filename, err)
+}
+
+func (bq *BigQuery) IsUploadOnly() bool {
+	return bq.conf.GCS.GCSOnly
 }

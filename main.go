@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/nishanths/fullstory"
@@ -20,38 +21,55 @@ import (
 var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
-	bundleFields       = warehouse.BundleFields()
+	bundleFieldsMap    = warehouse.BundleFields()
 )
 
-// Represents a single export row in the export file
+// Record represents a single export row in the export file
 type Record map[string]interface{}
 
 type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
 
-func TransformExportJsonRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
+// TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
+// slice of strings. The slice of strings contains values in the same order as the existing export table.
+// For existing export table fields that do not exist in the json record, an empty string is populated.
+func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
 	var line []string
+	// Change all record keys to lower case. We do this because columns are case insensitive for most warehouse solutions.
+	rec = getRecordWithLowerCaseKeys(rec)
 
-	// TODO(jess): some configurable way to inject additional transformed fields, for very light/limited ETL
-
-	for _, field := range bundleFields {
-		if field.IsCustomVar {
-			continue
+	// Map of CustomVars
+	customVarsMap := make(map[string]interface{})
+	for key, val := range rec {
+		if field, ok := bundleFieldsMap[key]; !ok {
+			customVarsMap[field.Name] = val
 		}
+	}
 
-		if val, ok := rec[field.Name]; ok {
-			line = append(line, wh.ValueToString(val, field.IsTime))
-			delete(rec, field.Name)
-		} else {
+	// Fetch the table columns so can build the csv with a column order that matches the export table
+	tableColumns := wh.GetExportTableColumns()
+	for _, col := range tableColumns {
+		field, isPartOfExportBundle := bundleFieldsMap[col]
+
+		// These are columns in the export table that we are not going to populate
+		if !isPartOfExportBundle {
 			line = append(line, "")
+			continue;
+		}
+
+		if field.IsCustomVar {
+			customVars, err := json.Marshal(customVarsMap)
+			if err != nil {
+				return nil, err
+			}
+			line = append(line, string(customVars))
+		} else {
+			if val, valExists := rec[col]; valExists {
+				line = append(line, wh.ValueToString(val, field.IsTime))
+			} else {
+				line = append(line, "")
+			}
 		}
 	}
-
-	// custom variables will be whatever is left after all well-known fields are accounted for
-	customVars, err := json.Marshal(rec)
-	if err != nil {
-		return nil, err
-	}
-	line = append(line, string(customVars))
 	return line, nil
 }
 
@@ -92,17 +110,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, expo
 			return 0, err
 		}
 
-		if err := wh.LoadToWarehouse(filename, e); err != nil {
-			log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
-			return 0, err
-		}
-
-		if err := wh.SaveSyncPoints(e); err != nil {
-			// If we've already copied in the data but fail to save the sync point, we're
-			// still okay - the next call to LastSyncPoint() will see that there are export
-			// records beyond the sync point and remove them - ie, we will reprocess the
-			// current export file
-			log.Printf("Failed to save sync point for bundle %d: %s", e.ID, err)
+		if err := LoadBundles(wh, filename, e); err != nil {
 			return 0, err
 		}
 
@@ -153,13 +161,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 		processedBundles = append(processedBundles, e)
 	}
 
-	if err := wh.LoadToWarehouse(filename, processedBundles...); err != nil {
-		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
-		return 0, err
-	}
-
-	if err := wh.SaveSyncPoints(processedBundles...); err != nil {
-		log.Printf("Failed to save sync points for bundles ending with %d: %s", processedBundles[len(processedBundles)].ID, err)
+	if err := LoadBundles(wh, filename, processedBundles...); err != nil {
 		return 0, err
 	}
 
@@ -170,6 +172,37 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 	return len(processedBundles), nil
 }
 
+func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
+	var objPath string
+	var err error
+	if objPath, err = wh.UploadFile(filename); err != nil {
+		log.Printf(wh.GetUploadFailedMsg(filename, err))
+		return err
+	}
+
+	if wh.IsUploadOnly() {
+		return nil
+	}
+
+	defer wh.DeleteFile(objPath)
+
+	if err := wh.LoadToWarehouse(objPath, bundles...); err != nil {
+		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
+		return err
+	}
+
+	// If we've already copied in the data but fail to save the sync point, we're
+	// still okay - the next call to LastSyncPoint() will see that there are export
+	// records beyond the sync point and remove them - ie, we will reprocess the
+	// current export file
+	if err := wh.SaveSyncPoints(bundles...); err != nil {
+		log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
+		return err
+	}
+	return nil
+}
+
+// WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
 func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
 	stream, err := fs.ExportData(bundleID)
 	if err != nil {
@@ -200,7 +233,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh
 			log.Printf("failed json decode of record: %s", err)
 			return recordCount, err
 		}
-		line, err := TransformExportJsonRecord(wh, r)
+		line, err := TransformExportJSONRecord(wh, r)
 		if err != nil {
 			log.Printf("Failed object transform, bundle %d; skipping record. %s", bundleID, err)
 			continue
@@ -233,6 +266,14 @@ func BackoffOnError(err error) bool {
 	return false
 }
 
+func getRecordWithLowerCaseKeys(rec map[string]interface{}) map[string]interface{} {
+	m := make(map[string]interface{})
+	for k, v := range rec {
+		m[strings.ToLower(k)] = v
+	}
+	return m
+}
+
 func main() {
 	conffile := flag.String("c", "config.toml", "configuration file")
 	flag.Parse()
@@ -259,6 +300,10 @@ func main() {
 		} else {
 			log.Fatalf("Warehouse type '%s' unrecognized", conf.Warehouse)
 		}
+	}
+
+	if err := wh.EnsureCompatibleExportTable(); err != nil {
+		log.Fatal(err)
 	}
 
 	for {
