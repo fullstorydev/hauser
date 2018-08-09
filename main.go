@@ -27,7 +27,7 @@ var (
 // Record represents a single export row in the export file
 type Record map[string]interface{}
 
-type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.ExportMeta) (int, error)
+type ExportProcessor func(warehouse.Warehouse, []string, *fullstory.Client, []fullstory.ExportMeta) (int, error)
 
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
@@ -72,7 +72,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, re
 	return line, nil
 }
 
-func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, exportProcessor ExportProcessor) (int, error) {
+func ProcessExportsSince(wh warehouse.Warehouse, tableColumns []string, since time.Time, exportProcessor ExportProcessor) (int, error) {
 	log.Printf("Checking for new export files since %s", since)
 
 	fs := fullstory.NewClient(conf.FsApiToken)
@@ -85,13 +85,12 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, exportProcesso
 		return 0, err
 	}
 
-	return exportProcessor(wh, fs, exports)
+	return exportProcessor(wh, tableColumns, fs, exports)
 }
 
 // ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
 // occurs, or until they are all processed.
-func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
-	tableColumns := wh.GetExportTableColumns()
+func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
 		filename := filepath.Join(conf.TmpDir, fmt.Sprintf("%d.csv", e.ID))
@@ -126,7 +125,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, expo
 // day to be processed is the day from the first export bundle's Start value.  When all the bundles with that same day
 // have been written to the CSV file, it is loaded to the warehouse, and the function quits without attempting to
 // process remaining bundles (they'll get picked up on the next call to ProcessExportsSince)
-func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
 	if len(exports) == 0 {
 		return 0, nil
 	}
@@ -146,7 +145,6 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 	var processedBundles []fullstory.ExportMeta
 	var totalRecords int
 	groupDay := exports[0].Start.UTC().Truncate(24 * time.Hour)
-	tableColumns := wh.GetExportTableColumns()
 	for _, e := range exports {
 		if !groupDay.Equal(e.Start.UTC().Truncate(24 * time.Hour)) {
 			break
@@ -307,13 +305,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	tableColumns := wh.GetExportTableColumns()
 	for {
 		lastSyncedRecord, err := wh.LastSyncPoint()
 		if BackoffOnError(err) {
 			continue
 		}
 
-		numBundles, err := ProcessExportsSince(wh, lastSyncedRecord, exportProcessor)
+		numBundles, err := ProcessExportsSince(wh, tableColumns, lastSyncedRecord, exportProcessor)
 		if BackoffOnError(err) {
 			continue
 		}
