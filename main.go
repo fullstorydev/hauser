@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,13 @@ var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
 	bundleFieldsMap    = warehouse.BundleFields()
+)
+
+const (
+	maxAttempts int = 3
+
+	// Default retry after duration. Arbitrarily set to 10s.
+	defaultRetryAfterDuration time.Duration = time.Duration(10) * time.Second
 )
 
 // Record represents a single export row in the export file
@@ -202,9 +210,30 @@ func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.
 	return nil
 }
 
+func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, error) {
+	log.Printf("Getting Export Data for bundle %d\n", bundleID)
+	for r := 1; r <= maxAttempts; r++ {
+		stream, err := fs.ExportData(bundleID)
+		if err != nil {
+			log.Printf("Failed to fetch export data for Bundle %d", bundleID)
+			retryAfterDuration := defaultRetryAfterDuration
+			if statusError, ok := err.(fullstory.StatusError); ok {
+				if retryAfter, err := strconv.Atoi(statusError.RetryAfter); err == nil {
+					retryAfterDuration = time.Duration(retryAfter) * time.Second
+				}
+			}
+			log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
+			time.Sleep(retryAfterDuration)
+		} else {
+			return stream, nil
+		}
+	}
+	return nil, fmt.Errorf("Unable to fetch export data. Tried %d times.", maxAttempts)
+}
+
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
 func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
-	stream, err := fs.ExportData(bundleID)
+	stream, err := getExportData(fs, bundleID)
 	if err != nil {
 		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)
 		return 0, err
