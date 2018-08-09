@@ -50,7 +50,7 @@ func NewRedshift(c *config.Config) *Redshift {
 // It opens a connection and calls getTableColumns
 func (rs *Redshift) GetExportTableColumns() []string {
 	var err error
-	rs.conn, err = rs.MakeRedshfitConnection()
+	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	return s
 }
 
-func (rs *Redshift) MakeRedshfitConnection() (*sql.DB, error) {
+func (rs *Redshift) MakeRedshiftConnection() (*sql.DB, error) {
 	url := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v",
 		rs.conf.Redshift.User,
 		rs.conf.Redshift.Password,
@@ -143,7 +143,7 @@ func (rs *Redshift) DeleteFile(s3obj string) {
 
 func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...fullstory.ExportMeta) error {
 	var err error
-	rs.conn, err = rs.MakeRedshfitConnection()
+	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...fullstory.ExportMeta) err
 // EnsureCompatibleExportTable makes sure the export table has all the hauser schema columns
 func (rs *Redshift) EnsureCompatibleExportTable() error {
 	var err error
-	rs.conn, err = rs.MakeRedshfitConnection()
+	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
 		return err
 	}
@@ -222,7 +222,7 @@ func (rs *Redshift) CreateSyncTable() error {
 
 func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	var err error
-	rs.conn, err = rs.MakeRedshfitConnection()
+	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
 		log.Printf("Couldn't connect to DB: %s", err)
 		return err
@@ -255,7 +255,7 @@ func (rs *Redshift) DeleteExportRecordsAfter(end time.Time) error {
 func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 	t := beginningOfTime
 	var err error
-	rs.conn, err = rs.MakeRedshfitConnection()
+	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
 		log.Printf("Couldn't connect to DB: %s", err)
 		return t, err
