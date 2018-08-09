@@ -32,7 +32,7 @@ type ExportProcessor func(warehouse.Warehouse, *fullstory.Client, []fullstory.Ex
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
 // For existing export table fields that do not exist in the json record, an empty string is populated.
-func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{}) ([]string, error) {
+func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	// Change all record keys to lower case. We do this because columns are case insensitive for most warehouse solutions.
 	rec = getRecordWithLowerCaseKeys(rec)
@@ -46,7 +46,6 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, rec map[string]interface{
 	}
 
 	// Fetch the table columns so can build the csv with a column order that matches the export table
-	tableColumns := wh.GetExportTableColumns()
 	for _, col := range tableColumns {
 		field, isPartOfExportBundle := bundleFieldsMap[col]
 
@@ -92,6 +91,7 @@ func ProcessExportsSince(wh warehouse.Warehouse, since time.Time, exportProcesso
 // ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
 // occurs, or until they are all processed.
 func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+	tableColumns := wh.GetExportTableColumns()
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
 		filename := filepath.Join(conf.TmpDir, fmt.Sprintf("%d.csv", e.ID))
@@ -105,7 +105,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, fs *fullstory.Client, expo
 		defer outfile.Close()
 		csvOut := csv.NewWriter(outfile)
 
-		recordCount, err := WriteBundleToCSV(fs, e.ID, csvOut, wh)
+		recordCount, err := WriteBundleToCSV(fs, e.ID, tableColumns, csvOut, wh)
 		if err != nil {
 			return 0, err
 		}
@@ -146,12 +146,13 @@ func ProcessFilesByDay(wh warehouse.Warehouse, fs *fullstory.Client, exports []f
 	var processedBundles []fullstory.ExportMeta
 	var totalRecords int
 	groupDay := exports[0].Start.UTC().Truncate(24 * time.Hour)
+	tableColumns := wh.GetExportTableColumns()
 	for _, e := range exports {
 		if !groupDay.Equal(e.Start.UTC().Truncate(24 * time.Hour)) {
 			break
 		}
 
-		recordCount, err := WriteBundleToCSV(fs, e.ID, csvOut, wh)
+		recordCount, err := WriteBundleToCSV(fs, e.ID, tableColumns, csvOut, wh)
 		if err != nil {
 			return 0, err
 		}
@@ -203,7 +204,7 @@ func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.
 }
 
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
-func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
+func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
 	stream, err := fs.ExportData(bundleID)
 	if err != nil {
 		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)
@@ -233,7 +234,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, csvOut *csv.Writer, wh
 			log.Printf("failed json decode of record: %s", err)
 			return recordCount, err
 		}
-		line, err := TransformExportJSONRecord(wh, r)
+		line, err := TransformExportJSONRecord(wh, tableColumns, r)
 		if err != nil {
 			log.Printf("Failed object transform, bundle %d; skipping record. %s", bundleID, err)
 			continue
