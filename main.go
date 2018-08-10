@@ -305,7 +305,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Note(aneesh): We SHOULD fetch the table columns ONLY after the call to EnsureCompatibleExportTable.
+	// NB: We SHOULD fetch the table columns ONLY after the call to EnsureCompatibleExportTable.
 	// The EnsureCompatibleExportTable function potentially alters the schema of the export table in the client warehouse.
 	tableColumns := wh.GetExportTableColumns()
 	for {
