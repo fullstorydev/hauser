@@ -66,17 +66,12 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 		defer resp.Body.Close()
 		b := &bytes.Buffer{}
 		io.Copy(b, resp.Body) // Ignore error.
-		statusError := StatusError {
+		return nil, StatusError{
 			Body:       b,
 			Status:     resp.Status,
+			RetryAfter: resp.Header.Get("Retry-After"),
 			StatusCode: resp.StatusCode,
 		}
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			statusError.RetryAfter = resp.Header.Get("Retry-After")
-		}
-
-		return nil, statusError
 	}
 
 	return resp.Body, nil

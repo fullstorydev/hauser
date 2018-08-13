@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -26,9 +27,10 @@ var (
 )
 
 const (
+	// Maximum number of times Hauser will attempt to retry each request made to fullstory
 	maxAttempts int = 3
 
-	// Default retry after duration. Arbitrarily set to 10s.
+	// Default duration Hauser will wait before retrying after getting a 429 response, if no retry-after is specified in the response. Arbitrarily set to 10s.
 	defaultRetryAfterDuration time.Duration = time.Duration(10) * time.Second
 )
 
@@ -214,18 +216,23 @@ func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, er
 	log.Printf("Getting Export Data for bundle %d\n", bundleID)
 	for r := 1; r <= maxAttempts; r++ {
 		stream, err := fs.ExportData(bundleID)
-		if err != nil {
-			log.Printf("Failed to fetch export data for Bundle %d", bundleID)
+		if err == nil {
+			return stream, nil
+		}
+
+		log.Printf("Failed to fetch export data for Bundle %d", bundleID)
+		if statusError, ok := err.(fullstory.StatusError); ok {
+			// If the status code is NOT 429 and the code is below 500 we will not attempt to retry
+			if statusError.StatusCode != http.StatusTooManyRequests && statusError.StatusCode < 500 {
+				break
+			}
+
 			retryAfterDuration := defaultRetryAfterDuration
-			if statusError, ok := err.(fullstory.StatusError); ok {
-				if retryAfter, err := strconv.Atoi(statusError.RetryAfter); err == nil {
-					retryAfterDuration = time.Duration(retryAfter) * time.Second
-				}
+			if retryAfter, err := strconv.Atoi(statusError.RetryAfter); err == nil {
+				retryAfterDuration = time.Duration(retryAfter) * time.Second
 			}
 			log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
 			time.Sleep(retryAfterDuration)
-		} else {
-			return stream, nil
 		}
 	}
 	return nil, fmt.Errorf("Unable to fetch export data. Tried %d times.", maxAttempts)
