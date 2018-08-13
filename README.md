@@ -35,6 +35,13 @@ Loading data into BigQuery may be skipped by setting `GCS.GCSOnly` in the config
 
 If `hauser` detects that a load failure occurred, to ensure data consistency it will roll back all sync points for the most recent date partition and reload all files for the entire partition.
 
+## Schema Changes
+As FullStory adds more features we expose additional fields in our data export. `hauser` automatically deals with the addition of new fields by appending nullable columns to the warehouse export table.
+
+On startup, `hauser` will ensure that the export table listed in the config contains columns for all export fields. If `hauser` detects columns for fields don't exist, it will append columns for those fields to the export table. It uses this schema information, which it acquires once on startup, to intelligently build CSV files and deal with schema alterations to the export table. If schema changes are made, `hauser` will have to be restarted so it is aware of the updated export table schema.
+
+If the export table contains columns that aren't part of the export bundle, `hauser` will insert null values for those columns when it inserts new records. Note: In order for `hauser` to successfully insert records, any added columns must be nullable.
+
 ## Working with Custom Vars
 For convenience, any custom user vars in your data are stored in a json map in the `CustomVars` column. In Redshift, they can be easily accessed using the [`JSON_EXTRACT_PATH_TEXT`](http://docs.aws.amazon.com/redshift/latest/dg/JSON_EXTRACT_PATH_TEXT.html) function.
 
