@@ -27,10 +27,10 @@ var (
 )
 
 const (
-	// Maximum number of times Hauser will attempt to retry each request made to fullstory
+	// Maximum number of times Hauser will attempt to retry each request made to FullStory
 	maxAttempts int = 3
 
-	// Default duration Hauser will wait before retrying after getting a 429 response, if no retry-after is specified in the response. Arbitrarily set to 10s.
+	// Default duration Hauser will wait before retrying a 429 or 5xx response. If Retry-After is specified, uses that instead. Default arbitrarily set to 10s.
 	defaultRetryAfterDuration time.Duration = time.Duration(10) * time.Second
 )
 
