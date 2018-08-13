@@ -220,19 +220,20 @@ func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, er
 		}
 
 		log.Printf("Failed to fetch export data for Bundle %d", bundleID)
+		retryAfterDuration := defaultRetryAfterDuration
 		if statusError, ok := err.(fullstory.StatusError); ok {
 			// If the status code is NOT 429 and the code is below 500 we will not attempt to retry
 			if statusError.StatusCode != http.StatusTooManyRequests && statusError.StatusCode < 500 {
 				break
 			}
 
-			retryAfterDuration := defaultRetryAfterDuration
 			if retryAfter, err := strconv.Atoi(statusError.RetryAfter); err == nil {
 				retryAfterDuration = time.Duration(retryAfter) * time.Second
 			}
-			log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
-			time.Sleep(retryAfterDuration)
 		}
+
+		log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
+		time.Sleep(retryAfterDuration)
 	}
 	return nil, fmt.Errorf("Unable to fetch export data. Tried %d times.", maxAttempts)
 }
