@@ -18,6 +18,7 @@ import (
 
 	"github.com/fullstorydev/hauser/config"
 	"github.com/fullstorydev/hauser/warehouse"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -213,13 +214,15 @@ func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.
 
 func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, error) {
 	log.Printf("Getting Export Data for bundle %d\n", bundleID)
+	var fsErr error
 	for r := 1; r <= maxAttempts; r++ {
 		stream, err := fs.ExportData(bundleID)
 		if err == nil {
 			return stream, nil
 		}
+		log.Printf("Failed to fetch export data for Bundle %d: %s", bundleID, err)
 
-		log.Printf("Failed to fetch export data for Bundle %d", bundleID)
+		fsErr = err
 		retryAfterDuration := defaultRetryAfterDuration
 		if statusError, ok := err.(fullstory.StatusError); ok {
 			// If the status code is NOT 429 and the code is below 500 we will not attempt to retry
@@ -235,7 +238,8 @@ func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, er
 		log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
 		time.Sleep(retryAfterDuration)
 	}
-	return nil, fmt.Errorf("Unable to fetch export data. Tried %d times.", maxAttempts)
+
+	return nil, errors.Wrap(fsErr, fmt.Sprintf("Unable to fetch export data. Tried %d times.", maxAttempts))
 }
 
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
