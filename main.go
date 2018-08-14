@@ -7,8 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,12 +18,21 @@ import (
 
 	"github.com/fullstorydev/hauser/config"
 	"github.com/fullstorydev/hauser/warehouse"
+	"github.com/pkg/errors"
 )
 
 var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
 	bundleFieldsMap    = warehouse.BundleFields()
+)
+
+const (
+	// Maximum number of times Hauser will attempt to retry each request made to FullStory
+	maxAttempts int = 3
+
+	// Default duration Hauser will wait before retrying a 429 or 5xx response. If Retry-After is specified, uses that instead. Default arbitrarily set to 10s.
+	defaultRetryAfterDuration time.Duration = time.Duration(10) * time.Second
 )
 
 // Record represents a single export row in the export file
@@ -201,9 +212,39 @@ func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.
 	return nil
 }
 
+func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, error) {
+	log.Printf("Getting Export Data for bundle %d\n", bundleID)
+	var fsErr error
+	for r := 1; r <= maxAttempts; r++ {
+		stream, err := fs.ExportData(bundleID)
+		if err == nil {
+			return stream, nil
+		}
+		log.Printf("Failed to fetch export data for Bundle %d: %s", bundleID, err)
+
+		fsErr = err
+		retryAfterDuration := defaultRetryAfterDuration
+		if statusError, ok := err.(fullstory.StatusError); ok {
+			// If the status code is NOT 429 and the code is below 500 we will not attempt to retry
+			if statusError.StatusCode != http.StatusTooManyRequests && statusError.StatusCode < 500 {
+				break
+			}
+
+			if retryAfter, err := strconv.Atoi(statusError.RetryAfter); err == nil {
+				retryAfterDuration = time.Duration(retryAfter) * time.Second
+			}
+		}
+
+		log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
+		time.Sleep(retryAfterDuration)
+	}
+
+	return nil, errors.Wrap(fsErr, fmt.Sprintf("Unable to fetch export data. Tried %d times.", maxAttempts))
+}
+
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
 func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
-	stream, err := fs.ExportData(bundleID)
+	stream, err := getExportData(fs, bundleID)
 	if err != nil {
 		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)
 		return 0, err

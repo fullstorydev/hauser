@@ -17,11 +17,12 @@ var _ error = StatusError{}
 type StatusError struct {
 	Status     string
 	StatusCode int
+	RetryAfter string
 	Body       io.Reader
 }
 
 func (e StatusError) Error() string {
-	return fmt.Sprintf("fullstory: response error: %s", e.Status)
+	return fmt.Sprintf("fullstory: response error: Status:%s, StatusCode:%d, RetryAfter:%s", e.Status, e.StatusCode, e.RetryAfter)
 }
 
 // Client represents a HTTP client for making requests to the FullStory API.
@@ -53,7 +54,7 @@ func NewClient(apiToken string) *Client {
 //
 // If the error is nil, the caller is responsible for closing the returned data.
 func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
-	req.Header.Set("Authorization", "Basic "+c.APIToken)
+	req.Header.Set("Authorization", "Basic " + c.APIToken)
 	req.Header.Set("Accept-encoding", "*")
 
 	resp, err := c.HTTPClient.Do(req)
@@ -68,6 +69,7 @@ func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
 		return nil, StatusError{
 			Body:       b,
 			Status:     resp.Status,
+			RetryAfter: resp.Header.Get("Retry-After"),
 			StatusCode: resp.StatusCode,
 		}
 	}
