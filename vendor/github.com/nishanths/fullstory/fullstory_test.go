@@ -3,6 +3,7 @@ package fullstory
 import (
 	"compress/gzip"
 	"io/ioutil"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -97,5 +98,27 @@ func TestExportDataGzip(t *testing.T) {
 	expect := `{"foo":bar, "hello:world", "answer":42, "question":null}`
 	if s != expect {
 		t.Fatalf("got %q, want %q", s, expect)
+	}
+}
+
+func TestExportDataRetry(t *testing.T) {
+	t.Parallel()
+	_, err := client2.ExportData(11111)
+	if err == nil {
+		t.Fatal("Expected to be throttled, but got success!")
+	}
+
+	statusError, ok := err.(StatusError)
+	if !ok {
+		t.Fatalf("did not get a StatusError")
+	}
+
+	if statusError.StatusCode != http.StatusTooManyRequests {
+		t.Fatalf("got %d, want %d for StatusCode", statusError.StatusCode, http.StatusTooManyRequests)
+	}
+
+	expRetryAfter := time.Duration(retryAfter) * time.Second
+	if statusError.RetryAfter != expRetryAfter {
+		t.Fatalf("got %v, want %v for RetryAfter", statusError.RetryAfter, expRetryAfter)
 	}
 }
