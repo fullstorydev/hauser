@@ -30,6 +30,11 @@ func TestGetRetryInfo(t *testing.T) {
 			expRetryAfter: 3 * time.Second,
 		},
 		{
+			err:           fullstory.StatusError{StatusCode: http.StatusServiceUnavailable, RetryAfter: 3 * time.Second},
+			expDoRetry:    true,
+			expRetryAfter: 3 * time.Second,
+		},
+		{
 			err:           fullstory.StatusError{StatusCode: http.StatusNotFound, RetryAfter: 3 * time.Second},
 			expDoRetry:    false,
 			expRetryAfter: defaultRetryAfterDuration,
