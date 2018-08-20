@@ -7,8 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 	"time"
+)
+
+const (
+	retryAfter = 10
 )
 
 var (
@@ -116,6 +121,13 @@ func setupTest() {
 	}))
 
 	router.HandleFunc("/export/get", mw(func(w http.ResponseWriter, r *http.Request) {
+		ids := r.URL.Query()["id"]
+		if len(ids) > 0 && ids[0] == "11111" {
+			// mimic 429
+			w.Header().Set("Retry-After", strconv.Itoa(retryAfter))
+			http.Error(w, "You've been throttled!", http.StatusTooManyRequests)
+			return
+		}
 		w.Header().Set("Content-Encoding", "gzip")
 
 		gz, err := gzip.NewWriterLevel(w, gzip.BestCompression)

@@ -36,8 +36,8 @@
  },
  "github.com/nishanths/fullstory": {
   "git-remote": "https://github.com/nishanths/fullstory",
-  "current-version-git-hash": "51ce73fdee4fa3b736c1ec309e244202f47cf3c8",
-  "content-hash": "7c9f371a0d6f9de60b9d59e0f59848a969b04a0b"
+  "current-version-git-hash": "5c231e3c1db842ac29ef823e1eb75ecb04808614",
+  "content-hash": "90e212ed048fb0cdc0e362c874147a7365fed7cf"
  },
  "github.com/pkg/errors": {
   "git-remote": "https://github.com/pkg/errors",
