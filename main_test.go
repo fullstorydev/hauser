@@ -1,15 +1,15 @@
 package main
 
 import (
-	"testing"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"testing"
 	"time"
 
-	"github.com/pkg/errors"
-	"github.com/nishanths/fullstory"
 	"github.com/fullstorydev/hauser/warehouse"
-	"fmt"
-	"encoding/json"
+	"github.com/nishanths/fullstory"
+	"github.com/pkg/errors"
 )
 
 func TestGetRetryInfo(t *testing.T) {
@@ -59,33 +59,33 @@ func TestGetRetryInfo(t *testing.T) {
 func TestTransformExportJSONRecord(t *testing.T) {
 	testCases := []struct {
 		tableColumns []string
-		rec map[string]interface{}
-		expResult []string
-	} {
+		rec          map[string]interface{}
+		expResult    []string
+	}{
 		// no custom vars
 		{
 			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
-			rec: map[string]interface{} {
+			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
-				"PageDuration": 42,
+				"PageDuration":    42,
 			},
 			expResult: []string{"Heyo!", "42", `{}`},
 		},
 		// two custom vars
 		{
 			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
-			rec: map[string]interface{} {
+			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
-				"PageDuration": 42,
-				"custom_str": "Heyo again!",
-				"custom_num": 42,
+				"PageDuration":    42,
+				"custom_str":      "Heyo again!",
+				"custom_num":      42,
 			},
 			expResult: []string{"Heyo!", "42", `{"custom_str":"Heyo again!","custom_num":42}`},
 		},
 		// missing column value for pageduration
 		{
 			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
-			rec: map[string]interface{} {
+			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 			},
 			expResult: []string{"Heyo!", "", `{}`},
@@ -93,9 +93,9 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		// additional columns in target table that are not in the export
 		{
 			tableColumns: []string{"eventtargettext", "pageduration", "customvars", "randomcolumnnotinexport"},
-			rec: map[string]interface{} {
+			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
-				"PageDuration": 42,
+				"PageDuration":    42,
 			},
 			expResult: []string{"Heyo!", "42", `{}`, ""},
 		},
@@ -132,7 +132,7 @@ func compareTransformedStrings(t *testing.T, str1, str2 string) bool {
 
 func compareJSONStrings(t *testing.T, str1, str2 string) bool {
 	// decode JSON
-	var m1,m2 interface{}
+	var m1, m2 interface{}
 	if err := json.Unmarshal([]byte(str1), &m1); err != nil {
 		t.Fatalf("Could not unmarshal JSON string: %s", str1)
 	}
