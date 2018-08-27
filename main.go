@@ -44,14 +44,18 @@ type ExportProcessor func(warehouse.Warehouse, []string, *fullstory.Client, []fu
 // For existing export table fields that do not exist in the json record, an empty string is populated.
 func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, rec map[string]interface{}) ([]string, error) {
 	var line []string
-	// Change all record keys to lower case. We do this because columns are case insensitive for most warehouse solutions.
-	rec = getRecordWithLowerCaseKeys(rec)
-
-	// Map of CustomVars
+	lowerRec := make(map[string]interface{})
 	customVarsMap := make(map[string]interface{})
+
+	// Do a single pass over the data record to:
+	// a) extract all custom variables
+	// b) change standard/non-custom field names to lowercase for case-insensitive column name matching
 	for key, val := range rec {
-		if _, ok := bundleFieldsMap[key]; !ok {
+		lowerKey := strings.ToLower(key)
+		if _, ok := bundleFieldsMap[lowerKey]; !ok {
 			customVarsMap[key] = val
+		} else {
+			lowerRec[lowerKey] = val
 		}
 	}
 
@@ -62,7 +66,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, re
 		// These are columns in the export table that we are not going to populate
 		if !isPartOfExportBundle {
 			line = append(line, "")
-			continue;
+			continue
 		}
 
 		if field.IsCustomVar {
@@ -72,7 +76,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, re
 			}
 			line = append(line, string(customVars))
 		} else {
-			if val, valExists := rec[col]; valExists {
+			if val, valExists := lowerRec[col]; valExists {
 				line = append(line, wh.ValueToString(val, field.IsTime))
 			} else {
 				line = append(line, "")
@@ -311,14 +315,6 @@ func BackoffOnError(err error) bool {
 	}
 	currentBackoffStep = 0
 	return false
-}
-
-func getRecordWithLowerCaseKeys(rec map[string]interface{}) map[string]interface{} {
-	m := make(map[string]interface{})
-	for k, v := range rec {
-		m[strings.ToLower(k)] = v
-	}
-	return m
 }
 
 func main() {
