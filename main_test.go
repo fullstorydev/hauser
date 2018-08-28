@@ -77,10 +77,10 @@ func TestTransformExportJSONRecord(t *testing.T) {
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
-				"custom_str":      "Heyo again!",
-				"custom_num":      42,
+				"myCustom_str":      "Heyo again!",
+				"myCustom_num":      42,
 			},
-			expResult: []string{"Heyo!", "42", `{"custom_str":"Heyo again!","custom_num":42}`},
+			expResult: []string{"Heyo!", "42", `{"myCustom_str":"Heyo again!","myCustom_num":42}`},
 		},
 		// missing column value for pageduration
 		{
