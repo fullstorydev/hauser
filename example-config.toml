@@ -13,8 +13,10 @@ Bucket = ""
 Region = "us-east-2"
 # timeout for copying export files from the local machine to S3
 Timeout = "5m"
-# upload data file only (i.e. skip load to Redshift)?
+# upload data file only (i.e. skip load to Redshift)
 S3Only = true
+# If S3Only is set to true, you can choose to upload the export file as Json instead of Csv
+UploadAsJSONToS3 = false
 
 [redshift]
 User = "<your user>"
@@ -32,7 +34,10 @@ VarCharMax = 65535
 
 [gcs]
 Bucket = "<your bucket>"
+# upload data file only (i.e. skip load to Bigquery)
 GCSOnly = false
+# If GCSOnly is set to true, you can choose to upload the export file as Json instead of Csv
+UploadAsJSONToGCS = false
 
 [bigquery]
 Project = "<your project>"

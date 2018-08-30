@@ -30,10 +30,11 @@ type Config struct {
 }
 
 type S3Config struct {
-	Bucket  string
-	Region  string
-	Timeout duration
-	S3Only  bool
+	Bucket              string
+	Region              string
+	Timeout             duration
+	S3Only              bool
+	UploadAsJSONToS3    bool
 }
 
 type RedshiftConfig struct {
@@ -49,8 +50,9 @@ type RedshiftConfig struct {
 }
 
 type GCSConfig struct {
-	Bucket  string
-	GCSOnly bool
+	Bucket              string
+	GCSOnly             bool
+	UploadAsJSONToGCS   bool
 }
 
 type BigQueryConfig struct {
