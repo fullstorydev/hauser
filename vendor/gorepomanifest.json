@@ -26,8 +26,8 @@
  },
  "github.com/googleapis/gax-go": {
   "git-remote": "https://github.com/googleapis/gax-go",
-  "current-version-git-hash": "317e0006254c44a0ac427cc52a0e083ff0b9622f",
-  "content-hash": "6b130a27234d285f7a2fe3f59e4e46fe11013b4e"
+  "current-version-git-hash": "1ef592c90f479e3ab30c6c2312e20e13881b7ea6",
+  "content-hash": "4df4dc5d65a986147d73794544fd88a76e115354"
  },
  "github.com/lib/pq": {
   "git-remote": "https://github.com/lib/pq",
