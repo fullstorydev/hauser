@@ -1,8 +1,9 @@
 {
  "cloud.google.com/go": {
   "git-remote": "https://code.googlesource.com/gocloud",
-  "current-version-git-hash": "da30b6d6aeb462b223228cc0b4e7952cba499d90",
-  "content-hash": "47754e544543cc4a7491074e60b87e5e231e031a"
+  "git-remote-branch": "master",
+  "current-version-git-hash": "ce3259d98fbcbe04db4ed502d169f519aada03b5",
+  "content-hash": "3ea942270def01ab90b532cb0e4424f12f571113"
  },
  "github.com/BurntSushi/toml": {
   "git-remote": "https://github.com/BurntSushi/toml",

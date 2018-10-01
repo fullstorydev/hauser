@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc. All Rights Reserved.
+// Copyright 2017 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,19 @@ package pubsub
 
 import (
 	"io"
-	"reflect"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"cloud.google.com/go/internal/leakcheck"
+	"cloud.google.com/go/internal/testutil"
+	"google.golang.org/grpc/status"
+
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/net/context"
 	"google.golang.org/api/option"
 	pb "google.golang.org/genproto/googleapis/pubsub/v1"
@@ -45,20 +50,24 @@ var (
 )
 
 func TestStreamingPullBasic(t *testing.T) {
-	client, server := newFake(t)
+	defer leakcheck.Check(t)
+
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
 	server.addStreamingPullMessages(testMessages)
 	testStreamingPullIteration(t, client, server, testMessages)
 }
 
 func TestStreamingPullMultipleFetches(t *testing.T) {
-	client, server := newFake(t)
+	client, server := newMock(t)
 	server.addStreamingPullMessages(testMessages[:1])
 	server.addStreamingPullMessages(testMessages[1:])
 	testStreamingPullIteration(t, client, server, testMessages)
 }
 
-func testStreamingPullIteration(t *testing.T, client *Client, server *fakeServer, msgs []*pb.ReceivedMessage) {
-	sub := client.Subscription("s")
+func testStreamingPullIteration(t *testing.T, client *Client, server *mockServer, msgs []*pb.ReceivedMessage) {
+	sub := client.Subscription("S")
 	gotMsgs, err := pullN(context.Background(), sub, len(msgs), func(_ context.Context, m *Message) {
 		id, err := strconv.Atoi(m.ackID)
 		if err != nil {
@@ -89,8 +98,7 @@ func testStreamingPullIteration(t *testing.T, client *Client, server *fakeServer
 			t.Errorf("%d: no message for ackID %q", i, want.ackID)
 			continue
 		}
-		got.doneFunc = nil // Don't compare done; it's a function.
-		if !reflect.DeepEqual(got, want) {
+		if !testutil.Equal(got, want, cmp.AllowUnexported(Message{}), cmpopts.IgnoreTypes(time.Time{}, func(string, bool, time.Time) {})) {
 			t.Errorf("%d: got\n%#v\nwant\n%#v", i, got, want)
 		}
 	}
@@ -110,13 +118,17 @@ func testStreamingPullIteration(t *testing.T, client *Client, server *fakeServer
 }
 
 func TestStreamingPullError(t *testing.T) {
+	defer leakcheck.Check(t)
+
 	// If an RPC to the service returns a non-retryable error, Pull should
 	// return after all callbacks return, without waiting for messages to be
 	// acked.
-	client, server := newFake(t)
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
 	server.addStreamingPullMessages(testMessages[:1])
-	server.addStreamingPullError(grpc.Errorf(codes.Unknown, ""))
-	sub := client.Subscription("s")
+	server.addStreamingPullError(status.Errorf(codes.Unknown, ""))
+	sub := client.Subscription("S")
 	// Use only one goroutine, since the fake server is configured to
 	// return only one error.
 	sub.ReceiveSettings.NumGoroutines = 1
@@ -140,11 +152,15 @@ func TestStreamingPullError(t *testing.T) {
 }
 
 func TestStreamingPullCancel(t *testing.T) {
+	defer leakcheck.Check(t)
+
 	// If Receive's context is canceled, it should return after all callbacks
 	// return and all messages have been acked.
-	client, server := newFake(t)
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
 	server.addStreamingPullMessages(testMessages)
-	sub := client.Subscription("s")
+	sub := client.Subscription("S")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	var n int32
 	err := sub.Receive(ctx, func(ctx2 context.Context, m *Message) {
@@ -161,25 +177,33 @@ func TestStreamingPullCancel(t *testing.T) {
 	}
 }
 
+// TODO(deklerk) this test has leak issues
 func TestStreamingPullRetry(t *testing.T) {
 	// Check that we retry on io.EOF or Unavailable.
-	client, server := newFake(t)
+	t.Parallel()
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
 	server.addStreamingPullMessages(testMessages[:1])
 	server.addStreamingPullError(io.EOF)
 	server.addStreamingPullError(io.EOF)
 	server.addStreamingPullMessages(testMessages[1:2])
-	server.addStreamingPullError(grpc.Errorf(codes.Unavailable, ""))
-	server.addStreamingPullError(grpc.Errorf(codes.Unavailable, ""))
+	server.addStreamingPullError(status.Errorf(codes.Unavailable, ""))
+	server.addStreamingPullError(status.Errorf(codes.Unavailable, ""))
 	server.addStreamingPullMessages(testMessages[2:])
 
 	testStreamingPullIteration(t, client, server, testMessages)
 }
 
 func TestStreamingPullOneActive(t *testing.T) {
+	defer leakcheck.Check(t)
+
 	// Only one call to Pull can be active at a time.
-	client, srv := newFake(t)
+	client, srv := newMock(t)
+	defer client.Close()
+	defer srv.srv.Close()
 	srv.addStreamingPullMessages(testMessages[:1])
-	sub := client.Subscription("s")
+	sub := client.Subscription("S")
 	ctx, cancel := context.WithCancel(context.Background())
 	err := sub.Receive(ctx, func(ctx context.Context, m *Message) {
 		m.Ack()
@@ -195,6 +219,8 @@ func TestStreamingPullOneActive(t *testing.T) {
 }
 
 func TestStreamingPullConcurrent(t *testing.T) {
+	defer leakcheck.Check(t)
+
 	newMsg := func(i int) *pb.ReceivedMessage {
 		return &pb.ReceivedMessage{
 			AckId:   strconv.Itoa(i),
@@ -203,13 +229,15 @@ func TestStreamingPullConcurrent(t *testing.T) {
 	}
 
 	// Multiple goroutines should be able to read from the same iterator.
-	client, server := newFake(t)
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
 	// Add a lot of messages, a few at a time, to make sure both threads get a chance.
 	nMessages := 100
 	for i := 0; i < nMessages; i += 2 {
 		server.addStreamingPullMessages([]*pb.ReceivedMessage{newMsg(i), newMsg(i + 1)})
 	}
-	sub := client.Subscription("s")
+	sub := client.Subscription("S")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second)
 	gotMsgs, err := pullN(ctx, sub, nMessages, func(ctx context.Context, m *Message) {
 		m.Ack()
@@ -229,11 +257,14 @@ func TestStreamingPullConcurrent(t *testing.T) {
 	}
 }
 
+// TODO(deklerk) this test has leak issues
 func TestStreamingPullFlowControl(t *testing.T) {
 	// Callback invocations should not occur if flow control limits are exceeded.
-	client, server := newFake(t)
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
 	server.addStreamingPullMessages(testMessages)
-	sub := client.Subscription("s")
+	sub := client.Subscription("S")
 	sub.ReceiveSettings.MaxOutstandingMessages = 2
 	ctx, cancel := context.WithCancel(context.Background())
 	activec := make(chan int)
@@ -272,8 +303,138 @@ func TestStreamingPullFlowControl(t *testing.T) {
 	}
 }
 
-func newFake(t *testing.T) (*Client, *fakeServer) {
-	srv, err := newFakeServer()
+func TestStreamingPull_ClosedClient(t *testing.T) {
+	defer leakcheck.Check(t)
+
+	ctx := context.Background()
+	client, server := newMock(t)
+	defer server.srv.Close()
+	server.addStreamingPullMessages(testMessages)
+	sub := client.Subscription("S")
+	sub.ReceiveSettings.MaxOutstandingBytes = 1
+	recvFinished := make(chan error)
+
+	go func() {
+		err := sub.Receive(ctx, func(_ context.Context, m *Message) {
+			m.Ack()
+		})
+		recvFinished <- err
+	}()
+
+	// wait for receives to happen
+	time.Sleep(100 * time.Millisecond)
+
+	err := client.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// wait for things to close
+	time.Sleep(100 * time.Millisecond)
+
+	select {
+	case recvErr := <-recvFinished:
+		s, ok := status.FromError(recvErr)
+		if !ok {
+			t.Fatalf("Expected a gRPC failure, got %v", err)
+		}
+		if s.Code() != codes.Canceled {
+			t.Fatalf("Expected canceled, got %v", s.Code())
+		}
+	case <-time.After(time.Second):
+		t.Fatal("Receive should have exited immediately after the client was closed, but it did not")
+	}
+}
+
+func TestStreamingPull_RetriesAfterUnavailable(t *testing.T) {
+	defer leakcheck.Check(t)
+
+	ctx := context.Background()
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
+	server.addStreamingPullMessages(testMessages)
+	server.addStreamingPullError(status.Error(codes.Unavailable, "Unavailable The service was unable to fulfill your request. Please try again. [code=8a75]"))
+	server.addStreamingPullMessages(testMessages)
+	sub := client.Subscription("S")
+	sub.ReceiveSettings.MaxOutstandingBytes = 1
+	recvErr := make(chan error, 1)
+	recvdMsgs := make(chan *Message, len(testMessages)*2)
+
+	go func() {
+		recvErr <- sub.Receive(ctx, func(_ context.Context, m *Message) {
+			m.Ack()
+			recvdMsgs <- m
+		})
+	}()
+
+	// wait for receive to happen
+	var n int
+	for {
+		select {
+		case <-time.After(2 * time.Second):
+			t.Fatalf("timed out waiting for all message to arrive. got %d messages total", n)
+		case err := <-recvErr:
+			t.Fatal(err)
+		case <-recvdMsgs:
+			n++
+			if n == len(testMessages)*2 {
+				return
+			}
+		}
+	}
+}
+
+func TestStreamingPull_ReconnectsAfterServerDies(t *testing.T) {
+	defer leakcheck.Check(t)
+
+	ctx := context.Background()
+	client, server := newMock(t)
+	defer server.srv.Close()
+	defer client.Close()
+	server.addStreamingPullMessages(testMessages)
+	sub := client.Subscription("S")
+	sub.ReceiveSettings.MaxOutstandingBytes = 1
+	recvErr := make(chan error, 1)
+	recvdMsgs := make(chan interface{}, len(testMessages)*2)
+
+	go func() {
+		recvErr <- sub.Receive(ctx, func(_ context.Context, m *Message) {
+			m.Ack()
+			recvdMsgs <- struct{}{}
+		})
+	}()
+
+	// wait for receive to happen
+	var n int
+	for {
+		select {
+		case <-time.After(5 * time.Second):
+			t.Fatalf("timed out waiting for all message to arrive. got %d messages total", n)
+		case err := <-recvErr:
+			t.Fatal(err)
+		case <-recvdMsgs:
+			n++
+			if n == len(testMessages) {
+				// Restart the server
+				server.srv.Close()
+				server2, err := newMockServer(server.srv.Port)
+				defer server2.srv.Close()
+				if err != nil {
+					t.Fatal(err)
+				}
+				server2.addStreamingPullMessages(testMessages)
+			}
+
+			if n == len(testMessages)*2 {
+				return
+			}
+		}
+	}
+}
+
+func newMock(t *testing.T) (*Client, *mockServer) {
+	srv, err := newMockServer(0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -281,7 +442,7 @@ func newFake(t *testing.T) (*Client, *fakeServer) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := NewClient(context.Background(), "projectID", option.WithGRPCConn(conn))
+	client, err := NewClient(context.Background(), "P", option.WithGRPCConn(conn))
 	if err != nil {
 		t.Fatal(err)
 	}

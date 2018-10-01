@@ -1,4 +1,4 @@
-// Copyright 2014 Google Inc. All Rights Reserved.
+// Copyright 2014 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package pubsub
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -27,13 +26,16 @@ import (
 	"cloud.google.com/go/iam"
 	"cloud.google.com/go/internal"
 	"cloud.google.com/go/internal/testutil"
+	"cloud.google.com/go/internal/uid"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 var (
-	topicIDs = testutil.NewUIDSpace("topic")
-	subIDs   = testutil.NewUIDSpace("sub")
+	topicIDs = uid.NewSpace("topic", nil)
+	subIDs   = uid.NewSpace("sub", nil)
 )
 
 // messageData is used to hold the contents of a message so that it can be compared against the contents
@@ -71,7 +73,7 @@ func integrationTestClient(t *testing.T, ctx context.Context) *Client {
 	return client
 }
 
-func TestAll(t *testing.T) {
+func TestIntegration_All(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	client := integrationTestClient(t, ctx)
@@ -104,6 +106,80 @@ func TestAll(t *testing.T) {
 		t.Errorf("subscription %s should exist, but it doesn't", sub.ID())
 	}
 
+	for _, sync := range []bool{false, true} {
+		for _, maxMsgs := range []int{0, 3, -1} { // MaxOutstandingMessages = default, 3, unlimited
+			testPublishAndReceive(t, topic, sub, maxMsgs, sync)
+		}
+	}
+	if msg, ok := testIAM(ctx, topic.IAM(), "pubsub.topics.get"); !ok {
+		t.Errorf("topic IAM: %s", msg)
+	}
+	if msg, ok := testIAM(ctx, sub.IAM(), "pubsub.subscriptions.get"); !ok {
+		t.Errorf("sub IAM: %s", msg)
+	}
+
+	snap, err := sub.CreateSnapshot(ctx, "")
+	if err != nil {
+		t.Fatalf("CreateSnapshot error: %v", err)
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
+		snapIt := client.Snapshots(timeoutCtx)
+		for {
+			s, err := snapIt.Next()
+			if err == nil && s.name == snap.name {
+				return true, nil
+			}
+			if err == iterator.Done {
+				return false, fmt.Errorf("cannot find snapshot: %q", snap.name)
+			}
+			if err != nil {
+				return false, err
+			}
+		}
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
+		err := sub.SeekToSnapshot(timeoutCtx, snap.Snapshot)
+		return err == nil, err
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
+		err := sub.SeekToTime(timeoutCtx, time.Now())
+		return err == nil, err
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
+		snapHandle := client.Snapshot(snap.ID())
+		err := snapHandle.Delete(timeoutCtx)
+		return err == nil, err
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := sub.Delete(ctx); err != nil {
+		t.Errorf("DeleteSub error: %v", err)
+	}
+
+	if err := topic.Delete(ctx); err != nil {
+		t.Errorf("DeleteTopic error: %v", err)
+	}
+}
+
+func testPublishAndReceive(t *testing.T, topic *Topic, sub *Subscription, maxMsgs int, synchronous bool) {
+	ctx := context.Background()
 	var msgs []*Message
 	for i := 0; i < 10; i++ {
 		text := fmt.Sprintf("a message with an index %d", i)
@@ -115,7 +191,7 @@ func TestAll(t *testing.T) {
 		})
 	}
 
-	// Publish the messages.
+	// Publish some messages.
 	type pubResult struct {
 		m *Message
 		r *PublishResult
@@ -136,7 +212,10 @@ func TestAll(t *testing.T) {
 		want[md.ID] = md
 	}
 
-	// Use a timeout to ensure that Pull does not block indefinitely if there are unexpectedly few messages available.
+	sub.ReceiveSettings.MaxOutstandingMessages = maxMsgs
+	sub.ReceiveSettings.Synchronous = synchronous
+	// Use a timeout to ensure that Pull does not block indefinitely if there are
+	// unexpectedly few messages available.
 	timeoutCtx, _ := context.WithTimeout(ctx, time.Minute)
 	gotMsgs, err := pullN(timeoutCtx, sub, len(want), func(ctx context.Context, m *Message) {
 		m.Ack()
@@ -149,73 +228,9 @@ func TestAll(t *testing.T) {
 		md := extractMessageData(m)
 		got[md.ID] = md
 	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("messages: got: %v ; want: %v", got, want)
-	}
-
-	if msg, ok := testIAM(ctx, topic.IAM(), "pubsub.topics.get"); !ok {
-		t.Errorf("topic IAM: %s", msg)
-	}
-	if msg, ok := testIAM(ctx, sub.IAM(), "pubsub.subscriptions.get"); !ok {
-		t.Errorf("sub IAM: %s", msg)
-	}
-
-	snap, err := sub.createSnapshot(ctx, "")
-	if err != nil {
-		t.Fatalf("CreateSnapshot error: %v", err)
-	}
-
-	timeoutCtx, _ = context.WithTimeout(ctx, time.Minute)
-	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
-		snapIt := client.snapshots(timeoutCtx)
-		for {
-			s, err := snapIt.Next()
-			if err == nil && s.name == snap.name {
-				return true, nil
-			}
-			if err == iterator.Done {
-				return false, fmt.Errorf("cannot find snapshot: %q", snap.name)
-			}
-			if err != nil {
-				return false, err
-			}
-		}
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
-		err := sub.seekToSnapshot(timeoutCtx, snap.snapshot)
-		return err == nil, err
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
-		err := sub.seekToTime(timeoutCtx, time.Now())
-		return err == nil, err
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = internal.Retry(timeoutCtx, gax.Backoff{}, func() (bool, error) {
-		snapHandle := client.snapshot(snap.ID())
-		err := snapHandle.delete(timeoutCtx)
-		return err == nil, err
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err := sub.Delete(ctx); err != nil {
-		t.Errorf("DeleteSub error: %v", err)
-	}
-
-	if err := topic.Delete(ctx); err != nil {
-		t.Errorf("DeleteTopic error: %v", err)
+	if !testutil.Equal(got, want) {
+		t.Errorf("MaxOutstandingMessages=%d, Synchronous=%t: messages: got: %v ; want: %v",
+			maxMsgs, synchronous, got, want)
 	}
 }
 
@@ -247,7 +262,7 @@ func testIAM(ctx context.Context, h *iam.Handle, permission string) (msg string,
 	if policy, err = h.Policy(ctx); err != nil {
 		return fmt.Sprintf("Policy: %v", err), false
 	}
-	if got, want := policy.Members(iam.Viewer), []string{member}; !reflect.DeepEqual(got, want) {
+	if got, want := policy.Members(iam.Viewer), []string{member}; !testutil.Equal(got, want) {
 		return fmt.Sprintf("after Add: got %v, want %v", got, want), false
 	}
 	// Now remove that member, set the policy, and check that it's empty again.
@@ -271,13 +286,69 @@ func testIAM(ctx context.Context, h *iam.Handle, permission string) (msg string,
 	if err != nil {
 		return fmt.Sprintf("TestPermissions: %v", err), false
 	}
-	if !reflect.DeepEqual(gotPerms, wantPerms) {
+	if !testutil.Equal(gotPerms, wantPerms) {
 		return fmt.Sprintf("TestPermissions: got %v, want %v", gotPerms, wantPerms), false
 	}
 	return "", true
 }
 
-func TestSubscriptionUpdate(t *testing.T) {
+func TestIntegration_CancelReceive(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	client := integrationTestClient(t, ctx)
+	defer client.Close()
+
+	topic, err := client.CreateTopic(ctx, topicIDs.New())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer topic.Delete(ctx)
+	defer topic.Stop()
+
+	var sub *Subscription
+	if sub, err = client.CreateSubscription(ctx, subIDs.New(), SubscriptionConfig{Topic: topic}); err != nil {
+		t.Fatal(err)
+	}
+	defer sub.Delete(ctx)
+
+	sub.ReceiveSettings.MaxOutstandingMessages = -1
+	sub.ReceiveSettings.MaxOutstandingBytes = -1
+	sub.ReceiveSettings.NumGoroutines = 1
+
+	doneReceiving := make(chan struct{})
+
+	// Publish the messages.
+	go func() {
+		for {
+			select {
+			case <-doneReceiving:
+				return
+			default:
+				topic.Publish(ctx, &Message{Data: []byte("some msg")})
+				time.Sleep(time.Second)
+			}
+		}
+	}()
+
+	go func() {
+		defer close(doneReceiving)
+		err = sub.Receive(ctx, func(_ context.Context, msg *Message) {
+			cancel()
+			time.AfterFunc(5*time.Second, msg.Ack)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	select {
+	case <-time.After(60 * time.Second):
+		t.Fatalf("Waited 60 seconds for Receive to finish, should have finished sooner")
+	case <-doneReceiving:
+	}
+}
+
+func TestIntegration_UpdateSubscription(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	client := integrationTestClient(t, ctx)
@@ -296,40 +367,68 @@ func TestSubscriptionUpdate(t *testing.T) {
 	}
 	defer sub.Delete(ctx)
 
-	sc, err := sub.Config(ctx)
+	got, err := sub.Config(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(sc.PushConfig, PushConfig{}) {
-		t.Fatalf("got %+v, want empty PushConfig")
+	want := SubscriptionConfig{
+		Topic:               topic,
+		AckDeadline:         10 * time.Second,
+		RetainAckedMessages: false,
+		RetentionDuration:   defaultRetentionDuration,
 	}
-	// Add a PushConfig.
+	if !testutil.Equal(got, want) {
+		t.Fatalf("\ngot  %+v\nwant %+v", got, want)
+	}
+	// Add a PushConfig and change other fields.
 	projID := testutil.ProjID()
 	pc := PushConfig{
 		Endpoint:   "https://" + projID + ".appspot.com/_ah/push-handlers/push",
 		Attributes: map[string]string{"x-goog-version": "v1"},
 	}
-	sc, err = sub.Update(ctx, SubscriptionConfigToUpdate{PushConfig: &pc})
+	got, err = sub.Update(ctx, SubscriptionConfigToUpdate{
+		PushConfig:          &pc,
+		AckDeadline:         2 * time.Minute,
+		RetainAckedMessages: true,
+		RetentionDuration:   2 * time.Hour,
+		Labels:              map[string]string{"label": "value"},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Despite the docs which say that Get always returns a valid "x-goog-version"
-	// attribute, none is returned. See
-	// https://cloud.google.com/pubsub/docs/reference/rpc/google.pubsub.v1#google.pubsub.v1.PushConfig
-	pc.Attributes = nil
-	if got, want := sc.PushConfig, pc; !reflect.DeepEqual(got, want) {
-		t.Fatalf("setting push config: got\n%+v\nwant\n%+v", got, want)
-	}
-	// Remove the PushConfig, turning the subscription back into pull mode.
-	pc = PushConfig{}
-	sc, err = sub.Update(ctx, SubscriptionConfigToUpdate{PushConfig: &pc})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := sc.PushConfig, pc; !reflect.DeepEqual(got, want) {
-		t.Fatalf("removing push config: got\n%+v\nwant %+v", got, want)
+	want = SubscriptionConfig{
+		Topic:               topic,
+		PushConfig:          pc,
+		AckDeadline:         2 * time.Minute,
+		RetainAckedMessages: true,
+		RetentionDuration:   2 * time.Hour,
+		Labels:              map[string]string{"label": "value"},
 	}
 
+	if !testutil.Equal(got, want) {
+		t.Fatalf("\ngot  %+v\nwant %+v", got, want)
+	}
+
+	// Remove the PushConfig, turning the subscription back into pull mode.
+	// Change AckDeadline, remove labels.
+	pc = PushConfig{}
+	got, err = sub.Update(ctx, SubscriptionConfigToUpdate{
+		PushConfig:  &pc,
+		AckDeadline: 30 * time.Second,
+		Labels:      map[string]string{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want.PushConfig = pc
+	want.AckDeadline = 30 * time.Second
+	want.Labels = nil
+	// service issue: PushConfig attributes are not removed.
+	// TODO(jba): remove when issue resolved.
+	want.PushConfig.Attributes = map[string]string{"x-goog-version": "v1"}
+	if !testutil.Equal(got, want) {
+		t.Fatalf("\ngot  %+v\nwant %+v", got, want)
+	}
 	// If nothing changes, our client returns an error.
 	_, err = sub.Update(ctx, SubscriptionConfigToUpdate{})
 	if err == nil {
@@ -337,7 +436,58 @@ func TestSubscriptionUpdate(t *testing.T) {
 	}
 }
 
-func TestPublicTopic(t *testing.T) {
+func TestIntegration_UpdateTopic(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	client := integrationTestClient(t, ctx)
+	defer client.Close()
+
+	compareConfig := func(got TopicConfig, wantLabels map[string]string) bool {
+		if !testutil.Equal(got.Labels, wantLabels) {
+			return false
+		}
+		// For MessageStoragePolicy, we don't want to check for an exact set of regions.
+		// That set may change at any time. Instead, just make sure that the set isn't empty.
+		if len(got.MessageStoragePolicy.AllowedPersistenceRegions) == 0 {
+			return false
+		}
+		return true
+	}
+
+	topic, err := client.CreateTopic(ctx, topicIDs.New())
+	if err != nil {
+		t.Fatalf("CreateTopic error: %v", err)
+	}
+	defer topic.Stop()
+	defer topic.Delete(ctx)
+
+	got, err := topic.Config(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !compareConfig(got, nil) {
+		t.Fatalf("\ngot  %+v\nwant no labels", got)
+	}
+
+	labels := map[string]string{"label": "value"}
+	got, err = topic.Update(ctx, TopicConfigToUpdate{Labels: labels})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !compareConfig(got, labels) {
+		t.Fatalf("\ngot  %+v\nwant labels %+v", got, labels)
+	}
+	// Remove all labels.
+	got, err = topic.Update(ctx, TopicConfigToUpdate{Labels: map[string]string{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !compareConfig(got, nil) {
+		t.Fatalf("\ngot  %+v\nwant no labels", got)
+	}
+}
+
+func TestIntegration_PublicTopic(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	client := integrationTestClient(t, ctx)
@@ -359,5 +509,107 @@ func TestPublicTopic(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestIntegration_Errors(t *testing.T) {
+	// Test various edge conditions.
+	t.Parallel()
+	ctx := context.Background()
+	client := integrationTestClient(t, ctx)
+	defer client.Close()
+
+	topic, err := client.CreateTopic(ctx, topicIDs.New())
+	if err != nil {
+		t.Fatalf("CreateTopic error: %v", err)
+	}
+	defer topic.Stop()
+	defer topic.Delete(ctx)
+
+	// Out-of-range retention duration.
+	sub, err := client.CreateSubscription(ctx, subIDs.New(), SubscriptionConfig{
+		Topic:             topic,
+		RetentionDuration: 1 * time.Second,
+	})
+	if want := codes.InvalidArgument; grpc.Code(err) != want {
+		t.Errorf("got <%v>, want %s", err, want)
+	}
+	if err == nil {
+		sub.Delete(ctx)
+	}
+
+	// Ack deadline less than minimum.
+	sub, err = client.CreateSubscription(ctx, subIDs.New(), SubscriptionConfig{
+		Topic:       topic,
+		AckDeadline: 5 * time.Second,
+	})
+	if want := codes.Unknown; grpc.Code(err) != want {
+		t.Errorf("got <%v>, want %s", err, want)
+	}
+	if err == nil {
+		sub.Delete(ctx)
+	}
+
+	// Updating a non-existent subscription.
+	sub = client.Subscription(subIDs.New())
+	_, err = sub.Update(ctx, SubscriptionConfigToUpdate{AckDeadline: 20 * time.Second})
+	if want := codes.NotFound; grpc.Code(err) != want {
+		t.Errorf("got <%v>, want %s", err, want)
+	}
+	// Deleting a non-existent subscription.
+	err = sub.Delete(ctx)
+	if want := codes.NotFound; grpc.Code(err) != want {
+		t.Errorf("got <%v>, want %s", err, want)
+	}
+
+	// Updating out-of-range retention duration.
+	sub, err = client.CreateSubscription(ctx, subIDs.New(), SubscriptionConfig{Topic: topic})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sub.Delete(ctx)
+	_, err = sub.Update(ctx, SubscriptionConfigToUpdate{RetentionDuration: 1000 * time.Hour})
+	if want := codes.InvalidArgument; grpc.Code(err) != want {
+		t.Errorf("got <%v>, want %s", err, want)
+	}
+}
+
+func TestIntegration_MessageStoragePolicy(t *testing.T) {
+	// Verify that the message storage policy is populated.
+	if testing.Short() {
+		t.Skip("Integration tests skipped in short mode")
+	}
+	ctx := context.Background()
+	// The message storage policy depends on the Resource Location Restriction org policy.
+	// The usual testing project is in the google.com org, which has no resource location restrictions,
+	// so we will always see an empty MessageStoragePolicy. Use a project in another org that does
+	// have a restriction set ("us-east1").
+	projID := "ps-geofencing-test"
+	// We can use the same creds as always because the service account of the default testing project
+	// has permission to use the above project. This test will fail if a different service account
+	// is used for testing.
+	ts := testutil.TokenSource(ctx, ScopePubSub, ScopeCloudPlatform)
+	if ts == nil {
+		t.Skip("Integration tests skipped. See CONTRIBUTING.md for details")
+	}
+	client, err := NewClient(ctx, projID, option.WithTokenSource(ts))
+	if err != nil {
+		t.Fatalf("Creating client error: %v", err)
+	}
+	topic, err := client.CreateTopic(ctx, topicIDs.New())
+	if err != nil {
+		t.Fatalf("CreateTopic error: %v", err)
+	}
+	defer topic.Stop()
+	defer topic.Delete(ctx)
+
+	config, err := topic.Config(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := config.MessageStoragePolicy.AllowedPersistenceRegions
+	want := []string{"us-east1"}
+	if !testutil.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
 	}
 }
