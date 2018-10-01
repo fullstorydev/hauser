@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc. All Rights Reserved.
+// Copyright 2017 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ func TestRetry(t *testing.T) {
 			t.Errorf("%s: Retry returned err %v", tt.desc, err)
 		}
 		if got := resp.StatusCode; got != tt.wantStatus {
-			t.Errorf("%s: Retry returned response with StatusCode=%d; want %d", got, tt.wantStatus)
+			t.Errorf("%s: Retry returned response with StatusCode=%d; want %d", tt.desc, got, tt.wantStatus)
 		}
 		if len(tt.respStatus) != 0 {
 			t.Errorf("%s: f was not called enough; status codes remaining: %v", tt.desc, tt.respStatus)
@@ -120,7 +120,7 @@ func TestRetryClosesBody(t *testing.T) {
 		want := i != 2 // Only the last response should not be closed.
 		got := resp.Body.(*checkCloseReader).closed
 		if got != want {
-			t.Errorf("response[%d].Body closed = %t, want %t", got, want)
+			t.Errorf("response[%d].Body closed = %t, want %t", i, got, want)
 		}
 	}
 }

@@ -1,4 +1,4 @@
-// Package proximitybeacon provides access to the Google Proximity Beacon API.
+// Package proximitybeacon provides access to the Proximity Beacon API.
 //
 // See https://developers.google.com/beacons/proximity/
 //
@@ -193,8 +193,8 @@ type AdvertisedId struct {
 }
 
 func (s *AdvertisedId) MarshalJSON() ([]byte, error) {
-	type noMethod AdvertisedId
-	raw := noMethod(*s)
+	type NoMethod AdvertisedId
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -206,6 +206,31 @@ func (s *AdvertisedId) MarshalJSON() ([]byte, error) {
 type AttachmentInfo struct {
 	// Data: An opaque data container for client-provided data.
 	Data string `json:"data,omitempty"`
+
+	// MaxDistanceMeters: The distance away from the beacon at which this
+	// attachment should be
+	// delivered to a mobile app.
+	//
+	// Setting this to a value greater than zero indicates that the app
+	// should
+	// behave as if the beacon is "seen" when the mobile device is less than
+	// this
+	// distance away from the beacon.
+	//
+	// Different attachments on the same beacon can have different max
+	// distances.
+	//
+	// Note that even though this value is expressed with fractional
+	// meter
+	// precision, real-world behavior is likley to be much less precise than
+	// one
+	// meter, due to the nature of current Bluetooth radio
+	// technology.
+	//
+	// Optional. When not set or zero, the attachment should be delivered at
+	// the
+	// beacon's outer limit of detection.
+	MaxDistanceMeters float64 `json:"maxDistanceMeters,omitempty"`
 
 	// NamespacedType: Specifies what kind of attachment this is. Tells a
 	// client how to
@@ -232,9 +257,23 @@ type AttachmentInfo struct {
 }
 
 func (s *AttachmentInfo) MarshalJSON() ([]byte, error) {
-	type noMethod AttachmentInfo
-	raw := noMethod(*s)
+	type NoMethod AttachmentInfo
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *AttachmentInfo) UnmarshalJSON(data []byte) error {
+	type NoMethod AttachmentInfo
+	var s1 struct {
+		MaxDistanceMeters gensupport.JSONFloat64 `json:"maxDistanceMeters"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxDistanceMeters = float64(s1.MaxDistanceMeters)
+	return nil
 }
 
 // Beacon: Details of a beacon device.
@@ -382,8 +421,8 @@ type Beacon struct {
 }
 
 func (s *Beacon) MarshalJSON() ([]byte, error) {
-	type noMethod Beacon
-	raw := noMethod(*s)
+	type NoMethod Beacon
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -410,6 +449,33 @@ type BeaconAttachment struct {
 	// responses.
 	// Required.
 	Data string `json:"data,omitempty"`
+
+	// MaxDistanceMeters: The distance away from the beacon at which this
+	// attachment should be
+	// delivered to a mobile app.
+	//
+	// Setting this to a value greater than zero indicates that the app
+	// should
+	// behave as if the beacon is "seen" when the mobile device is less than
+	// this
+	// distance away from the beacon.
+	//
+	// Different attachments on the same beacon can have different max
+	// distances.
+	//
+	// Note that even though this value is expressed with fractional
+	// meter
+	// precision, real-world behavior is likley to be much less precise than
+	// one
+	// meter, due to the nature of current Bluetooth radio
+	// technology.
+	//
+	// Optional. When not set or zero, the attachment should be delivered at
+	// the
+	// beacon's outer limit of detection.
+	//
+	// Negative values are invalid and return an error.
+	MaxDistanceMeters float64 `json:"maxDistanceMeters,omitempty"`
 
 	// NamespacedType: Specifies what kind of attachment this is. Tells a
 	// client how to
@@ -445,9 +511,23 @@ type BeaconAttachment struct {
 }
 
 func (s *BeaconAttachment) MarshalJSON() ([]byte, error) {
-	type noMethod BeaconAttachment
-	raw := noMethod(*s)
+	type NoMethod BeaconAttachment
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *BeaconAttachment) UnmarshalJSON(data []byte) error {
+	type NoMethod BeaconAttachment
+	var s1 struct {
+		MaxDistanceMeters gensupport.JSONFloat64 `json:"maxDistanceMeters"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxDistanceMeters = float64(s1.MaxDistanceMeters)
+	return nil
 }
 
 // BeaconInfo: A subset of beacon information served via the
@@ -482,31 +562,33 @@ type BeaconInfo struct {
 }
 
 func (s *BeaconInfo) MarshalJSON() ([]byte, error) {
-	type noMethod BeaconInfo
-	raw := noMethod(*s)
+	type NoMethod BeaconInfo
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Date: Represents a whole calendar date, e.g. date of birth. The time
-// of day and
-// time zone are either specified elsewhere or are not significant. The
-// date
-// is relative to the Proleptic Gregorian Calendar. The day may be 0
+// Date: Represents a whole calendar date, for example date of birth.
+// The time of day
+// and time zone are either specified elsewhere or are not significant.
+// The date
+// is relative to the Proleptic Gregorian Calendar. The day can be 0
 // to
-// represent a year and month where the day is not significant, e.g.
-// credit card
-// expiration date. The year may be 0 to represent a month and day
-// independent
-// of year, e.g. anniversary date. Related types are
-// google.type.TimeOfDay
-// and `google.protobuf.Timestamp`.
+// represent a year and month where the day is not significant, for
+// example
+// credit card expiration date. The year can be 0 to represent a month
+// and day
+// independent of year, for example anniversary date. Related types
+// are
+// google.type.TimeOfDay and `google.protobuf.Timestamp`.
 type Date struct {
 	// Day: Day of month. Must be from 1 to 31 and valid for the year and
 	// month, or 0
 	// if specifying a year/month where the day is not significant.
 	Day int64 `json:"day,omitempty"`
 
-	// Month: Month of year. Must be from 1 to 12.
+	// Month: Month of year. Must be from 1 to 12, or 0 if specifying a date
+	// without a
+	// month.
 	Month int64 `json:"month,omitempty"`
 
 	// Year: Year of date. Must be from 1 to 9999, or 0 if specifying a date
@@ -532,8 +614,8 @@ type Date struct {
 }
 
 func (s *Date) MarshalJSON() ([]byte, error) {
-	type noMethod Date
-	raw := noMethod(*s)
+	type NoMethod Date
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -565,8 +647,8 @@ type DeleteAttachmentsResponse struct {
 }
 
 func (s *DeleteAttachmentsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod DeleteAttachmentsResponse
-	raw := noMethod(*s)
+	type NoMethod DeleteAttachmentsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -576,18 +658,27 @@ type Diagnostics struct {
 	//
 	// Possible values:
 	//   "ALERT_UNSPECIFIED" - Invalid value. Should never appear.
-	//   "WRONG_LOCATION" - The beacon has been reported in a location
-	// different than its registered
-	// location. This may indicate that the beacon has been moved. This
-	// signal
-	// is not 100% accurate, but indicates that further investigation is
-	// worth
-	// while.
+	//   "WRONG_LOCATION" - The beacon has been reported far from its
+	// expected location (the beacon's
+	// lat_lng field if populated, otherwise, if the beacon's place_id field
+	// is
+	// present, the center of that place). This may indicate that the beacon
+	// has
+	// been moved. This signal is not 100% accurate, but indicates that
+	// further
+	// investigation is worthwhile.
 	//   "LOW_BATTERY" - The battery level for the beacon is low enough
 	// that, given the beacon's
 	// current use, its battery will run out with in the next 60 days.
 	// This
 	// indicates that the battery should be replaced soon.
+	//   "LOW_ACTIVITY" - The beacon has been reported at a very low rate or
+	// not at all. This may
+	// indicate that the beacon is broken or just that no one has gone near
+	// the
+	// beacon in recent days. If this status appears unexpectedly, the
+	// beacon
+	// owner should investigate further.
 	Alerts []string `json:"alerts,omitempty"`
 
 	// BeaconName: Resource name of the beacon. For Eddystone-EID beacons,
@@ -619,8 +710,8 @@ type Diagnostics struct {
 }
 
 func (s *Diagnostics) MarshalJSON() ([]byte, error) {
-	type noMethod Diagnostics
-	raw := noMethod(*s)
+	type NoMethod Diagnostics
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -750,8 +841,8 @@ type EphemeralIdRegistration struct {
 }
 
 func (s *EphemeralIdRegistration) MarshalJSON() ([]byte, error) {
-	type noMethod EphemeralIdRegistration
-	raw := noMethod(*s)
+	type NoMethod EphemeralIdRegistration
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -803,8 +894,8 @@ type EphemeralIdRegistrationParams struct {
 }
 
 func (s *EphemeralIdRegistrationParams) MarshalJSON() ([]byte, error) {
-	type noMethod EphemeralIdRegistrationParams
-	raw := noMethod(*s)
+	type NoMethod EphemeralIdRegistrationParams
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -846,8 +937,8 @@ type GetInfoForObservedBeaconsRequest struct {
 }
 
 func (s *GetInfoForObservedBeaconsRequest) MarshalJSON() ([]byte, error) {
-	type noMethod GetInfoForObservedBeaconsRequest
-	raw := noMethod(*s)
+	type NoMethod GetInfoForObservedBeaconsRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -881,8 +972,8 @@ type GetInfoForObservedBeaconsResponse struct {
 }
 
 func (s *GetInfoForObservedBeaconsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod GetInfoForObservedBeaconsResponse
-	raw := noMethod(*s)
+	type NoMethod GetInfoForObservedBeaconsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -911,8 +1002,8 @@ type IndoorLevel struct {
 }
 
 func (s *IndoorLevel) MarshalJSON() ([]byte, error) {
-	type noMethod IndoorLevel
-	raw := noMethod(*s)
+	type NoMethod IndoorLevel
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -925,40 +1016,6 @@ func (s *IndoorLevel) MarshalJSON() ([]byte, error) {
 // href="http://www.unoosa.org/pdf/icg/2012/template/WGS_84.pdf">WGS84
 // st
 // andard</a>. Values must be within normalized ranges.
-//
-// Example of normalization code in Python:
-//
-//     def NormalizeLongitude(longitude):
-//       """Wraps decimal degrees longitude to [-180.0, 180.0]."""
-//       q, r = divmod(longitude, 360.0)
-//       if r > 180.0 or (r == 180.0 and q <= -1.0):
-//         return r - 360.0
-//       return r
-//
-//     def NormalizeLatLng(latitude, longitude):
-//       """Wraps decimal degrees latitude and longitude to
-//       [-90.0, 90.0] and [-180.0, 180.0], respectively."""
-//       r = latitude % 360.0
-//       if r <= 90.0:
-//         return r, NormalizeLongitude(longitude)
-//       elif r >= 270.0:
-//         return r - 360, NormalizeLongitude(longitude)
-//       else:
-//         return 180 - r, NormalizeLongitude(longitude + 180.0)
-//
-//     assert 180.0 == NormalizeLongitude(180.0)
-//     assert -180.0 == NormalizeLongitude(-180.0)
-//     assert -179.0 == NormalizeLongitude(181.0)
-//     assert (0.0, 0.0) == NormalizeLatLng(360.0, 0.0)
-//     assert (0.0, 0.0) == NormalizeLatLng(-360.0, 0.0)
-//     assert (85.0, 180.0) == NormalizeLatLng(95.0, 0.0)
-//     assert (-85.0, -170.0) == NormalizeLatLng(-95.0, 10.0)
-//     assert (90.0, 10.0) == NormalizeLatLng(90.0, 10.0)
-//     assert (-90.0, -10.0) == NormalizeLatLng(-90.0, -10.0)
-//     assert (0.0, -170.0) == NormalizeLatLng(-180.0, 10.0)
-//     assert (0.0, -170.0) == NormalizeLatLng(180.0, 10.0)
-//     assert (-90.0, 10.0) == NormalizeLatLng(270.0, 10.0)
-//     assert (90.0, 10.0) == NormalizeLatLng(-270.0, 10.0)
 type LatLng struct {
 	// Latitude: The latitude in degrees. It must be in the range [-90.0,
 	// +90.0].
@@ -986,19 +1043,19 @@ type LatLng struct {
 }
 
 func (s *LatLng) MarshalJSON() ([]byte, error) {
-	type noMethod LatLng
-	raw := noMethod(*s)
+	type NoMethod LatLng
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *LatLng) UnmarshalJSON(data []byte) error {
-	type noMethod LatLng
+	type NoMethod LatLng
 	var s1 struct {
 		Latitude  gensupport.JSONFloat64 `json:"latitude"`
 		Longitude gensupport.JSONFloat64 `json:"longitude"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
@@ -1035,8 +1092,8 @@ type ListBeaconAttachmentsResponse struct {
 }
 
 func (s *ListBeaconAttachmentsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListBeaconAttachmentsResponse
-	raw := noMethod(*s)
+	type NoMethod ListBeaconAttachmentsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1078,8 +1135,8 @@ type ListBeaconsResponse struct {
 }
 
 func (s *ListBeaconsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListBeaconsResponse
-	raw := noMethod(*s)
+	type NoMethod ListBeaconsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1116,8 +1173,8 @@ type ListDiagnosticsResponse struct {
 }
 
 func (s *ListDiagnosticsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListDiagnosticsResponse
-	raw := noMethod(*s)
+	type NoMethod ListDiagnosticsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1149,8 +1206,8 @@ type ListNamespacesResponse struct {
 }
 
 func (s *ListNamespacesResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListNamespacesResponse
-	raw := noMethod(*s)
+	type NoMethod ListNamespacesResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1199,8 +1256,8 @@ type Namespace struct {
 }
 
 func (s *Namespace) MarshalJSON() ([]byte, error) {
-	type noMethod Namespace
-	raw := noMethod(*s)
+	type NoMethod Namespace
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1245,8 +1302,8 @@ type Observation struct {
 }
 
 func (s *Observation) MarshalJSON() ([]byte, error) {
-	type noMethod Observation
-	raw := noMethod(*s)
+	type NoMethod Observation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1312,6 +1369,7 @@ func (c *BeaconinfoGetforobservedCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/beaconinfo:getforobserved")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -1353,7 +1411,7 @@ func (c *BeaconinfoGetforobservedCall) Do(opts ...googleapi.CallOption) (*GetInf
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1447,6 +1505,7 @@ func (c *BeaconsActivateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}:activate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -1490,7 +1549,7 @@ func (c *BeaconsActivateCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1600,6 +1659,7 @@ func (c *BeaconsDeactivateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}:deactivate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -1643,7 +1703,7 @@ func (c *BeaconsDeactivateCall) Do(opts ...googleapi.CallOption) (*Empty, error)
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1752,6 +1812,7 @@ func (c *BeaconsDecommissionCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}:decommission")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -1795,7 +1856,7 @@ func (c *BeaconsDecommissionCall) Do(opts ...googleapi.CallOption) (*Empty, erro
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1900,6 +1961,7 @@ func (c *BeaconsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -1943,7 +2005,7 @@ func (c *BeaconsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2071,6 +2133,7 @@ func (c *BeaconsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -2114,7 +2177,7 @@ func (c *BeaconsGetCall) Do(opts ...googleapi.CallOption) (*Beacon, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2340,6 +2403,7 @@ func (c *BeaconsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/beacons")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -2380,7 +2444,7 @@ func (c *BeaconsListCall) Do(opts ...googleapi.CallOption) (*ListBeaconsResponse
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2519,6 +2583,7 @@ func (c *BeaconsRegisterCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/beacons:register")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -2559,7 +2624,7 @@ func (c *BeaconsRegisterCall) Do(opts ...googleapi.CallOption) (*Beacon, error) 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2674,6 +2739,7 @@ func (c *BeaconsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -2717,7 +2783,7 @@ func (c *BeaconsUpdateCall) Do(opts ...googleapi.CallOption) (*Beacon, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2846,6 +2912,7 @@ func (c *BeaconsAttachmentsBatchDeleteCall) doRequest(alt string) (*http.Respons
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}/attachments:batchDelete")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -2889,7 +2956,7 @@ func (c *BeaconsAttachmentsBatchDeleteCall) Do(opts ...googleapi.CallOption) (*D
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3019,6 +3086,7 @@ func (c *BeaconsAttachmentsCreateCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}/attachments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -3062,7 +3130,7 @@ func (c *BeaconsAttachmentsCreateCall) Do(opts ...googleapi.CallOption) (*Beacon
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3174,6 +3242,7 @@ func (c *BeaconsAttachmentsDeleteCall) doRequest(alt string) (*http.Response, er
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+attachmentName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -3217,7 +3286,7 @@ func (c *BeaconsAttachmentsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty,
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3356,6 +3425,7 @@ func (c *BeaconsAttachmentsListCall) doRequest(alt string) (*http.Response, erro
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}/attachments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -3399,7 +3469,7 @@ func (c *BeaconsAttachmentsListCall) Do(opts ...googleapi.CallOption) (*ListBeac
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3477,6 +3547,7 @@ func (r *BeaconsDiagnosticsService) List(beaconName string) *BeaconsDiagnosticsL
 //   "ALERT_UNSPECIFIED"
 //   "WRONG_LOCATION"
 //   "LOW_BATTERY"
+//   "LOW_ACTIVITY"
 func (c *BeaconsDiagnosticsListCall) AlertFilter(alertFilter string) *BeaconsDiagnosticsListCall {
 	c.urlParams_.Set("alertFilter", alertFilter)
 	return c
@@ -3554,6 +3625,7 @@ func (c *BeaconsDiagnosticsListCall) doRequest(alt string) (*http.Response, erro
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+beaconName}/diagnostics")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -3597,7 +3669,7 @@ func (c *BeaconsDiagnosticsListCall) Do(opts ...googleapi.CallOption) (*ListDiag
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3615,7 +3687,8 @@ func (c *BeaconsDiagnosticsListCall) Do(opts ...googleapi.CallOption) (*ListDiag
 	//       "enum": [
 	//         "ALERT_UNSPECIFIED",
 	//         "WRONG_LOCATION",
-	//         "LOW_BATTERY"
+	//         "LOW_BATTERY",
+	//         "LOW_ACTIVITY"
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
@@ -3756,6 +3829,7 @@ func (c *NamespacesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/namespaces")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -3796,7 +3870,7 @@ func (c *NamespacesListCall) Do(opts ...googleapi.CallOption) (*ListNamespacesRe
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3893,6 +3967,7 @@ func (c *NamespacesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+namespaceName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -3936,7 +4011,7 @@ func (c *NamespacesUpdateCall) Do(opts ...googleapi.CallOption) (*Namespace, err
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4050,6 +4125,7 @@ func (c *V1beta1GetEidparamsCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/eidparams")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -4090,7 +4166,7 @@ func (c *V1beta1GetEidparamsCall) Do(opts ...googleapi.CallOption) (*EphemeralId
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil

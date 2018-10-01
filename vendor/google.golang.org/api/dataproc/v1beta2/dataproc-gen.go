@@ -1,4 +1,6 @@
-// Package dataproc provides access to the Google Cloud Dataproc API.
+// Package dataproc provides access to the Cloud Dataproc API.
+//
+// This package is DEPRECATED. Use package cloud.google.com/go/dataproc/apiv1 instead.
 //
 // See https://cloud.google.com/dataproc/
 //
@@ -77,6 +79,7 @@ func (s *Service) userAgent() string {
 
 func NewProjectsService(s *Service) *ProjectsService {
 	rs := &ProjectsService{s: s}
+	rs.Locations = NewProjectsLocationsService(s)
 	rs.Regions = NewProjectsRegionsService(s)
 	return rs
 }
@@ -84,7 +87,30 @@ func NewProjectsService(s *Service) *ProjectsService {
 type ProjectsService struct {
 	s *Service
 
+	Locations *ProjectsLocationsService
+
 	Regions *ProjectsRegionsService
+}
+
+func NewProjectsLocationsService(s *Service) *ProjectsLocationsService {
+	rs := &ProjectsLocationsService{s: s}
+	rs.WorkflowTemplates = NewProjectsLocationsWorkflowTemplatesService(s)
+	return rs
+}
+
+type ProjectsLocationsService struct {
+	s *Service
+
+	WorkflowTemplates *ProjectsLocationsWorkflowTemplatesService
+}
+
+func NewProjectsLocationsWorkflowTemplatesService(s *Service) *ProjectsLocationsWorkflowTemplatesService {
+	rs := &ProjectsLocationsWorkflowTemplatesService{s: s}
+	return rs
+}
+
+type ProjectsLocationsWorkflowTemplatesService struct {
+	s *Service
 }
 
 func NewProjectsRegionsService(s *Service) *ProjectsRegionsService {
@@ -92,6 +118,7 @@ func NewProjectsRegionsService(s *Service) *ProjectsRegionsService {
 	rs.Clusters = NewProjectsRegionsClustersService(s)
 	rs.Jobs = NewProjectsRegionsJobsService(s)
 	rs.Operations = NewProjectsRegionsOperationsService(s)
+	rs.WorkflowTemplates = NewProjectsRegionsWorkflowTemplatesService(s)
 	return rs
 }
 
@@ -103,6 +130,8 @@ type ProjectsRegionsService struct {
 	Jobs *ProjectsRegionsJobsService
 
 	Operations *ProjectsRegionsOperationsService
+
+	WorkflowTemplates *ProjectsRegionsWorkflowTemplatesService
 }
 
 func NewProjectsRegionsClustersService(s *Service) *ProjectsRegionsClustersService {
@@ -132,6 +161,15 @@ type ProjectsRegionsOperationsService struct {
 	s *Service
 }
 
+func NewProjectsRegionsWorkflowTemplatesService(s *Service) *ProjectsRegionsWorkflowTemplatesService {
+	rs := &ProjectsRegionsWorkflowTemplatesService{s: s}
+	return rs
+}
+
+type ProjectsRegionsWorkflowTemplatesService struct {
+	s *Service
+}
+
 // AcceleratorConfig: Specifies the type and number of accelerator cards
 // attached to the instances of an instance group (see GPUs on Compute
 // Engine).
@@ -141,11 +179,11 @@ type AcceleratorConfig struct {
 	AcceleratorCount int64 `json:"acceleratorCount,omitempty"`
 
 	// AcceleratorTypeUri: Full URL, partial URI, or short name of the
-	// accelerator type resource to expose to this instance. See Google
-	// Compute Engine AcceleratorTypes(
+	// accelerator type resource to expose to this instance. See Compute
+	// Engine AcceleratorTypes(
 	// /compute/docs/reference/beta/acceleratorTypes)Examples *
-	// https://www.googleapis.com/compute/beta/projects/[project_id]/zones/us-east1-a/acceleratorTypes/nvidia-tesla-k80 * projects/[project_id]/zones/us-east1-a/acceleratorTypes/nvidia-tesla-k80 *
-	// nvidia-tesla-k80
+	// https://www.googleapis.com/compute/beta/projects/[project_id]/zones/us-east1-a/acceleratorTypes/nvidia-tesla-k80 * projects/[project_id]/zones/us-east1-a/acceleratorTypes/nvidia-tesla-k80 * nvidia-tesla-k80Auto Zone Exception: If you are using the Cloud Dataproc Auto Zone Placement feature, you must use the short name of the accelerator type resource, for example,
+	// nvidia-tesla-k80.
 	AcceleratorTypeUri string `json:"acceleratorTypeUri,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AcceleratorCount") to
@@ -167,13 +205,19 @@ type AcceleratorConfig struct {
 }
 
 func (s *AcceleratorConfig) MarshalJSON() ([]byte, error) {
-	type noMethod AcceleratorConfig
-	raw := noMethod(*s)
+	type NoMethod AcceleratorConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Binding: Associates members with a role.
 type Binding struct {
+	// Condition: Unimplemented. The condition that is associated with this
+	// binding. NOTE: an unsatisfied condition will not allow user access
+	// via current binding. Different bindings, including their conditions,
+	// are examined independently.
+	Condition *Expr `json:"condition,omitempty"`
+
 	// Members: Specifies the identities requesting access for a Cloud
 	// Platform resource. members can have the following values:
 	// allUsers: A special identifier that represents anyone who is  on the
@@ -182,8 +226,7 @@ type Binding struct {
 	// who is authenticated with a Google account or a service
 	// account.
 	// user:{emailid}: An email address that represents a specific Google
-	// account. For example, alice@gmail.com or
-	// joe@example.com.
+	// account. For example, alice@gmail.com .
 	// serviceAccount:{emailid}: An email address that represents a service
 	// account. For example,
 	// my-other-app@appspot.gserviceaccount.com.
@@ -194,10 +237,10 @@ type Binding struct {
 	Members []string `json:"members,omitempty"`
 
 	// Role: Role that is assigned to members. For example, roles/viewer,
-	// roles/editor, or roles/owner. Required
+	// roles/editor, or roles/owner.
 	Role string `json:"role,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Members") to
+	// ForceSendFields is a list of field names (e.g. "Condition") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -205,7 +248,7 @@ type Binding struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Members") to include in
+	// NullFields is a list of field names (e.g. "Condition") to include in
 	// API requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -215,8 +258,8 @@ type Binding struct {
 }
 
 func (s *Binding) MarshalJSON() ([]byte, error) {
-	type noMethod Binding
-	raw := noMethod(*s)
+	type NoMethod Binding
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -225,13 +268,13 @@ type CancelJobRequest struct {
 }
 
 // Cluster: Describes the identifying information, config, and status of
-// a cluster of Google Compute Engine instances.
+// a cluster of Compute Engine instances.
 type Cluster struct {
 	// ClusterName: Required. The cluster name. Cluster names within a
 	// project must be unique. Names of deleted clusters can be reused.
 	ClusterName string `json:"clusterName,omitempty"`
 
-	// ClusterUuid: Output-only. A cluster UUID (Unique Universal
+	// ClusterUuid: Output only. A cluster UUID (Unique Universal
 	// Identifier). Cloud Dataproc generates this value when it creates the
 	// cluster.
 	ClusterUuid string `json:"clusterUuid,omitempty"`
@@ -248,19 +291,19 @@ type Cluster struct {
 	// labels can be associated with a cluster.
 	Labels map[string]string `json:"labels,omitempty"`
 
-	// Metrics: Contains cluster daemon metrics such as HDFS and YARN
-	// stats.Beta Feature: This report is available for testing purposes
-	// only. It may be changed before final release.
+	// Metrics: Output only. Contains cluster daemon metrics such as HDFS
+	// and YARN stats.Beta Feature: This report is available for testing
+	// purposes only. It may be changed before final release.
 	Metrics *ClusterMetrics `json:"metrics,omitempty"`
 
 	// ProjectId: Required. The Google Cloud Platform project ID that the
 	// cluster belongs to.
 	ProjectId string `json:"projectId,omitempty"`
 
-	// Status: Output-only. Cluster status.
+	// Status: Output only. Cluster status.
 	Status *ClusterStatus `json:"status,omitempty"`
 
-	// StatusHistory: Output-only. The previous cluster status.
+	// StatusHistory: Output only. The previous cluster status.
 	StatusHistory []*ClusterStatus `json:"statusHistory,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -285,15 +328,15 @@ type Cluster struct {
 }
 
 func (s *Cluster) MarshalJSON() ([]byte, error) {
-	type noMethod Cluster
-	raw := noMethod(*s)
+	type NoMethod Cluster
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ClusterConfig: The cluster config.
 type ClusterConfig struct {
-	// ConfigBucket: Optional. A Google Cloud Storage staging bucket used
-	// for sharing generated SSH keys and config. If you do not specify a
+	// ConfigBucket: Optional. A Cloud Storage staging bucket used for
+	// sharing generated SSH keys and config. If you do not specify a
 	// staging bucket, Cloud Dataproc will determine an appropriate Cloud
 	// Storage location (US, ASIA, or EU) for your cluster's staging bucket
 	// according to the Google Compute Engine zone where your cluster is
@@ -301,8 +344,11 @@ type ClusterConfig struct {
 	// per-location bucket for you.
 	ConfigBucket string `json:"configBucket,omitempty"`
 
-	// GceClusterConfig: Required. The shared Google Compute Engine config
-	// settings for all instances in a cluster.
+	// EncryptionConfig: Optional. Encryption settings for the cluster.
+	EncryptionConfig *EncryptionConfig `json:"encryptionConfig,omitempty"`
+
+	// GceClusterConfig: Required. The shared Compute Engine config settings
+	// for all instances in a cluster.
 	GceClusterConfig *GceClusterConfig `json:"gceClusterConfig,omitempty"`
 
 	// InitializationActions: Optional. Commands to execute on each node
@@ -324,20 +370,20 @@ type ClusterConfig struct {
 	// schedule.
 	LifecycleConfig *LifecycleConfig `json:"lifecycleConfig,omitempty"`
 
-	// MasterConfig: Optional. The Google Compute Engine config settings for
-	// the master instance in a cluster.
+	// MasterConfig: Optional. The Compute Engine config settings for the
+	// master instance in a cluster.
 	MasterConfig *InstanceGroupConfig `json:"masterConfig,omitempty"`
 
-	// SecondaryWorkerConfig: Optional. The Google Compute Engine config
-	// settings for additional worker instances in a cluster.
+	// SecondaryWorkerConfig: Optional. The Compute Engine config settings
+	// for additional worker instances in a cluster.
 	SecondaryWorkerConfig *InstanceGroupConfig `json:"secondaryWorkerConfig,omitempty"`
 
 	// SoftwareConfig: Optional. The config settings for software inside the
 	// cluster.
 	SoftwareConfig *SoftwareConfig `json:"softwareConfig,omitempty"`
 
-	// WorkerConfig: Optional. The Google Compute Engine config settings for
-	// worker instances in a cluster.
+	// WorkerConfig: Optional. The Compute Engine config settings for worker
+	// instances in a cluster.
 	WorkerConfig *InstanceGroupConfig `json:"workerConfig,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ConfigBucket") to
@@ -358,8 +404,8 @@ type ClusterConfig struct {
 }
 
 func (s *ClusterConfig) MarshalJSON() ([]byte, error) {
-	type noMethod ClusterConfig
-	raw := noMethod(*s)
+	type NoMethod ClusterConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -391,35 +437,69 @@ type ClusterMetrics struct {
 }
 
 func (s *ClusterMetrics) MarshalJSON() ([]byte, error) {
-	type noMethod ClusterMetrics
-	raw := noMethod(*s)
+	type NoMethod ClusterMetrics
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ClusterOperation: The cluster operation triggered by a workflow.
+type ClusterOperation struct {
+	// Done: Output only. Indicates the operation is done.
+	Done bool `json:"done,omitempty"`
+
+	// Error: Output only. Error, if operation failed.
+	Error string `json:"error,omitempty"`
+
+	// OperationId: Output only. The id of the cluster operation.
+	OperationId string `json:"operationId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Done") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Done") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ClusterOperation) MarshalJSON() ([]byte, error) {
+	type NoMethod ClusterOperation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ClusterOperationMetadata: Metadata describing the operation.
 type ClusterOperationMetadata struct {
-	// ClusterName: Output-only. Name of the cluster for the operation.
+	// ClusterName: Output only. Name of the cluster for the operation.
 	ClusterName string `json:"clusterName,omitempty"`
 
-	// ClusterUuid: Output-only. Cluster UUID for the operation.
+	// ClusterUuid: Output only. Cluster UUID for the operation.
 	ClusterUuid string `json:"clusterUuid,omitempty"`
 
-	// Description: Output-only. Short description of operation.
+	// Description: Output only. Short description of operation.
 	Description string `json:"description,omitempty"`
 
-	// Labels: Output-only. Labels associated with the operation
+	// Labels: Output only. Labels associated with the operation
 	Labels map[string]string `json:"labels,omitempty"`
 
-	// OperationType: Output-only. The operation type.
+	// OperationType: Output only. The operation type.
 	OperationType string `json:"operationType,omitempty"`
 
-	// Status: Output-only. Current operation status.
+	// Status: Output only. Current operation status.
 	Status *ClusterOperationStatus `json:"status,omitempty"`
 
-	// StatusHistory: Output-only. The previous operation status.
+	// StatusHistory: Output only. The previous operation status.
 	StatusHistory []*ClusterOperationStatus `json:"statusHistory,omitempty"`
 
-	// Warnings: Output-only. Errors encountered during operation execution.
+	// Warnings: Output only. Errors encountered during operation execution.
 	Warnings []string `json:"warnings,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ClusterName") to
@@ -440,22 +520,22 @@ type ClusterOperationMetadata struct {
 }
 
 func (s *ClusterOperationMetadata) MarshalJSON() ([]byte, error) {
-	type noMethod ClusterOperationMetadata
-	raw := noMethod(*s)
+	type NoMethod ClusterOperationMetadata
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ClusterOperationStatus: The status of the operation.
 type ClusterOperationStatus struct {
-	// Details: Output-only.A message containing any operation metadata
+	// Details: Output only. A message containing any operation metadata
 	// details.
 	Details string `json:"details,omitempty"`
 
-	// InnerState: Output-only. A message containing the detailed operation
+	// InnerState: Output only. A message containing the detailed operation
 	// state.
 	InnerState string `json:"innerState,omitempty"`
 
-	// State: Output-only. A message containing the operation state.
+	// State: Output only. A message containing the operation state.
 	//
 	// Possible values:
 	//   "UNKNOWN" - Unused.
@@ -464,7 +544,7 @@ type ClusterOperationStatus struct {
 	//   "DONE" - The operation is done; either cancelled or completed.
 	State string `json:"state,omitempty"`
 
-	// StateStartTime: Output-only. The time this state was entered.
+	// StateStartTime: Output only. The time this state was entered.
 	StateStartTime string `json:"stateStartTime,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Details") to
@@ -485,17 +565,53 @@ type ClusterOperationStatus struct {
 }
 
 func (s *ClusterOperationStatus) MarshalJSON() ([]byte, error) {
-	type noMethod ClusterOperationStatus
-	raw := noMethod(*s)
+	type NoMethod ClusterOperationStatus
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ClusterSelector: A selector that chooses target cluster for jobs
+// based on metadata.
+type ClusterSelector struct {
+	// ClusterLabels: Required. The cluster labels. Cluster must have all
+	// labels to match.
+	ClusterLabels map[string]string `json:"clusterLabels,omitempty"`
+
+	// Zone: Optional. The zone where workflow process executes. This
+	// parameter does not affect the selection of the cluster.If
+	// unspecified, the zone of the first cluster matching the selector is
+	// used.
+	Zone string `json:"zone,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ClusterLabels") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClusterLabels") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ClusterSelector) MarshalJSON() ([]byte, error) {
+	type NoMethod ClusterSelector
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ClusterStatus: The status of a cluster and its instances.
 type ClusterStatus struct {
-	// Detail: Output-only. Optional details of cluster's state.
+	// Detail: Output only. Optional details of cluster's state.
 	Detail string `json:"detail,omitempty"`
 
-	// State: Output-only. The cluster's state.
+	// State: Output only. The cluster's state.
 	//
 	// Possible values:
 	//   "UNKNOWN" - The cluster state is unknown.
@@ -510,14 +626,14 @@ type ClusterStatus struct {
 	// and process jobs.
 	State string `json:"state,omitempty"`
 
-	// StateStartTime: Output-only. Time when this state was entered.
+	// StateStartTime: Output only. Time when this state was entered.
 	StateStartTime string `json:"stateStartTime,omitempty"`
 
-	// Substate: Output-only. Additional state information that includes
+	// Substate: Output only. Additional state information that includes
 	// status reported by the agent.
 	//
 	// Possible values:
-	//   "UNSPECIFIED"
+	//   "UNSPECIFIED" - The cluster substate is unknown.
 	//   "UNHEALTHY" - The cluster is known to be in an unhealthy state (for
 	// example, critical daemons are not running or HDFS capacity is
 	// exhausted).Applies to RUNNING state.
@@ -544,8 +660,8 @@ type ClusterStatus struct {
 }
 
 func (s *ClusterStatus) MarshalJSON() ([]byte, error) {
-	type noMethod ClusterStatus
-	raw := noMethod(*s)
+	type NoMethod ClusterStatus
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -556,9 +672,9 @@ type DiagnoseClusterRequest struct {
 
 // DiagnoseClusterResults: The location of diagnostic output.
 type DiagnoseClusterResults struct {
-	// OutputUri: Output-only. The Google Cloud Storage URI of the
-	// diagnostic output. The output report is a plain text file with a
-	// summary of collected diagnostics.
+	// OutputUri: Output only. The Cloud Storage URI of the diagnostic
+	// output. The output report is a plain text file with a summary of
+	// collected diagnostics.
 	OutputUri string `json:"outputUri,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "OutputUri") to
@@ -579,8 +695,8 @@ type DiagnoseClusterResults struct {
 }
 
 func (s *DiagnoseClusterResults) MarshalJSON() ([]byte, error) {
-	type noMethod DiagnoseClusterResults
-	raw := noMethod(*s)
+	type NoMethod DiagnoseClusterResults
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -590,6 +706,11 @@ type DiskConfig struct {
 	// BootDiskSizeGb: Optional. Size in GB of the boot disk (default is
 	// 500GB).
 	BootDiskSizeGb int64 `json:"bootDiskSizeGb,omitempty"`
+
+	// BootDiskType: Optional. Type of the boot disk (default is
+	// "pd-standard"). Valid values: "pd-ssd" (Persistent Disk Solid State
+	// Drive) or "pd-standard" (Persistent Disk Hard Disk Drive).
+	BootDiskType string `json:"bootDiskType,omitempty"`
 
 	// NumLocalSsds: Optional. Number of attached SSDs, from 0 to 4 (default
 	// is 0). If SSDs are not attached, the boot disk is used to store
@@ -619,8 +740,8 @@ type DiskConfig struct {
 }
 
 func (s *DiskConfig) MarshalJSON() ([]byte, error) {
-	type noMethod DiskConfig
-	raw := noMethod(*s)
+	type NoMethod DiskConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -639,9 +760,88 @@ type Empty struct {
 	googleapi.ServerResponse `json:"-"`
 }
 
-// GceClusterConfig: Common config settings for resources of Google
-// Compute Engine cluster instances, applicable to all instances in the
-// cluster.
+// EncryptionConfig: Encryption settings for the cluster.
+type EncryptionConfig struct {
+	// GcePdKmsKeyName: Optional. The Cloud KMS key name to use for PD disk
+	// encryption for all instances in the cluster.
+	GcePdKmsKeyName string `json:"gcePdKmsKeyName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "GcePdKmsKeyName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "GcePdKmsKeyName") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *EncryptionConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod EncryptionConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Expr: Represents an expression text. Example:
+// title: "User account presence"
+// description: "Determines whether the request has a user
+// account"
+// expression: "size(request.user) > 0"
+//
+type Expr struct {
+	// Description: An optional description of the expression. This is a
+	// longer text which describes the expression, e.g. when hovered over it
+	// in a UI.
+	Description string `json:"description,omitempty"`
+
+	// Expression: Textual representation of an expression in Common
+	// Expression Language syntax.The application context of the containing
+	// message determines which well-known feature set of CEL is supported.
+	Expression string `json:"expression,omitempty"`
+
+	// Location: An optional string indicating the location of the
+	// expression for error reporting, e.g. a file name and a position in
+	// the file.
+	Location string `json:"location,omitempty"`
+
+	// Title: An optional title for the expression, i.e. a short string
+	// describing its purpose. This can be used e.g. in UIs which allow to
+	// enter the expression.
+	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Expr) MarshalJSON() ([]byte, error) {
+	type NoMethod Expr
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GceClusterConfig: Common config settings for resources of Compute
+// Engine cluster instances, applicable to all instances in the cluster.
 type GceClusterConfig struct {
 	// InternalIpOnly: Optional. If true, all instances in the cluster will
 	// only have internal IP addresses. By default, clusters are not
@@ -652,15 +852,15 @@ type GceClusterConfig struct {
 	// without external IP addresses.
 	InternalIpOnly bool `json:"internalIpOnly,omitempty"`
 
-	// Metadata: The Google Compute Engine metadata entries to add to all
-	// instances (see Project and instance metadata
+	// Metadata: The Compute Engine metadata entries to add to all instances
+	// (see Project and instance metadata
 	// (https://cloud.google.com/compute/docs/storing-retrieving-metadata#pro
 	// ject_and_instance_metadata)).
 	Metadata map[string]string `json:"metadata,omitempty"`
 
-	// NetworkUri: Optional. The Google Compute Engine network to be used
-	// for machine communications. Cannot be specified with subnetwork_uri.
-	// If neither network_uri nor subnetwork_uri is specified, the "default"
+	// NetworkUri: Optional. The Compute Engine network to be used for
+	// machine communications. Cannot be specified with subnetwork_uri. If
+	// neither network_uri nor subnetwork_uri is specified, the "default"
 	// network of the project is used, if it exists. Cannot be a "Custom
 	// Subnet Network" (see Using Subnetworks for more information).A full
 	// URL, partial URI, or short name are valid.
@@ -673,8 +873,8 @@ type GceClusterConfig struct {
 	NetworkUri string `json:"networkUri,omitempty"`
 
 	// ServiceAccount: Optional. The service account of the instances.
-	// Defaults to the default Google Compute Engine service account. Custom
-	// service accounts need permissions equivalent to the folloing IAM
+	// Defaults to the default Compute Engine service account. Custom
+	// service accounts need permissions equivalent to the following IAM
 	// roles:
 	// roles/logging.logWriter
 	// roles/storage.objectAdmin(see
@@ -683,8 +883,8 @@ type GceClusterConfig struct {
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// ServiceAccountScopes: Optional. The URIs of service account scopes to
-	// be included in Google Compute Engine instances. The following base
-	// set of scopes is always
+	// be included in Compute Engine instances. The following base set of
+	// scopes is always
 	// included:
 	// https://www.googleapis.com/auth/cloud.useraccounts.readonly
 	//
@@ -701,9 +901,9 @@ type GceClusterConfig struct {
 	// https://www.googleapis.com/auth/devstorage.full_control
 	ServiceAccountScopes []string `json:"serviceAccountScopes,omitempty"`
 
-	// SubnetworkUri: Optional. The Google Compute Engine subnetwork to be
-	// used for machine communications. Cannot be specified with
-	// network_uri.A full URL, partial URI, or short name are valid.
+	// SubnetworkUri: Optional. The Compute Engine subnetwork to be used for
+	// machine communications. Cannot be specified with network_uri.A full
+	// URL, partial URI, or short name are valid.
 	// Examples:
 	// https://www.googleapis.com/compute/v1/projects/[project_id]/
 	// regions/us-east1/sub0
@@ -711,14 +911,14 @@ type GceClusterConfig struct {
 	// sub0
 	SubnetworkUri string `json:"subnetworkUri,omitempty"`
 
-	// Tags: The Google Compute Engine tags to add to all instances (see
-	// Tagging instances).
+	// Tags: The Compute Engine tags to add to all instances (see Tagging
+	// instances).
 	Tags []string `json:"tags,omitempty"`
 
-	// ZoneUri: Optional. The zone where the Google Compute Engine cluster
-	// will be located. On a create request, it is required in the "global"
-	// region. If omitted in a non-global Cloud Dataproc region, the service
-	// will pick a zone in the corresponding Compute Engine region. On a get
+	// ZoneUri: Optional. The zone where the Compute Engine cluster will be
+	// located. On a create request, it is required in the "global" region.
+	// If omitted in a non-global Cloud Dataproc region, the service will
+	// pick a zone in the corresponding Compute Engine region. On a get
 	// request, zone will always be present.A full URL, partial URI, or
 	// short name are valid.
 	// Examples:
@@ -747,9 +947,13 @@ type GceClusterConfig struct {
 }
 
 func (s *GceClusterConfig) MarshalJSON() ([]byte, error) {
-	type noMethod GceClusterConfig
-	raw := noMethod(*s)
+	type NoMethod GceClusterConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GetIamPolicyRequest: Request message for GetIamPolicy method.
+type GetIamPolicyRequest struct {
 }
 
 // HadoopJob: A Cloud Dataproc job for running Apache Hadoop MapReduce
@@ -818,8 +1022,8 @@ type HadoopJob struct {
 }
 
 func (s *HadoopJob) MarshalJSON() ([]byte, error) {
-	type noMethod HadoopJob
-	raw := noMethod(*s)
+	type NoMethod HadoopJob
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -872,52 +1076,56 @@ type HiveJob struct {
 }
 
 func (s *HiveJob) MarshalJSON() ([]byte, error) {
-	type noMethod HiveJob
-	raw := noMethod(*s)
+	type NoMethod HiveJob
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// InstanceGroupConfig: Optional. The config settings for Google Compute
-// Engine resources in an instance group, such as a master or worker
-// group.
+// InstanceGroupConfig: Optional. The config settings for Compute Engine
+// resources in an instance group, such as a master or worker group.
 type InstanceGroupConfig struct {
-	// Accelerators: Optional. The Google Compute Engine accelerator
-	// configuration for these instances.Beta Feature: This feature is still
-	// under development. It may be changed before final release.
+	// Accelerators: Optional. The Compute Engine accelerator configuration
+	// for these instances.Beta Feature: This feature is still under
+	// development. It may be changed before final release.
 	Accelerators []*AcceleratorConfig `json:"accelerators,omitempty"`
 
 	// DiskConfig: Optional. Disk option config settings.
 	DiskConfig *DiskConfig `json:"diskConfig,omitempty"`
 
-	// ImageUri: Output-only. The Google Compute Engine image resource used
-	// for cluster instances. Inferred from SoftwareConfig.image_version.
+	// ImageUri: Optional. The Compute Engine image resource used for
+	// cluster instances. It can be specified or may be inferred from
+	// SoftwareConfig.image_version.
 	ImageUri string `json:"imageUri,omitempty"`
 
-	// InstanceNames: Optional. The list of instance names. Cloud Dataproc
-	// derives the names from cluster_name, num_instances, and the instance
-	// group if not set by user (recommended practice is to let Cloud
-	// Dataproc derive the name).
+	// InstanceNames: Output only. The list of instance names. Cloud
+	// Dataproc derives the names from cluster_name, num_instances, and the
+	// instance group.
 	InstanceNames []string `json:"instanceNames,omitempty"`
 
 	// IsPreemptible: Optional. Specifies that this instance group contains
 	// preemptible instances.
 	IsPreemptible bool `json:"isPreemptible,omitempty"`
 
-	// MachineTypeUri: Optional. The Google Compute Engine machine type used
-	// for cluster instances.A full URL, partial URI, or short name are
-	// valid.
+	// MachineTypeUri: Optional. The Compute Engine machine type used for
+	// cluster instances.A full URL, partial URI, or short name are valid.
 	// Examples:
 	// https://www.googleapis.com/compute/v1/projects/[project_id]/
 	// zones/us-east1-a/machineTypes/n1-standard-2
 	// projects/[project_id]/zone
 	// s/us-east1-a/machineTypes/n1-standard-2
-	// n1-standard-2
+	// n1-standard-2Auto Zone Exception: If you are using the Cloud Dataproc
+	// Auto Zone Placement feature, you must use the short name of the
+	// machine type resource, for example, n1-standard-2.
 	MachineTypeUri string `json:"machineTypeUri,omitempty"`
 
-	// ManagedGroupConfig: Output-only. The config for Google Compute Engine
+	// ManagedGroupConfig: Output only. The config for Compute Engine
 	// Instance Group Manager that manages this group. This is only used for
 	// preemptible instance groups.
 	ManagedGroupConfig *ManagedGroupConfig `json:"managedGroupConfig,omitempty"`
+
+	// MinCpuPlatform: Optional. Specifies the minimum cpu platform for the
+	// Instance Group. See Cloud Dataproc&rarr;Minimum CPU Platform.
+	MinCpuPlatform string `json:"minCpuPlatform,omitempty"`
 
 	// NumInstances: Optional. The number of VM instances in the instance
 	// group. For master instance groups, must be set to 1.
@@ -941,20 +1149,69 @@ type InstanceGroupConfig struct {
 }
 
 func (s *InstanceGroupConfig) MarshalJSON() ([]byte, error) {
-	type noMethod InstanceGroupConfig
-	raw := noMethod(*s)
+	type NoMethod InstanceGroupConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// InstantiateWorkflowTemplateRequest: A request to instantiate a
+// workflow template.
+type InstantiateWorkflowTemplateRequest struct {
+	// InstanceId: Deprecated. Please use request_id field instead.
+	InstanceId string `json:"instanceId,omitempty"`
+
+	// Parameters: Optional. Map from parameter names to values that should
+	// be used for those parameters. Values may not exceed 100 characters.
+	Parameters map[string]string `json:"parameters,omitempty"`
+
+	// RequestId: Optional. A tag that prevents multiple concurrent workflow
+	// instances with the same tag from running. This mitigates risk of
+	// concurrent instances started due to retries.It is recommended to
+	// always set this value to a UUID
+	// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag
+	// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+	// and hyphens (-). The maximum length is 40 characters.
+	RequestId string `json:"requestId,omitempty"`
+
+	// Version: Optional. The version of workflow template to instantiate.
+	// If specified, the workflow will be instantiated only if the current
+	// version of the workflow template has the supplied version.This option
+	// cannot be used to instantiate a previous version of workflow
+	// template.
+	Version int64 `json:"version,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "InstanceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "InstanceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *InstantiateWorkflowTemplateRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod InstantiateWorkflowTemplateRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Job: A Cloud Dataproc job resource.
 type Job struct {
-	// DriverControlFilesUri: Output-only. If present, the location of
+	// DriverControlFilesUri: Output only. If present, the location of
 	// miscellaneous control files which may be used as part of job setup
 	// and handling. If not present, control files may be placed in the same
 	// location as driver_output_uri.
 	DriverControlFilesUri string `json:"driverControlFilesUri,omitempty"`
 
-	// DriverOutputResourceUri: Output-only. A URI pointing to the location
+	// DriverOutputResourceUri: Output only. A URI pointing to the location
 	// of the stdout of the job's driver program.
 	DriverOutputResourceUri string `json:"driverOutputResourceUri,omitempty"`
 
@@ -997,15 +1254,15 @@ type Job struct {
 	// SparkSqlJob: Job is a SparkSql job.
 	SparkSqlJob *SparkSqlJob `json:"sparkSqlJob,omitempty"`
 
-	// Status: Output-only. The job status. Additional application-specific
+	// Status: Output only. The job status. Additional application-specific
 	// status information may be contained in the <code>type_job</code> and
 	// <code>yarn_applications</code> fields.
 	Status *JobStatus `json:"status,omitempty"`
 
-	// StatusHistory: Output-only. The previous job status.
+	// StatusHistory: Output only. The previous job status.
 	StatusHistory []*JobStatus `json:"statusHistory,omitempty"`
 
-	// YarnApplications: Output-only. The collection of YARN applications
+	// YarnApplications: Output only. The collection of YARN applications
 	// spun up by this job.Beta Feature: This report is available for
 	// testing purposes only. It may be changed before final release.
 	YarnApplications []*YarnApplication `json:"yarnApplications,omitempty"`
@@ -1034,8 +1291,8 @@ type Job struct {
 }
 
 func (s *Job) MarshalJSON() ([]byte, error) {
-	type noMethod Job
-	raw := noMethod(*s)
+	type NoMethod Job
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1045,7 +1302,7 @@ type JobPlacement struct {
 	// submitted.
 	ClusterName string `json:"clusterName,omitempty"`
 
-	// ClusterUuid: Output-only. A cluster UUID generated by the Cloud
+	// ClusterUuid: Output only. A cluster UUID generated by the Cloud
 	// Dataproc service when the job is submitted.
 	ClusterUuid string `json:"clusterUuid,omitempty"`
 
@@ -1067,8 +1324,8 @@ type JobPlacement struct {
 }
 
 func (s *JobPlacement) MarshalJSON() ([]byte, error) {
-	type noMethod JobPlacement
-	raw := noMethod(*s)
+	type NoMethod JobPlacement
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1104,14 +1361,12 @@ type JobReference struct {
 }
 
 func (s *JobReference) MarshalJSON() ([]byte, error) {
-	type noMethod JobReference
-	raw := noMethod(*s)
+	type NoMethod JobReference
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// JobScheduling: Job scheduling options.Beta Feature: These options are
-// available for testing purposes only. They may be changed before final
-// release.
+// JobScheduling: Job scheduling options.
 type JobScheduling struct {
 	// MaxFailuresPerHour: Optional. Maximum number of times per hour a
 	// driver may be restarted as a result of driver terminating with
@@ -1139,18 +1394,18 @@ type JobScheduling struct {
 }
 
 func (s *JobScheduling) MarshalJSON() ([]byte, error) {
-	type noMethod JobScheduling
-	raw := noMethod(*s)
+	type NoMethod JobScheduling
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // JobStatus: Cloud Dataproc job status.
 type JobStatus struct {
-	// Details: Output-only. Optional job state details, such as an error
+	// Details: Output only. Optional job state details, such as an error
 	// description if the state is <code>ERROR</code>.
 	Details string `json:"details,omitempty"`
 
-	// State: Output-only. A state message specifying the overall job state.
+	// State: Output only. A state message specifying the overall job state.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - The job state is unknown.
@@ -1172,14 +1427,14 @@ type JobStatus struct {
 	// only.
 	State string `json:"state,omitempty"`
 
-	// StateStartTime: Output-only. The time when this state was entered.
+	// StateStartTime: Output only. The time when this state was entered.
 	StateStartTime string `json:"stateStartTime,omitempty"`
 
-	// Substate: Output-only. Additional state information, which includes
+	// Substate: Output only. Additional state information, which includes
 	// status reported by the agent.
 	//
 	// Possible values:
-	//   "UNSPECIFIED"
+	//   "UNSPECIFIED" - The job substate is unknown.
 	//   "SUBMITTED" - The Job is submitted to the agent.Applies to RUNNING
 	// state.
 	//   "QUEUED" - The Job has been received and is awaiting execution (it
@@ -1209,24 +1464,27 @@ type JobStatus struct {
 }
 
 func (s *JobStatus) MarshalJSON() ([]byte, error) {
-	type noMethod JobStatus
-	raw := noMethod(*s)
+	type NoMethod JobStatus
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// LifecycleConfig: Specifies the cluster auto delete related schedule
+// LifecycleConfig: Specifies the cluster auto-delete schedule
 // configuration.
 type LifecycleConfig struct {
 	// AutoDeleteTime: Optional. The time when cluster will be auto-deleted.
 	AutoDeleteTime string `json:"autoDeleteTime,omitempty"`
 
-	// AutoDeleteTtl: Optional. The life duration of cluster, the cluster
-	// will be auto-deleted at the end of this duration.
+	// AutoDeleteTtl: Optional. The lifetime duration of cluster. The
+	// cluster will be auto-deleted at the end of this period. Valid range:
+	// 10m, 14d.Example: "1d", to delete the cluster 1 day after its
+	// creation..
 	AutoDeleteTtl string `json:"autoDeleteTtl,omitempty"`
 
-	// IdleDeleteTtl: Optional. The longest duration that cluster would keep
-	// alive while staying  idle; passing this threshold will cause cluster
-	// to be auto-deleted.
+	// IdleDeleteTtl: Optional. The duration to keep the cluster alive while
+	// idling. Passing this threshold will cause the cluster to be deleted.
+	// Valid range: 10m, 14d.Example: "10m", the minimum value, to delete
+	// the cluster when it has had no jobs running for 10 minutes.
 	IdleDeleteTtl string `json:"idleDeleteTtl,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AutoDeleteTime") to
@@ -1248,17 +1506,17 @@ type LifecycleConfig struct {
 }
 
 func (s *LifecycleConfig) MarshalJSON() ([]byte, error) {
-	type noMethod LifecycleConfig
-	raw := noMethod(*s)
+	type NoMethod LifecycleConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListClustersResponse: The list of all clusters in a project.
 type ListClustersResponse struct {
-	// Clusters: Output-only. The clusters in the project.
+	// Clusters: Output only. The clusters in the project.
 	Clusters []*Cluster `json:"clusters,omitempty"`
 
-	// NextPageToken: Output-only. This token is included in the response if
+	// NextPageToken: Output only. This token is included in the response if
 	// there are more results to fetch. To fetch additional results, provide
 	// this value as the page_token in a subsequent
 	// <code>ListClustersRequest</code>.
@@ -1286,14 +1544,14 @@ type ListClustersResponse struct {
 }
 
 func (s *ListClustersResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListClustersResponse
-	raw := noMethod(*s)
+	type NoMethod ListClustersResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListJobsResponse: A list of jobs in a project.
 type ListJobsResponse struct {
-	// Jobs: Output-only. Jobs list.
+	// Jobs: Output only. Jobs list.
 	Jobs []*Job `json:"jobs,omitempty"`
 
 	// NextPageToken: Optional. This token is included in the response if
@@ -1324,8 +1582,8 @@ type ListJobsResponse struct {
 }
 
 func (s *ListJobsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListJobsResponse
-	raw := noMethod(*s)
+	type NoMethod ListJobsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1361,8 +1619,47 @@ type ListOperationsResponse struct {
 }
 
 func (s *ListOperationsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListOperationsResponse
-	raw := noMethod(*s)
+	type NoMethod ListOperationsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ListWorkflowTemplatesResponse: A response to a request to list
+// workflow templates in a project.
+type ListWorkflowTemplatesResponse struct {
+	// NextPageToken: Output only. This token is included in the response if
+	// there are more results to fetch. To fetch additional results, provide
+	// this value as the page_token in a subsequent
+	// <code>ListWorkflowTemplatesRequest</code>.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// Templates: Output only. WorkflowTemplates list.
+	Templates []*WorkflowTemplate `json:"templates,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListWorkflowTemplatesResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkflowTemplatesResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1392,19 +1689,62 @@ type LoggingConfig struct {
 }
 
 func (s *LoggingConfig) MarshalJSON() ([]byte, error) {
-	type noMethod LoggingConfig
-	raw := noMethod(*s)
+	type NoMethod LoggingConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ManagedCluster: Cluster that is managed by the workflow.
+type ManagedCluster struct {
+	// ClusterName: Required. The cluster name prefix. A unique cluster name
+	// will be formed by appending a random suffix.The name must contain
+	// only lower-case letters (a-z), numbers (0-9), and hyphens (-). Must
+	// begin with a letter. Cannot begin or end with hyphen. Must consist of
+	// between 2 and 35 characters.
+	ClusterName string `json:"clusterName,omitempty"`
+
+	// Config: Required. The cluster configuration.
+	Config *ClusterConfig `json:"config,omitempty"`
+
+	// Labels: Optional. The labels to associate with this cluster.Label
+	// keys must be between 1 and 63 characters long, and must conform to
+	// the following PCRE regular expression: \p{Ll}\p{Lo}{0,62}Label values
+	// must be between 1 and 63 characters long, and must conform to the
+	// following PCRE regular expression: \p{Ll}\p{Lo}\p{N}_-{0,63}No more
+	// than 32 labels can be associated with a given cluster.
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ClusterName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClusterName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ManagedCluster) MarshalJSON() ([]byte, error) {
+	type NoMethod ManagedCluster
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ManagedGroupConfig: Specifies the resources used to actively manage
 // an instance group.
 type ManagedGroupConfig struct {
-	// InstanceGroupManagerName: Output-only. The name of the Instance Group
+	// InstanceGroupManagerName: Output only. The name of the Instance Group
 	// Manager for this group.
 	InstanceGroupManagerName string `json:"instanceGroupManagerName,omitempty"`
 
-	// InstanceTemplateName: Output-only. The name of the Instance Template
+	// InstanceTemplateName: Output only. The name of the Instance Template
 	// used for the Managed Instance Group.
 	InstanceTemplateName string `json:"instanceTemplateName,omitempty"`
 
@@ -1428,16 +1768,15 @@ type ManagedGroupConfig struct {
 }
 
 func (s *ManagedGroupConfig) MarshalJSON() ([]byte, error) {
-	type noMethod ManagedGroupConfig
-	raw := noMethod(*s)
+	type NoMethod ManagedGroupConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // NodeInitializationAction: Specifies an executable to run on a fully
 // configured node and a timeout period for executable completion.
 type NodeInitializationAction struct {
-	// ExecutableFile: Required. Google Cloud Storage URI of executable
-	// file.
+	// ExecutableFile: Required. Cloud Storage URI of executable file.
 	ExecutableFile string `json:"executableFile,omitempty"`
 
 	// ExecutionTimeout: Optional. Amount of time executable has to
@@ -1466,8 +1805,8 @@ type NodeInitializationAction struct {
 }
 
 func (s *NodeInitializationAction) MarshalJSON() ([]byte, error) {
-	type noMethod NodeInitializationAction
-	raw := noMethod(*s)
+	type NoMethod NodeInitializationAction
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1527,8 +1866,107 @@ type Operation struct {
 }
 
 func (s *Operation) MarshalJSON() ([]byte, error) {
-	type noMethod Operation
-	raw := noMethod(*s)
+	type NoMethod Operation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// OrderedJob: A job executed by the workflow.
+type OrderedJob struct {
+	// HadoopJob: Job is a Hadoop job.
+	HadoopJob *HadoopJob `json:"hadoopJob,omitempty"`
+
+	// HiveJob: Job is a Hive job.
+	HiveJob *HiveJob `json:"hiveJob,omitempty"`
+
+	// Labels: Optional. The labels to associate with this job.Label keys
+	// must be between 1 and 63 characters long, and must conform to the
+	// following regular expression: \p{Ll}\p{Lo}{0,62}Label values must be
+	// between 1 and 63 characters long, and must conform to the following
+	// regular expression: \p{Ll}\p{Lo}\p{N}_-{0,63}No more than 32 labels
+	// can be associated with a given job.
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// PigJob: Job is a Pig job.
+	PigJob *PigJob `json:"pigJob,omitempty"`
+
+	// PrerequisiteStepIds: Optional. The optional list of prerequisite job
+	// step_ids. If not specified, the job will start at the beginning of
+	// workflow.
+	PrerequisiteStepIds []string `json:"prerequisiteStepIds,omitempty"`
+
+	// PysparkJob: Job is a Pyspark job.
+	PysparkJob *PySparkJob `json:"pysparkJob,omitempty"`
+
+	// Scheduling: Optional. Job scheduling configuration.
+	Scheduling *JobScheduling `json:"scheduling,omitempty"`
+
+	// SparkJob: Job is a Spark job.
+	SparkJob *SparkJob `json:"sparkJob,omitempty"`
+
+	// SparkSqlJob: Job is a SparkSql job.
+	SparkSqlJob *SparkSqlJob `json:"sparkSqlJob,omitempty"`
+
+	// StepId: Required. The step id. The id must be unique among all jobs
+	// within the template.The step id is used as prefix for job id, as job
+	// goog-dataproc-workflow-step-id label, and in prerequisiteStepIds
+	// field from other steps.The id must contain only letters (a-z, A-Z),
+	// numbers (0-9), underscores (_), and hyphens (-). Cannot begin or end
+	// with underscore or hyphen. Must consist of between 3 and 50
+	// characters.
+	StepId string `json:"stepId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HadoopJob") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HadoopJob") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OrderedJob) MarshalJSON() ([]byte, error) {
+	type NoMethod OrderedJob
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ParameterValidation: Configuration for parameter validation.
+type ParameterValidation struct {
+	// Regex: Validation based on regular expressions.
+	Regex *RegexValidation `json:"regex,omitempty"`
+
+	// Values: Validation based on a list of allowed values.
+	Values *ValueValidation `json:"values,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Regex") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Regex") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ParameterValidation) MarshalJSON() ([]byte, error) {
+	type NoMethod ParameterValidation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1585,17 +2023,17 @@ type PigJob struct {
 }
 
 func (s *PigJob) MarshalJSON() ([]byte, error) {
-	type noMethod PigJob
-	raw := noMethod(*s)
+	type NoMethod PigJob
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Policy: Defines an Identity and Access Management (IAM) policy. It is
 // used to specify access control policies for Cloud Platform
-// resources.A Policy consists of a list of bindings. A Binding binds a
+// resources.A Policy consists of a list of bindings. A binding binds a
 // list of members to a role, where the members can be user accounts,
 // Google groups, Google domains, and service accounts. A role is a
-// named list of permissions defined by IAM.Example
+// named list of permissions defined by IAM.JSON Example
 // {
 //   "bindings": [
 //     {
@@ -1604,7 +2042,7 @@ func (s *PigJob) MarshalJSON() ([]byte, error) {
 //         "user:mike@example.com",
 //         "group:admins@example.com",
 //         "domain:google.com",
-//         "serviceAccount:my-other-app@appspot.gserviceaccount.com",
+//         "serviceAccount:my-other-app@appspot.gserviceaccount.com"
 //       ]
 //     },
 //     {
@@ -1613,8 +2051,19 @@ func (s *PigJob) MarshalJSON() ([]byte, error) {
 //     }
 //   ]
 // }
+// YAML Example
+// bindings:
+// - members:
+//   - user:mike@example.com
+//   - group:admins@example.com
+//   - domain:google.com
+//   - serviceAccount:my-other-app@appspot.gserviceaccount.com
+//   role: roles/owner
+// - members:
+//   - user:sean@example.com
+//   role: roles/viewer
 // For a description of IAM and its features, see the IAM developer's
-// guide (https://cloud.google.com/iam).
+// guide (https://cloud.google.com/iam/docs).
 type Policy struct {
 	// Bindings: Associates a list of members to a role. bindings with no
 	// members will result in an error.
@@ -1631,7 +2080,7 @@ type Policy struct {
 	// to setIamPolicy, then the existing policy is overwritten blindly.
 	Etag string `json:"etag,omitempty"`
 
-	// Version: Version of the Policy. The default version is 0.
+	// Version: Deprecated.
 	Version int64 `json:"version,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1656,8 +2105,8 @@ type Policy struct {
 }
 
 func (s *Policy) MarshalJSON() ([]byte, error) {
-	type noMethod Policy
-	raw := noMethod(*s)
+	type NoMethod Policy
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1718,8 +2167,8 @@ type PySparkJob struct {
 }
 
 func (s *PySparkJob) MarshalJSON() ([]byte, error) {
-	type noMethod PySparkJob
-	raw := noMethod(*s)
+	type NoMethod PySparkJob
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1760,8 +2209,38 @@ type QueryList struct {
 }
 
 func (s *QueryList) MarshalJSON() ([]byte, error) {
-	type noMethod QueryList
-	raw := noMethod(*s)
+	type NoMethod QueryList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RegexValidation: Validation based on regular expressions.
+type RegexValidation struct {
+	// Regexes: Required. RE2 regular expressions used to validate the
+	// parameter's value. The value must match the regex in its entirety
+	// (substring matches are not sufficient).
+	Regexes []string `json:"regexes,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Regexes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Regexes") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RegexValidation) MarshalJSON() ([]byte, error) {
+	type NoMethod RegexValidation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1791,8 +2270,8 @@ type SetIamPolicyRequest struct {
 }
 
 func (s *SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
-	type noMethod SetIamPolicyRequest
-	raw := noMethod(*s)
+	type NoMethod SetIamPolicyRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1800,9 +2279,22 @@ func (s *SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 // the cluster.
 type SoftwareConfig struct {
 	// ImageVersion: Optional. The version of software inside the cluster.
-	// It must match the regular expression [0-9]+\.[0-9]+. If unspecified,
-	// it defaults to the latest version (see Cloud Dataproc Versioning).
+	// It must be one of the supported Cloud Dataproc Versions, such as
+	// "1.2" (including a subminor version, such as "1.2.29"), or the
+	// "preview" version. If unspecified, it defaults to the latest version.
 	ImageVersion string `json:"imageVersion,omitempty"`
+
+	// OptionalComponents: The set of optional components to activate on the
+	// cluster.
+	//
+	// Possible values:
+	//   "COMPONENT_UNSPECIFIED" - Unspecified component.
+	//   "JUPYTER" - The Jupyter Notebook.
+	//   "HIVE_WEBHCAT" - The Hive Web HCatalog (the REST service for
+	// accessing HCatalog).
+	//   "ZEPPELIN" - The Zeppelin notebook.
+	//   "ANACONDA" - The Anaconda python distribution.
+	OptionalComponents []string `json:"optionalComponents,omitempty"`
 
 	// Properties: Optional. The properties to set on daemon config
 	// files.Property keys are specified in prefix:property format, such as
@@ -1837,8 +2329,8 @@ type SoftwareConfig struct {
 }
 
 func (s *SoftwareConfig) MarshalJSON() ([]byte, error) {
-	type noMethod SoftwareConfig
-	raw := noMethod(*s)
+	type NoMethod SoftwareConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1900,8 +2392,8 @@ type SparkJob struct {
 }
 
 func (s *SparkJob) MarshalJSON() ([]byte, error) {
-	type noMethod SparkJob
-	raw := noMethod(*s)
+	type NoMethod SparkJob
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1948,8 +2440,8 @@ type SparkSqlJob struct {
 }
 
 func (s *SparkSqlJob) MarshalJSON() ([]byte, error) {
-	type noMethod SparkSqlJob
-	raw := noMethod(*s)
+	type NoMethod SparkSqlJob
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -2024,8 +2516,8 @@ type Status struct {
 }
 
 func (s *Status) MarshalJSON() ([]byte, error) {
-	type noMethod Status
-	raw := noMethod(*s)
+	type NoMethod Status
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -2033,6 +2525,16 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 type SubmitJobRequest struct {
 	// Job: Required. The job resource.
 	Job *Job `json:"job,omitempty"`
+
+	// RequestId: Optional. A unique id used to identify the request. If the
+	// server receives two SubmitJobRequest requests with the same id, then
+	// the second request will be ignored and the first Job created and
+	// stored in the backend is returned.It is recommended to always set
+	// this value to a UUID
+	// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id
+	// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+	// and hyphens (-). The maximum length is 40 characters.
+	RequestId string `json:"requestId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Job") to
 	// unconditionally include in API requests. By default, fields with
@@ -2052,8 +2554,100 @@ type SubmitJobRequest struct {
 }
 
 func (s *SubmitJobRequest) MarshalJSON() ([]byte, error) {
-	type noMethod SubmitJobRequest
-	raw := noMethod(*s)
+	type NoMethod SubmitJobRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// TemplateParameter: A configurable parameter that replaces one or more
+// fields in the template. Parameterizable fields: - Labels - File uris
+// - Job properties - Job arguments - Script variables - Main class (in
+// HadoopJob and SparkJob) - Zone (in ClusterSelector)
+type TemplateParameter struct {
+	// Description: Optional. Brief description of the parameter. Must not
+	// exceed 1024 characters.
+	Description string `json:"description,omitempty"`
+
+	// Fields: Required. Paths to all fields that the parameter replaces. A
+	// field is allowed to appear in at most one parameter's list of field
+	// paths.A field path is similar in syntax to a
+	// google.protobuf.FieldMask. For example, a field path that references
+	// the zone field of a workflow template's cluster selector would be
+	// specified as <code>placement.clusterSelector.zone</code>.Also, field
+	// paths can reference fields using the following syntax:
+	// Values in maps can be referenced by key.
+	// Examples<br>
+	// labels'key'
+	// placement.clusterSelector.clusterLabels'key'
+	//
+	// placement.managedCluster.labels'key'
+	// placement.clusterSelector.cluster
+	// Labels'key'
+	// jobsstep-id.labels'key'
+	// Jobs in the jobs list can be referenced by step-id.
+	// Examples:<br>
+	// jobsstep-id.hadoopJob.mainJarFileUri
+	// jobsstep-id.hiveJob
+	// .queryFileUri
+	// jobsstep-id.pySparkJob.mainPythonFileUri
+	// jobsstep-id.had
+	// oopJob.jarFileUris0
+	// jobsstep-id.hadoopJob.archiveUris0
+	// jobsstep-id.had
+	// oopJob.fileUris0
+	// jobsstep-id.pySparkJob.pythonFileUris0
+	// Items in repeated fields can be referenced by a zero-based index.
+	// Example:<br>
+	// jobsstep-id.sparkJob.args0
+	// Other
+	// examples:
+	// jobsstep-id.hadoopJob.properties'key'
+	// jobsstep-id.hadoopJob.
+	// args0
+	// jobsstep-id.hiveJob.scriptVariables'key'
+	// jobsstep-id.hadoopJob.m
+	// ainJarFileUri
+	// placement.clusterSelector.zoneIt may not be possible to parameterize
+	// maps and repeated fields in their entirety since only individual map
+	// values and individual items in repeated fields can be referenced. For
+	// example, the following field paths are
+	// invalid:
+	// placement.clusterSelector.clusterLabels
+	// jobsstep-id.sparkJob.
+	// args
+	Fields []string `json:"fields,omitempty"`
+
+	// Name: Required. Parameter name. The parameter name is used as the
+	// key, and paired with the parameter value, which are passed to the
+	// template when the template is instantiated. The name must contain
+	// only capital letters (A-Z), numbers (0-9), and underscores (_), and
+	// must not start with a number. The maximum length is 40 characters.
+	Name string `json:"name,omitempty"`
+
+	// Validation: Optional. Validation rules to be applied to this
+	// parameter's value.
+	Validation *ParameterValidation `json:"validation,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *TemplateParameter) MarshalJSON() ([]byte, error) {
+	type NoMethod TemplateParameter
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -2084,8 +2678,8 @@ type TestIamPermissionsRequest struct {
 }
 
 func (s *TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
-	type noMethod TestIamPermissionsRequest
-	raw := noMethod(*s)
+	type NoMethod TestIamPermissionsRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -2118,8 +2712,284 @@ type TestIamPermissionsResponse struct {
 }
 
 func (s *TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod TestIamPermissionsResponse
-	raw := noMethod(*s)
+	type NoMethod TestIamPermissionsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ValueValidation: Validation based on a list of allowed values.
+type ValueValidation struct {
+	// Values: Required. List of allowed values for the parameter.
+	Values []string `json:"values,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Values") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Values") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ValueValidation) MarshalJSON() ([]byte, error) {
+	type NoMethod ValueValidation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkflowGraph: The workflow graph.
+type WorkflowGraph struct {
+	// Nodes: Output only. The workflow nodes.
+	Nodes []*WorkflowNode `json:"nodes,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Nodes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Nodes") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkflowGraph) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkflowGraph
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkflowMetadata: A Cloud Dataproc workflow template resource.
+type WorkflowMetadata struct {
+	// ClusterName: Output only. The name of the managed cluster.
+	ClusterName string `json:"clusterName,omitempty"`
+
+	// CreateCluster: Output only. The create cluster operation metadata.
+	CreateCluster *ClusterOperation `json:"createCluster,omitempty"`
+
+	// DeleteCluster: Output only. The delete cluster operation metadata.
+	DeleteCluster *ClusterOperation `json:"deleteCluster,omitempty"`
+
+	// Graph: Output only. The workflow graph.
+	Graph *WorkflowGraph `json:"graph,omitempty"`
+
+	// Parameters: Map from parameter names to values that were used for
+	// those parameters.
+	Parameters map[string]string `json:"parameters,omitempty"`
+
+	// State: Output only. The workflow state.
+	//
+	// Possible values:
+	//   "UNKNOWN" - Unused.
+	//   "PENDING" - The operation has been created.
+	//   "RUNNING" - The operation is running.
+	//   "DONE" - The operation is done; either cancelled or completed.
+	State string `json:"state,omitempty"`
+
+	// Template: Output only. The "resource name" of the template.
+	Template string `json:"template,omitempty"`
+
+	// Version: Output only. The version of template at the time of workflow
+	// instantiation.
+	Version int64 `json:"version,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ClusterName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClusterName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkflowMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkflowMetadata
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkflowNode: The workflow node.
+type WorkflowNode struct {
+	// Error: Output only. The error detail.
+	Error string `json:"error,omitempty"`
+
+	// JobId: Output only. The job id; populated after the node enters
+	// RUNNING state.
+	JobId string `json:"jobId,omitempty"`
+
+	// PrerequisiteStepIds: Output only. Node's prerequisite nodes.
+	PrerequisiteStepIds []string `json:"prerequisiteStepIds,omitempty"`
+
+	// State: Output only. The node state.
+	//
+	// Possible values:
+	//   "NODE_STATUS_UNSPECIFIED" - State is unspecified.
+	//   "BLOCKED" - The node is awaiting prerequisite node to finish.
+	//   "RUNNABLE" - The node is runnable but not running.
+	//   "RUNNING" - The node is running.
+	//   "COMPLETED" - The node completed successfully.
+	//   "FAILED" - The node failed. A node can be marked FAILED because its
+	// ancestor or peer failed.
+	State string `json:"state,omitempty"`
+
+	// StepId: Output only. The name of the node.
+	StepId string `json:"stepId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Error") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Error") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkflowNode) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkflowNode
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkflowTemplate: A Cloud Dataproc workflow template resource.
+type WorkflowTemplate struct {
+	// CreateTime: Output only. The time template was created.
+	CreateTime string `json:"createTime,omitempty"`
+
+	// Id: Required. The template id.The id must contain only letters (a-z,
+	// A-Z), numbers (0-9), underscores (_), and hyphens (-). Cannot begin
+	// or end with underscore or hyphen. Must consist of between 3 and 50
+	// characters.
+	Id string `json:"id,omitempty"`
+
+	// Jobs: Required. The Directed Acyclic Graph of Jobs to submit.
+	Jobs []*OrderedJob `json:"jobs,omitempty"`
+
+	// Labels: Optional. The labels to associate with this template. These
+	// labels will be propagated to all jobs and clusters created by the
+	// workflow instance.Label keys must contain 1 to 63 characters, and
+	// must conform to RFC 1035 (https://www.ietf.org/rfc/rfc1035.txt).Label
+	// values may be empty, but, if present, must contain 1 to 63
+	// characters, and must conform to RFC 1035
+	// (https://www.ietf.org/rfc/rfc1035.txt).No more than 32 labels can be
+	// associated with a template.
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Name: Output only. The "resource name" of the template, as described
+	// in https://cloud.google.com/apis/design/resource_names of the form
+	// projects/{project_id}/regions/{region}/workflowTemplates/{template_id}
+	Name string `json:"name,omitempty"`
+
+	// Parameters: Optional. Template parameters whose values are
+	// substituted into the template. Values for parameters must be provided
+	// when the template is instantiated.
+	Parameters []*TemplateParameter `json:"parameters,omitempty"`
+
+	// Placement: Required. WorkflowTemplate scheduling information.
+	Placement *WorkflowTemplatePlacement `json:"placement,omitempty"`
+
+	// UpdateTime: Output only. The time template was last updated.
+	UpdateTime string `json:"updateTime,omitempty"`
+
+	// Version: Optional. Used to perform a consistent
+	// read-modify-write.This field should be left blank for a
+	// CreateWorkflowTemplate request. It is required for an
+	// UpdateWorkflowTemplate request, and must match the current server
+	// version. A typical update template flow would fetch the current
+	// template with a GetWorkflowTemplate request, which will return the
+	// current template with the version field filled in with the current
+	// server version. The user updates other fields in the template, then
+	// returns it as part of the UpdateWorkflowTemplate request.
+	Version int64 `json:"version,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "CreateTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreateTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkflowTemplate) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkflowTemplate
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkflowTemplatePlacement: Specifies workflow execution target.Either
+// managed_cluster or cluster_selector is required.
+type WorkflowTemplatePlacement struct {
+	// ClusterSelector: Optional. A selector that chooses target cluster for
+	// jobs based on metadata.The selector is evaluated at the time each job
+	// is submitted.
+	ClusterSelector *ClusterSelector `json:"clusterSelector,omitempty"`
+
+	// ManagedCluster: Optional. A cluster that is managed by the workflow.
+	ManagedCluster *ManagedCluster `json:"managedCluster,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ClusterSelector") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClusterSelector") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkflowTemplatePlacement) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkflowTemplatePlacement
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -2174,23 +3044,1515 @@ type YarnApplication struct {
 }
 
 func (s *YarnApplication) MarshalJSON() ([]byte, error) {
-	type noMethod YarnApplication
-	raw := noMethod(*s)
+	type NoMethod YarnApplication
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *YarnApplication) UnmarshalJSON(data []byte) error {
-	type noMethod YarnApplication
+	type NoMethod YarnApplication
 	var s1 struct {
 		Progress gensupport.JSONFloat64 `json:"progress"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
 	s.Progress = float64(s1.Progress)
 	return nil
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.create":
+
+type ProjectsLocationsWorkflowTemplatesCreateCall struct {
+	s                *Service
+	parent           string
+	workflowtemplate *WorkflowTemplate
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// Create: Creates new workflow template.
+func (r *ProjectsLocationsWorkflowTemplatesService) Create(parent string, workflowtemplate *WorkflowTemplate) *ProjectsLocationsWorkflowTemplatesCreateCall {
+	c := &ProjectsLocationsWorkflowTemplatesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workflowtemplate = workflowtemplate
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workflowtemplate)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+parent}/workflowTemplates")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.create" call.
+// Exactly one of *WorkflowTemplate or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkflowTemplate.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesCreateCall) Do(opts ...googleapi.CallOption) (*WorkflowTemplate, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkflowTemplate{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates new workflow template.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.locations.workflowTemplates.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The \"resource name\" of the region, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+parent}/workflowTemplates",
+	//   "request": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "response": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.delete":
+
+type ProjectsLocationsWorkflowTemplatesDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a workflow template. It does not cancel in-progress
+// workflows.
+func (r *ProjectsLocationsWorkflowTemplatesService) Delete(name string) *ProjectsLocationsWorkflowTemplatesDeleteCall {
+	c := &ProjectsLocationsWorkflowTemplatesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Version sets the optional parameter "version": The version of
+// workflow template to delete. If specified, will only delete the
+// template if the current server version matches specified version.
+func (c *ProjectsLocationsWorkflowTemplatesDeleteCall) Version(version int64) *ProjectsLocationsWorkflowTemplatesDeleteCall {
+	c.urlParams_.Set("version", fmt.Sprint(version))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.delete" call.
+// Exactly one of *Empty or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsLocationsWorkflowTemplatesDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Empty{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a workflow template. It does not cancel in-progress workflows.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "dataproc.projects.locations.workflowTemplates.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The \"resource name\" of the workflow template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "version": {
+	//       "description": "Optional. The version of workflow template to delete. If specified, will only delete the template if the current server version matches specified version.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}",
+	//   "response": {
+	//     "$ref": "Empty"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.get":
+
+type ProjectsLocationsWorkflowTemplatesGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Retrieves the latest workflow template.Can retrieve previously
+// instantiated template by specifying optional version parameter.
+func (r *ProjectsLocationsWorkflowTemplatesService) Get(name string) *ProjectsLocationsWorkflowTemplatesGetCall {
+	c := &ProjectsLocationsWorkflowTemplatesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Version sets the optional parameter "version": The version of
+// workflow template to retrieve. Only previously instatiated versions
+// can be retrieved.If unspecified, retrieves the current version.
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) Version(version int64) *ProjectsLocationsWorkflowTemplatesGetCall {
+	c.urlParams_.Set("version", fmt.Sprint(version))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkflowTemplatesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.get" call.
+// Exactly one of *WorkflowTemplate or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkflowTemplate.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesGetCall) Do(opts ...googleapi.CallOption) (*WorkflowTemplate, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkflowTemplate{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves the latest workflow template.Can retrieve previously instantiated template by specifying optional version parameter.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.locations.workflowTemplates.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The \"resource name\" of the workflow template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "version": {
+	//       "description": "Optional. The version of workflow template to retrieve. Only previously instatiated versions can be retrieved.If unspecified, retrieves the current version.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}",
+	//   "response": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.getIamPolicy":
+
+type ProjectsLocationsWorkflowTemplatesGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns
+// an empty policy if the resource exists and does not have a policy
+// set.
+func (r *ProjectsLocationsWorkflowTemplatesService) GetIamPolicy(resource string) *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall {
+	c := &ProjectsLocationsWorkflowTemplatesGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.getIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsLocationsWorkflowTemplatesGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}:getIamPolicy",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.locations.workflowTemplates.getIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:getIamPolicy",
+	//   "response": {
+	//     "$ref": "Policy"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.instantiate":
+
+type ProjectsLocationsWorkflowTemplatesInstantiateCall struct {
+	s                                  *Service
+	name                               string
+	instantiateworkflowtemplaterequest *InstantiateWorkflowTemplateRequest
+	urlParams_                         gensupport.URLParams
+	ctx_                               context.Context
+	header_                            http.Header
+}
+
+// Instantiate: Instantiates a template and begins execution.The
+// returned Operation can be used to track execution of workflow by
+// polling operations.get. The Operation will complete when entire
+// workflow is finished.The running workflow can be aborted via
+// operations.cancel. This will cause any inflight jobs to be cancelled
+// and workflow-owned clusters to be deleted.The Operation.metadata will
+// be WorkflowMetadata.On successful completion, Operation.response will
+// be Empty.
+func (r *ProjectsLocationsWorkflowTemplatesService) Instantiate(name string, instantiateworkflowtemplaterequest *InstantiateWorkflowTemplateRequest) *ProjectsLocationsWorkflowTemplatesInstantiateCall {
+	c := &ProjectsLocationsWorkflowTemplatesInstantiateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.instantiateworkflowtemplaterequest = instantiateworkflowtemplaterequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesInstantiateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesInstantiateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.instantiateworkflowtemplaterequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}:instantiate")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.instantiate" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Instantiates a template and begins execution.The returned Operation can be used to track execution of workflow by polling operations.get. The Operation will complete when entire workflow is finished.The running workflow can be aborted via operations.cancel. This will cause any inflight jobs to be cancelled and workflow-owned clusters to be deleted.The Operation.metadata will be WorkflowMetadata.On successful completion, Operation.response will be Empty.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}:instantiate",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.locations.workflowTemplates.instantiate",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The \"resource name\" of the workflow template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}:instantiate",
+	//   "request": {
+	//     "$ref": "InstantiateWorkflowTemplateRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.instantiateInline":
+
+type ProjectsLocationsWorkflowTemplatesInstantiateInlineCall struct {
+	s                *Service
+	parent           string
+	workflowtemplate *WorkflowTemplate
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// InstantiateInline: Instantiates a template and begins execution.This
+// method is equivalent to executing the sequence
+// CreateWorkflowTemplate, InstantiateWorkflowTemplate,
+// DeleteWorkflowTemplate.The returned Operation can be used to track
+// execution of workflow by polling operations.get. The Operation will
+// complete when entire workflow is finished.The running workflow can be
+// aborted via operations.cancel. This will cause any inflight jobs to
+// be cancelled and workflow-owned clusters to be deleted.The
+// Operation.metadata will be WorkflowMetadata.On successful completion,
+// Operation.response will be Empty.
+func (r *ProjectsLocationsWorkflowTemplatesService) InstantiateInline(parent string, workflowtemplate *WorkflowTemplate) *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall {
+	c := &ProjectsLocationsWorkflowTemplatesInstantiateInlineCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workflowtemplate = workflowtemplate
+	return c
+}
+
+// InstanceId sets the optional parameter "instanceId": Deprecated.
+// Please use request_id field instead.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) InstanceId(instanceId string) *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall {
+	c.urlParams_.Set("instanceId", instanceId)
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": A tag that
+// prevents multiple concurrent workflow instances with the same tag
+// from running. This mitigates risk of concurrent instances started due
+// to retries.It is recommended to always set this value to a UUID
+// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag
+// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+// and hyphens (-). The maximum length is 40 characters.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) RequestId(requestId string) *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workflowtemplate)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+parent}/workflowTemplates:instantiateInline")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.instantiateInline" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesInstantiateInlineCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Instantiates a template and begins execution.This method is equivalent to executing the sequence CreateWorkflowTemplate, InstantiateWorkflowTemplate, DeleteWorkflowTemplate.The returned Operation can be used to track execution of workflow by polling operations.get. The Operation will complete when entire workflow is finished.The running workflow can be aborted via operations.cancel. This will cause any inflight jobs to be cancelled and workflow-owned clusters to be deleted.The Operation.metadata will be WorkflowMetadata.On successful completion, Operation.response will be Empty.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates:instantiateInline",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.locations.workflowTemplates.instantiateInline",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "instanceId": {
+	//       "description": "Deprecated. Please use request_id field instead.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The \"resource name\" of the workflow template region, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "Optional. A tag that prevents multiple concurrent workflow instances with the same tag from running. This mitigates risk of concurrent instances started due to retries.It is recommended to always set this value to a UUID (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag must contain only letters (a-z, A-Z), numbers (0-9), underscores (_), and hyphens (-). The maximum length is 40 characters.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+parent}/workflowTemplates:instantiateInline",
+	//   "request": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.list":
+
+type ProjectsLocationsWorkflowTemplatesListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists workflows that match the specified filter in the request.
+func (r *ProjectsLocationsWorkflowTemplatesService) List(parent string) *ProjectsLocationsWorkflowTemplatesListCall {
+	c := &ProjectsLocationsWorkflowTemplatesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of results to return in each response.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) PageSize(pageSize int64) *ProjectsLocationsWorkflowTemplatesListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The page token,
+// returned by a previous call, to request the next page of results.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) PageToken(pageToken string) *ProjectsLocationsWorkflowTemplatesListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkflowTemplatesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+parent}/workflowTemplates")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.list" call.
+// Exactly one of *ListWorkflowTemplatesResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *ListWorkflowTemplatesResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) Do(opts ...googleapi.CallOption) (*ListWorkflowTemplatesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListWorkflowTemplatesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists workflows that match the specified filter in the request.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.locations.workflowTemplates.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "Optional. The maximum number of results to return in each response.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "Optional. The page token, returned by a previous call, to request the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The \"resource name\" of the region, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+parent}/workflowTemplates",
+	//   "response": {
+	//     "$ref": "ListWorkflowTemplatesResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsWorkflowTemplatesListCall) Pages(ctx context.Context, f func(*ListWorkflowTemplatesResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.setIamPolicy":
+
+type ProjectsLocationsWorkflowTemplatesSetIamPolicyCall struct {
+	s                   *Service
+	resource            string
+	setiampolicyrequest *SetIamPolicyRequest
+	urlParams_          gensupport.URLParams
+	ctx_                context.Context
+	header_             http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified
+// resource. Replaces any existing policy.
+func (r *ProjectsLocationsWorkflowTemplatesService) SetIamPolicy(resource string, setiampolicyrequest *SetIamPolicyRequest) *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall {
+	c := &ProjectsLocationsWorkflowTemplatesSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.setiampolicyrequest = setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.setIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsLocationsWorkflowTemplatesSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}:setIamPolicy",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.locations.workflowTemplates.setIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:setIamPolicy",
+	//   "request": {
+	//     "$ref": "SetIamPolicyRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Policy"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.testIamPermissions":
+
+type ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall struct {
+	s                         *Service
+	resource                  string
+	testiampermissionsrequest *TestIamPermissionsRequest
+	urlParams_                gensupport.URLParams
+	ctx_                      context.Context
+	header_                   http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the
+// specified resource. If the resource does not exist, this will return
+// an empty set of permissions, not a NOT_FOUND error.Note: This
+// operation is designed to be used for building permission-aware UIs
+// and command-line tools, not for authorization checking. This
+// operation may "fail open" without warning.
+func (r *ProjectsLocationsWorkflowTemplatesService) TestIamPermissions(resource string, testiampermissionsrequest *TestIamPermissionsRequest) *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall {
+	c := &ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.testiampermissionsrequest = testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.testIamPermissions" call.
+// Exactly one of *TestIamPermissionsResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *TestIamPermissionsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a NOT_FOUND error.Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}:testIamPermissions",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.locations.workflowTemplates.testIamPermissions",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:testIamPermissions",
+	//   "request": {
+	//     "$ref": "TestIamPermissionsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "TestIamPermissionsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.locations.workflowTemplates.update":
+
+type ProjectsLocationsWorkflowTemplatesUpdateCall struct {
+	s                *Service
+	name             string
+	workflowtemplate *WorkflowTemplate
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// Update: Updates (replaces) workflow template. The updated template
+// must contain version that matches the current server version.
+func (r *ProjectsLocationsWorkflowTemplatesService) Update(name string, workflowtemplate *WorkflowTemplate) *ProjectsLocationsWorkflowTemplatesUpdateCall {
+	c := &ProjectsLocationsWorkflowTemplatesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.workflowtemplate = workflowtemplate
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkflowTemplatesUpdateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkflowTemplatesUpdateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkflowTemplatesUpdateCall) Context(ctx context.Context) *ProjectsLocationsWorkflowTemplatesUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkflowTemplatesUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkflowTemplatesUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workflowtemplate)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("PUT", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.locations.workflowTemplates.update" call.
+// Exactly one of *WorkflowTemplate or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkflowTemplate.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkflowTemplatesUpdateCall) Do(opts ...googleapi.CallOption) (*WorkflowTemplate, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkflowTemplate{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates (replaces) workflow template. The updated template must contain version that matches the current server version.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/locations/{locationsId}/workflowTemplates/{workflowTemplatesId}",
+	//   "httpMethod": "PUT",
+	//   "id": "dataproc.projects.locations.workflowTemplates.update",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Output only. The \"resource name\" of the template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}",
+	//   "request": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "response": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
 }
 
 // method id "dataproc.projects.regions.clusters.create":
@@ -2211,6 +4573,20 @@ func (r *ProjectsRegionsClustersService) Create(projectId string, region string,
 	c.projectId = projectId
 	c.region = region
 	c.cluster = cluster
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": A unique id used
+// to identify the request. If the server receives two
+// CreateClusterRequest requests with the same id, then the second
+// request will be ignored and the first google.longrunning.Operation
+// created and stored in the backend is returned.It is recommended to
+// always set this value to a UUID
+// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id
+// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+// and hyphens (-). The maximum length is 40 characters.
+func (c *ProjectsRegionsClustersCreateCall) RequestId(requestId string) *ProjectsRegionsClustersCreateCall {
+	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
@@ -2252,6 +4628,7 @@ func (c *ProjectsRegionsClustersCreateCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/clusters")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -2296,7 +4673,7 @@ func (c *ProjectsRegionsClustersCreateCall) Do(opts ...googleapi.CallOption) (*O
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2320,6 +4697,11 @@ func (c *ProjectsRegionsClustersCreateCall) Do(opts ...googleapi.CallOption) (*O
 	//       "description": "Required. The Cloud Dataproc region in which to handle the request.",
 	//       "location": "path",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "Optional. A unique id used to identify the request. If the server receives two CreateClusterRequest requests with the same id, then the second request will be ignored and the first google.longrunning.Operation created and stored in the backend is returned.It is recommended to always set this value to a UUID (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id must contain only letters (a-z, A-Z), numbers (0-9), underscores (_), and hyphens (-). The maximum length is 40 characters.",
+	//       "location": "query",
 	//       "type": "string"
 	//     }
 	//   },
@@ -2358,6 +4740,28 @@ func (r *ProjectsRegionsClustersService) Delete(projectId string, region string,
 	return c
 }
 
+// ClusterUuid sets the optional parameter "clusterUuid": Specifying the
+// cluster_uuid means the RPC should fail (with error NOT_FOUND) if
+// cluster with specified UUID does not exist.
+func (c *ProjectsRegionsClustersDeleteCall) ClusterUuid(clusterUuid string) *ProjectsRegionsClustersDeleteCall {
+	c.urlParams_.Set("clusterUuid", clusterUuid)
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": A unique id used
+// to identify the request. If the server receives two
+// DeleteClusterRequest requests with the same id, then the second
+// request will be ignored and the first google.longrunning.Operation
+// created and stored in the backend is returned.It is recommended to
+// always set this value to a UUID
+// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id
+// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+// and hyphens (-). The maximum length is 40 characters.
+func (c *ProjectsRegionsClustersDeleteCall) RequestId(requestId string) *ProjectsRegionsClustersDeleteCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
@@ -2391,6 +4795,7 @@ func (c *ProjectsRegionsClustersDeleteCall) doRequest(alt string) (*http.Respons
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/clusters/{clusterName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -2436,7 +4841,7 @@ func (c *ProjectsRegionsClustersDeleteCall) Do(opts ...googleapi.CallOption) (*O
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2457,6 +4862,11 @@ func (c *ProjectsRegionsClustersDeleteCall) Do(opts ...googleapi.CallOption) (*O
 	//       "required": true,
 	//       "type": "string"
 	//     },
+	//     "clusterUuid": {
+	//       "description": "Optional. Specifying the cluster_uuid means the RPC should fail (with error NOT_FOUND) if cluster with specified UUID does not exist.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "projectId": {
 	//       "description": "Required. The ID of the Google Cloud Platform project that the cluster belongs to.",
 	//       "location": "path",
@@ -2467,6 +4877,11 @@ func (c *ProjectsRegionsClustersDeleteCall) Do(opts ...googleapi.CallOption) (*O
 	//       "description": "Required. The Cloud Dataproc region in which to handle the request.",
 	//       "location": "path",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "Optional. A unique id used to identify the request. If the server receives two DeleteClusterRequest requests with the same id, then the second request will be ignored and the first google.longrunning.Operation created and stored in the backend is returned.It is recommended to always set this value to a UUID (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id must contain only letters (a-z, A-Z), numbers (0-9), underscores (_), and hyphens (-). The maximum length is 40 characters.",
+	//       "location": "query",
 	//       "type": "string"
 	//     }
 	//   },
@@ -2544,6 +4959,7 @@ func (c *ProjectsRegionsClustersDiagnoseCall) doRequest(alt string) (*http.Respo
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/clusters/{clusterName}:diagnose")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -2589,7 +5005,7 @@ func (c *ProjectsRegionsClustersDiagnoseCall) Do(opts ...googleapi.CallOption) (
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2705,6 +5121,7 @@ func (c *ProjectsRegionsClustersGetCall) doRequest(alt string) (*http.Response, 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/clusters/{clusterName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -2750,7 +5167,7 @@ func (c *ProjectsRegionsClustersGetCall) Do(opts ...googleapi.CallOption) (*Clus
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2861,6 +5278,7 @@ func (c *ProjectsRegionsClustersGetIamPolicyCall) doRequest(alt string) (*http.R
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:getIamPolicy")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -2904,7 +5322,7 @@ func (c *ProjectsRegionsClustersGetIamPolicyCall) Do(opts ...googleapi.CallOptio
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3034,6 +5452,7 @@ func (c *ProjectsRegionsClustersListCall) doRequest(alt string) (*http.Response,
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/clusters")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -3078,7 +5497,7 @@ func (c *ProjectsRegionsClustersListCall) Do(opts ...googleapi.CallOption) (*Lis
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3189,12 +5608,26 @@ func (c *ProjectsRegionsClustersPatchCall) GracefulDecommissionTimeout(gracefulD
 	return c
 }
 
+// RequestId sets the optional parameter "requestId": A unique id used
+// to identify the request. If the server receives two
+// UpdateClusterRequest requests with the same id, then the second
+// request will be ignored and the first google.longrunning.Operation
+// created and stored in the backend is returned.It is recommended to
+// always set this value to a UUID
+// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id
+// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+// and hyphens (-). The maximum length is 40 characters.
+func (c *ProjectsRegionsClustersPatchCall) RequestId(requestId string) *ProjectsRegionsClustersPatchCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
 // UpdateMask sets the optional parameter "updateMask": Required.
-// Specifies the path, relative to <code>Cluster</code>, of the field to
-// update. For example, to change the number of workers in a cluster to
-// 5, the <code>update_mask</code> parameter would be specified as
-// <code>config.worker_config.num_instances</code>, and the PATCH
-// request body would specify the new value, as follows:
+// Specifies the path, relative to Cluster, of the field to update. For
+// example, to change the number of workers in a cluster to 5, the
+// update_mask parameter would be specified as
+// config.worker_config.num_instances, and the PATCH request body would
+// specify the new value, as follows:
 // {
 //   "config":{
 //     "workerConfig":{
@@ -3203,9 +5636,9 @@ func (c *ProjectsRegionsClustersPatchCall) GracefulDecommissionTimeout(gracefulD
 //   }
 // }
 // Similarly, to change the number of preemptible workers in a cluster
-// to 5, the <code>update_mask</code> parameter would be
-// <code>config.secondary_worker_config.num_instances</code>, and the
-// PATCH request body would be set as follows:
+// to 5, the update_mask parameter would be
+// config.secondary_worker_config.num_instances, and the PATCH request
+// body would be set as follows:
 // {
 //   "config":{
 //     "secondaryWorkerConfig":{
@@ -3213,11 +5646,42 @@ func (c *ProjectsRegionsClustersPatchCall) GracefulDecommissionTimeout(gracefulD
 //     }
 //   }
 // }
-// <strong>Note:</strong> currently only some fields can be updated:
-// |Mask|Purpose| |labels|Updates labels|
-// |config.worker_config.num_instances|Resize primary worker group|
-// |config.secondary_worker_config.num_instances|Resize secondary worker
-// group|
+// <strong>Note:</strong> currently only the following fields can be
+// updated:
+// <table>
+// <tr>
+// <td><strong>Mask</strong></td><td><strong>Purpos
+// e</strong></td>
+// </tr>
+// <tr>
+// <td>labels</td><td>Updates
+// labels</td>
+// </tr>
+// <tr>
+// <td>config.worker_config.num_instances</td><td>
+// Resize primary worker
+// group</td>
+// </tr>
+// <tr>
+// <td>config.secondary_worker_config.num_instances
+// </td><td>Resize secondary worker
+// group</td>
+// </tr>
+// <tr>
+// <td>config.lifecycle_config.auto_delete_ttl</td>
+// <td>Reset MAX TTL
+// duration</td>
+// </tr>
+// <tr>
+// <td>config.lifecycle_config.auto_delete_time<
+// /td><td>Update MAX TTL deletion
+// timestamp</td>
+// </tr>
+// <tr>
+// <td>config.lifecycle_config.idle_delete_ttl<
+// /td><td>Update Idle TTL duration</td>
+// </tr>
+// </table>
 func (c *ProjectsRegionsClustersPatchCall) UpdateMask(updateMask string) *ProjectsRegionsClustersPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
@@ -3261,6 +5725,7 @@ func (c *ProjectsRegionsClustersPatchCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/clusters/{clusterName}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -3306,7 +5771,7 @@ func (c *ProjectsRegionsClustersPatchCall) Do(opts ...googleapi.CallOption) (*Op
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3345,8 +5810,13 @@ func (c *ProjectsRegionsClustersPatchCall) Do(opts ...googleapi.CallOption) (*Op
 	//       "required": true,
 	//       "type": "string"
 	//     },
+	//     "requestId": {
+	//       "description": "Optional. A unique id used to identify the request. If the server receives two UpdateClusterRequest requests with the same id, then the second request will be ignored and the first google.longrunning.Operation created and stored in the backend is returned.It is recommended to always set this value to a UUID (https://en.wikipedia.org/wiki/Universally_unique_identifier).The id must contain only letters (a-z, A-Z), numbers (0-9), underscores (_), and hyphens (-). The maximum length is 40 characters.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "updateMask": {
-	//       "description": "Required. Specifies the path, relative to \u003ccode\u003eCluster\u003c/code\u003e, of the field to update. For example, to change the number of workers in a cluster to 5, the \u003ccode\u003eupdate_mask\u003c/code\u003e parameter would be specified as \u003ccode\u003econfig.worker_config.num_instances\u003c/code\u003e, and the PATCH request body would specify the new value, as follows:\n{\n  \"config\":{\n    \"workerConfig\":{\n      \"numInstances\":\"5\"\n    }\n  }\n}\nSimilarly, to change the number of preemptible workers in a cluster to 5, the \u003ccode\u003eupdate_mask\u003c/code\u003e parameter would be \u003ccode\u003econfig.secondary_worker_config.num_instances\u003c/code\u003e, and the PATCH request body would be set as follows:\n{\n  \"config\":{\n    \"secondaryWorkerConfig\":{\n      \"numInstances\":\"5\"\n    }\n  }\n}\n\u003cstrong\u003eNote:\u003c/strong\u003e currently only some fields can be updated: |Mask|Purpose| |labels|Updates labels| |config.worker_config.num_instances|Resize primary worker group| |config.secondary_worker_config.num_instances|Resize secondary worker group|",
+	//       "description": "Required. Specifies the path, relative to Cluster, of the field to update. For example, to change the number of workers in a cluster to 5, the update_mask parameter would be specified as config.worker_config.num_instances, and the PATCH request body would specify the new value, as follows:\n{\n  \"config\":{\n    \"workerConfig\":{\n      \"numInstances\":\"5\"\n    }\n  }\n}\nSimilarly, to change the number of preemptible workers in a cluster to 5, the update_mask parameter would be config.secondary_worker_config.num_instances, and the PATCH request body would be set as follows:\n{\n  \"config\":{\n    \"secondaryWorkerConfig\":{\n      \"numInstances\":\"5\"\n    }\n  }\n}\n\u003cstrong\u003eNote:\u003c/strong\u003e currently only the following fields can be updated:\n\u003ctable\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003eMask\u003c/strong\u003e\u003c/td\u003e\u003ctd\u003e\u003cstrong\u003ePurpose\u003c/strong\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003elabels\u003c/td\u003e\u003ctd\u003eUpdates labels\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003econfig.worker_config.num_instances\u003c/td\u003e\u003ctd\u003eResize primary worker group\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003econfig.secondary_worker_config.num_instances\u003c/td\u003e\u003ctd\u003eResize secondary worker group\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003econfig.lifecycle_config.auto_delete_ttl\u003c/td\u003e\u003ctd\u003eReset MAX TTL duration\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003econfig.lifecycle_config.auto_delete_time\u003c/td\u003e\u003ctd\u003eUpdate MAX TTL deletion timestamp\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003econfig.lifecycle_config.idle_delete_ttl\u003c/td\u003e\u003ctd\u003eUpdate Idle TTL duration\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/table\u003e",
 	//       "format": "google-fieldmask",
 	//       "location": "query",
 	//       "type": "string"
@@ -3424,6 +5894,7 @@ func (c *ProjectsRegionsClustersSetIamPolicyCall) doRequest(alt string) (*http.R
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:setIamPolicy")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -3467,7 +5938,7 @@ func (c *ProjectsRegionsClustersSetIamPolicyCall) Do(opts ...googleapi.CallOptio
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3564,6 +6035,7 @@ func (c *ProjectsRegionsClustersTestIamPermissionsCall) doRequest(alt string) (*
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:testIamPermissions")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -3607,7 +6079,7 @@ func (c *ProjectsRegionsClustersTestIamPermissionsCall) Do(opts ...googleapi.Cal
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3705,6 +6177,7 @@ func (c *ProjectsRegionsJobsCancelCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/jobs/{jobId}:cancel")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -3750,7 +6223,7 @@ func (c *ProjectsRegionsJobsCancelCall) Do(opts ...googleapi.CallOption) (*Job, 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3853,6 +6326,7 @@ func (c *ProjectsRegionsJobsDeleteCall) doRequest(alt string) (*http.Response, e
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/jobs/{jobId}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -3898,7 +6372,7 @@ func (c *ProjectsRegionsJobsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4011,6 +6485,7 @@ func (c *ProjectsRegionsJobsGetCall) doRequest(alt string) (*http.Response, erro
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/jobs/{jobId}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -4056,7 +6531,7 @@ func (c *ProjectsRegionsJobsGetCall) Do(opts ...googleapi.CallOption) (*Job, err
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4101,6 +6576,148 @@ func (c *ProjectsRegionsJobsGetCall) Do(opts ...googleapi.CallOption) (*Job, err
 
 }
 
+// method id "dataproc.projects.regions.jobs.getIamPolicy":
+
+type ProjectsRegionsJobsGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns
+// an empty policy if the resource exists and does not have a policy
+// set.
+func (r *ProjectsRegionsJobsService) GetIamPolicy(resource string) *ProjectsRegionsJobsGetIamPolicyCall {
+	c := &ProjectsRegionsJobsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsJobsGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsRegionsJobsGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsRegionsJobsGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsRegionsJobsGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsJobsGetIamPolicyCall) Context(ctx context.Context) *ProjectsRegionsJobsGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsJobsGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsJobsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.jobs.getIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsJobsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/jobs/{jobsId}:getIamPolicy",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.regions.jobs.getIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/jobs/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:getIamPolicy",
+	//   "response": {
+	//     "$ref": "Policy"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
 // method id "dataproc.projects.regions.jobs.list":
 
 type ProjectsRegionsJobsListCall struct {
@@ -4133,7 +6750,7 @@ func (c *ProjectsRegionsJobsListCall) ClusterName(clusterName string) *ProjectsR
 // the jobs to list. Filters are case-sensitive and have the following
 // syntax:field = value AND field = value ...where field is status.state
 // or labels.[KEY], and [KEY] is a label key. value can be * to match
-// all values. status.state can be either ACTIVE or INACTIVE. Only the
+// all values. status.state can be either ACTIVE or NON_ACTIVE. Only the
 // logical AND operator is supported; space-separated items are treated
 // as having an implicit AND operator.Example filter:status.state =
 // ACTIVE AND labels.env = staging AND labels.starred = *
@@ -4143,8 +6760,8 @@ func (c *ProjectsRegionsJobsListCall) Filter(filter string) *ProjectsRegionsJobs
 }
 
 // JobStateMatcher sets the optional parameter "jobStateMatcher":
-// Specifies enumerated categories of jobs to list (default = match ALL
-// jobs).
+// Specifies enumerated categories of jobs to list. (default = match ALL
+// jobs).If filter is provided, jobStateMatcher will be ignored.
 //
 // Possible values:
 //   "ALL"
@@ -4215,6 +6832,7 @@ func (c *ProjectsRegionsJobsListCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/jobs")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -4259,7 +6877,7 @@ func (c *ProjectsRegionsJobsListCall) Do(opts ...googleapi.CallOption) (*ListJob
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4279,12 +6897,12 @@ func (c *ProjectsRegionsJobsListCall) Do(opts ...googleapi.CallOption) (*ListJob
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "Optional. A filter constraining the jobs to list. Filters are case-sensitive and have the following syntax:field = value AND field = value ...where field is status.state or labels.[KEY], and [KEY] is a label key. value can be * to match all values. status.state can be either ACTIVE or INACTIVE. Only the logical AND operator is supported; space-separated items are treated as having an implicit AND operator.Example filter:status.state = ACTIVE AND labels.env = staging AND labels.starred = *",
+	//       "description": "Optional. A filter constraining the jobs to list. Filters are case-sensitive and have the following syntax:field = value AND field = value ...where field is status.state or labels.[KEY], and [KEY] is a label key. value can be * to match all values. status.state can be either ACTIVE or NON_ACTIVE. Only the logical AND operator is supported; space-separated items are treated as having an implicit AND operator.Example filter:status.state = ACTIVE AND labels.env = staging AND labels.starred = *",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "jobStateMatcher": {
-	//       "description": "Optional. Specifies enumerated categories of jobs to list (default = match ALL jobs).",
+	//       "description": "Optional. Specifies enumerated categories of jobs to list. (default = match ALL jobs).If filter is provided, jobStateMatcher will be ignored.",
 	//       "enum": [
 	//         "ALL",
 	//         "ACTIVE",
@@ -4422,6 +7040,7 @@ func (c *ProjectsRegionsJobsPatchCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/jobs/{jobId}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -4467,7 +7086,7 @@ func (c *ProjectsRegionsJobsPatchCall) Do(opts ...googleapi.CallOption) (*Job, e
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4513,6 +7132,143 @@ func (c *ProjectsRegionsJobsPatchCall) Do(opts ...googleapi.CallOption) (*Job, e
 	//   },
 	//   "response": {
 	//     "$ref": "Job"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.jobs.setIamPolicy":
+
+type ProjectsRegionsJobsSetIamPolicyCall struct {
+	s                   *Service
+	resource            string
+	setiampolicyrequest *SetIamPolicyRequest
+	urlParams_          gensupport.URLParams
+	ctx_                context.Context
+	header_             http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified
+// resource. Replaces any existing policy.
+func (r *ProjectsRegionsJobsService) SetIamPolicy(resource string, setiampolicyrequest *SetIamPolicyRequest) *ProjectsRegionsJobsSetIamPolicyCall {
+	c := &ProjectsRegionsJobsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.setiampolicyrequest = setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsJobsSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsRegionsJobsSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsJobsSetIamPolicyCall) Context(ctx context.Context) *ProjectsRegionsJobsSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsJobsSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsJobsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.jobs.setIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsJobsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/jobs/{jobsId}:setIamPolicy",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.jobs.setIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/jobs/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:setIamPolicy",
+	//   "request": {
+	//     "$ref": "SetIamPolicyRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Policy"
 	//   },
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/cloud-platform"
@@ -4580,6 +7336,7 @@ func (c *ProjectsRegionsJobsSubmitCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/projects/{projectId}/regions/{region}/jobs:submit")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -4624,7 +7381,7 @@ func (c *ProjectsRegionsJobsSubmitCall) Do(opts ...googleapi.CallOption) (*Job, 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4657,6 +7414,147 @@ func (c *ProjectsRegionsJobsSubmitCall) Do(opts ...googleapi.CallOption) (*Job, 
 	//   },
 	//   "response": {
 	//     "$ref": "Job"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.jobs.testIamPermissions":
+
+type ProjectsRegionsJobsTestIamPermissionsCall struct {
+	s                         *Service
+	resource                  string
+	testiampermissionsrequest *TestIamPermissionsRequest
+	urlParams_                gensupport.URLParams
+	ctx_                      context.Context
+	header_                   http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the
+// specified resource. If the resource does not exist, this will return
+// an empty set of permissions, not a NOT_FOUND error.Note: This
+// operation is designed to be used for building permission-aware UIs
+// and command-line tools, not for authorization checking. This
+// operation may "fail open" without warning.
+func (r *ProjectsRegionsJobsService) TestIamPermissions(resource string, testiampermissionsrequest *TestIamPermissionsRequest) *ProjectsRegionsJobsTestIamPermissionsCall {
+	c := &ProjectsRegionsJobsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.testiampermissionsrequest = testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsJobsTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsRegionsJobsTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsJobsTestIamPermissionsCall) Context(ctx context.Context) *ProjectsRegionsJobsTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsJobsTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsJobsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.jobs.testIamPermissions" call.
+// Exactly one of *TestIamPermissionsResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *TestIamPermissionsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsJobsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a NOT_FOUND error.Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/jobs/{jobsId}:testIamPermissions",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.jobs.testIamPermissions",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/jobs/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:testIamPermissions",
+	//   "request": {
+	//     "$ref": "TestIamPermissionsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "TestIamPermissionsResponse"
 	//   },
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/cloud-platform"
@@ -4724,6 +7622,7 @@ func (c *ProjectsRegionsOperationsCancelCall) doRequest(alt string) (*http.Respo
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}:cancel")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -4767,7 +7666,7 @@ func (c *ProjectsRegionsOperationsCancelCall) Do(opts ...googleapi.CallOption) (
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4852,6 +7751,7 @@ func (c *ProjectsRegionsOperationsDeleteCall) doRequest(alt string) (*http.Respo
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -4895,7 +7795,7 @@ func (c *ProjectsRegionsOperationsDeleteCall) Do(opts ...googleapi.CallOption) (
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4993,6 +7893,7 @@ func (c *ProjectsRegionsOperationsGetCall) doRequest(alt string) (*http.Response
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -5036,7 +7937,7 @@ func (c *ProjectsRegionsOperationsGetCall) Do(opts ...googleapi.CallOption) (*Op
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5060,6 +7961,148 @@ func (c *ProjectsRegionsOperationsGetCall) Do(opts ...googleapi.CallOption) (*Op
 	//   "path": "v1beta2/{+name}",
 	//   "response": {
 	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.operations.getIamPolicy":
+
+type ProjectsRegionsOperationsGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns
+// an empty policy if the resource exists and does not have a policy
+// set.
+func (r *ProjectsRegionsOperationsService) GetIamPolicy(resource string) *ProjectsRegionsOperationsGetIamPolicyCall {
+	c := &ProjectsRegionsOperationsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsOperationsGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsRegionsOperationsGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsRegionsOperationsGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsRegionsOperationsGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsOperationsGetIamPolicyCall) Context(ctx context.Context) *ProjectsRegionsOperationsGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsOperationsGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsOperationsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.operations.getIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsOperationsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/operations/{operationsId}:getIamPolicy",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.regions.operations.getIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:getIamPolicy",
+	//   "response": {
+	//     "$ref": "Policy"
 	//   },
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/cloud-platform"
@@ -5162,6 +8205,7 @@ func (c *ProjectsRegionsOperationsListCall) doRequest(alt string) (*http.Respons
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -5205,7 +8249,7 @@ func (c *ProjectsRegionsOperationsListCall) Do(opts ...googleapi.CallOption) (*L
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5272,4 +8316,1774 @@ func (c *ProjectsRegionsOperationsListCall) Pages(ctx context.Context, f func(*L
 		}
 		c.PageToken(x.NextPageToken)
 	}
+}
+
+// method id "dataproc.projects.regions.operations.setIamPolicy":
+
+type ProjectsRegionsOperationsSetIamPolicyCall struct {
+	s                   *Service
+	resource            string
+	setiampolicyrequest *SetIamPolicyRequest
+	urlParams_          gensupport.URLParams
+	ctx_                context.Context
+	header_             http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified
+// resource. Replaces any existing policy.
+func (r *ProjectsRegionsOperationsService) SetIamPolicy(resource string, setiampolicyrequest *SetIamPolicyRequest) *ProjectsRegionsOperationsSetIamPolicyCall {
+	c := &ProjectsRegionsOperationsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.setiampolicyrequest = setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsOperationsSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsRegionsOperationsSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsOperationsSetIamPolicyCall) Context(ctx context.Context) *ProjectsRegionsOperationsSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsOperationsSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsOperationsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.operations.setIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsOperationsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/operations/{operationsId}:setIamPolicy",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.operations.setIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:setIamPolicy",
+	//   "request": {
+	//     "$ref": "SetIamPolicyRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Policy"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.operations.testIamPermissions":
+
+type ProjectsRegionsOperationsTestIamPermissionsCall struct {
+	s                         *Service
+	resource                  string
+	testiampermissionsrequest *TestIamPermissionsRequest
+	urlParams_                gensupport.URLParams
+	ctx_                      context.Context
+	header_                   http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the
+// specified resource. If the resource does not exist, this will return
+// an empty set of permissions, not a NOT_FOUND error.Note: This
+// operation is designed to be used for building permission-aware UIs
+// and command-line tools, not for authorization checking. This
+// operation may "fail open" without warning.
+func (r *ProjectsRegionsOperationsService) TestIamPermissions(resource string, testiampermissionsrequest *TestIamPermissionsRequest) *ProjectsRegionsOperationsTestIamPermissionsCall {
+	c := &ProjectsRegionsOperationsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.testiampermissionsrequest = testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsOperationsTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsRegionsOperationsTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsOperationsTestIamPermissionsCall) Context(ctx context.Context) *ProjectsRegionsOperationsTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsOperationsTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsOperationsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.operations.testIamPermissions" call.
+// Exactly one of *TestIamPermissionsResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *TestIamPermissionsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsOperationsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a NOT_FOUND error.Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/operations/{operationsId}:testIamPermissions",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.operations.testIamPermissions",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:testIamPermissions",
+	//   "request": {
+	//     "$ref": "TestIamPermissionsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "TestIamPermissionsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.create":
+
+type ProjectsRegionsWorkflowTemplatesCreateCall struct {
+	s                *Service
+	parent           string
+	workflowtemplate *WorkflowTemplate
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// Create: Creates new workflow template.
+func (r *ProjectsRegionsWorkflowTemplatesService) Create(parent string, workflowtemplate *WorkflowTemplate) *ProjectsRegionsWorkflowTemplatesCreateCall {
+	c := &ProjectsRegionsWorkflowTemplatesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workflowtemplate = workflowtemplate
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesCreateCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesCreateCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workflowtemplate)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+parent}/workflowTemplates")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.create" call.
+// Exactly one of *WorkflowTemplate or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkflowTemplate.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesCreateCall) Do(opts ...googleapi.CallOption) (*WorkflowTemplate, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkflowTemplate{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates new workflow template.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.workflowTemplates.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The \"resource name\" of the region, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+parent}/workflowTemplates",
+	//   "request": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "response": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.delete":
+
+type ProjectsRegionsWorkflowTemplatesDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a workflow template. It does not cancel in-progress
+// workflows.
+func (r *ProjectsRegionsWorkflowTemplatesService) Delete(name string) *ProjectsRegionsWorkflowTemplatesDeleteCall {
+	c := &ProjectsRegionsWorkflowTemplatesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Version sets the optional parameter "version": The version of
+// workflow template to delete. If specified, will only delete the
+// template if the current server version matches specified version.
+func (c *ProjectsRegionsWorkflowTemplatesDeleteCall) Version(version int64) *ProjectsRegionsWorkflowTemplatesDeleteCall {
+	c.urlParams_.Set("version", fmt.Sprint(version))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesDeleteCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesDeleteCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.delete" call.
+// Exactly one of *Empty or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsWorkflowTemplatesDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Empty{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a workflow template. It does not cancel in-progress workflows.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "dataproc.projects.regions.workflowTemplates.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The \"resource name\" of the workflow template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "version": {
+	//       "description": "Optional. The version of workflow template to delete. If specified, will only delete the template if the current server version matches specified version.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}",
+	//   "response": {
+	//     "$ref": "Empty"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.get":
+
+type ProjectsRegionsWorkflowTemplatesGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Retrieves the latest workflow template.Can retrieve previously
+// instantiated template by specifying optional version parameter.
+func (r *ProjectsRegionsWorkflowTemplatesService) Get(name string) *ProjectsRegionsWorkflowTemplatesGetCall {
+	c := &ProjectsRegionsWorkflowTemplatesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Version sets the optional parameter "version": The version of
+// workflow template to retrieve. Only previously instatiated versions
+// can be retrieved.If unspecified, retrieves the current version.
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) Version(version int64) *ProjectsRegionsWorkflowTemplatesGetCall {
+	c.urlParams_.Set("version", fmt.Sprint(version))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) IfNoneMatch(entityTag string) *ProjectsRegionsWorkflowTemplatesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.get" call.
+// Exactly one of *WorkflowTemplate or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkflowTemplate.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesGetCall) Do(opts ...googleapi.CallOption) (*WorkflowTemplate, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkflowTemplate{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves the latest workflow template.Can retrieve previously instantiated template by specifying optional version parameter.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.regions.workflowTemplates.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The \"resource name\" of the workflow template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "version": {
+	//       "description": "Optional. The version of workflow template to retrieve. Only previously instatiated versions can be retrieved.If unspecified, retrieves the current version.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}",
+	//   "response": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.getIamPolicy":
+
+type ProjectsRegionsWorkflowTemplatesGetIamPolicyCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetIamPolicy: Gets the access control policy for a resource. Returns
+// an empty policy if the resource exists and does not have a policy
+// set.
+func (r *ProjectsRegionsWorkflowTemplatesService) GetIamPolicy(resource string) *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall {
+	c := &ProjectsRegionsWorkflowTemplatesGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall) IfNoneMatch(entityTag string) *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:getIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.getIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsWorkflowTemplatesGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}:getIamPolicy",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.regions.workflowTemplates.getIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:getIamPolicy",
+	//   "response": {
+	//     "$ref": "Policy"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.instantiate":
+
+type ProjectsRegionsWorkflowTemplatesInstantiateCall struct {
+	s                                  *Service
+	name                               string
+	instantiateworkflowtemplaterequest *InstantiateWorkflowTemplateRequest
+	urlParams_                         gensupport.URLParams
+	ctx_                               context.Context
+	header_                            http.Header
+}
+
+// Instantiate: Instantiates a template and begins execution.The
+// returned Operation can be used to track execution of workflow by
+// polling operations.get. The Operation will complete when entire
+// workflow is finished.The running workflow can be aborted via
+// operations.cancel. This will cause any inflight jobs to be cancelled
+// and workflow-owned clusters to be deleted.The Operation.metadata will
+// be WorkflowMetadata.On successful completion, Operation.response will
+// be Empty.
+func (r *ProjectsRegionsWorkflowTemplatesService) Instantiate(name string, instantiateworkflowtemplaterequest *InstantiateWorkflowTemplateRequest) *ProjectsRegionsWorkflowTemplatesInstantiateCall {
+	c := &ProjectsRegionsWorkflowTemplatesInstantiateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.instantiateworkflowtemplaterequest = instantiateworkflowtemplaterequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesInstantiateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesInstantiateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.instantiateworkflowtemplaterequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}:instantiate")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.instantiate" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Instantiates a template and begins execution.The returned Operation can be used to track execution of workflow by polling operations.get. The Operation will complete when entire workflow is finished.The running workflow can be aborted via operations.cancel. This will cause any inflight jobs to be cancelled and workflow-owned clusters to be deleted.The Operation.metadata will be WorkflowMetadata.On successful completion, Operation.response will be Empty.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}:instantiate",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.workflowTemplates.instantiate",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The \"resource name\" of the workflow template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}:instantiate",
+	//   "request": {
+	//     "$ref": "InstantiateWorkflowTemplateRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.instantiateInline":
+
+type ProjectsRegionsWorkflowTemplatesInstantiateInlineCall struct {
+	s                *Service
+	parent           string
+	workflowtemplate *WorkflowTemplate
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// InstantiateInline: Instantiates a template and begins execution.This
+// method is equivalent to executing the sequence
+// CreateWorkflowTemplate, InstantiateWorkflowTemplate,
+// DeleteWorkflowTemplate.The returned Operation can be used to track
+// execution of workflow by polling operations.get. The Operation will
+// complete when entire workflow is finished.The running workflow can be
+// aborted via operations.cancel. This will cause any inflight jobs to
+// be cancelled and workflow-owned clusters to be deleted.The
+// Operation.metadata will be WorkflowMetadata.On successful completion,
+// Operation.response will be Empty.
+func (r *ProjectsRegionsWorkflowTemplatesService) InstantiateInline(parent string, workflowtemplate *WorkflowTemplate) *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall {
+	c := &ProjectsRegionsWorkflowTemplatesInstantiateInlineCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workflowtemplate = workflowtemplate
+	return c
+}
+
+// InstanceId sets the optional parameter "instanceId": Deprecated.
+// Please use request_id field instead.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) InstanceId(instanceId string) *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall {
+	c.urlParams_.Set("instanceId", instanceId)
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": A tag that
+// prevents multiple concurrent workflow instances with the same tag
+// from running. This mitigates risk of concurrent instances started due
+// to retries.It is recommended to always set this value to a UUID
+// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag
+// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+// and hyphens (-). The maximum length is 40 characters.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) RequestId(requestId string) *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workflowtemplate)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+parent}/workflowTemplates:instantiateInline")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.instantiateInline" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesInstantiateInlineCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Instantiates a template and begins execution.This method is equivalent to executing the sequence CreateWorkflowTemplate, InstantiateWorkflowTemplate, DeleteWorkflowTemplate.The returned Operation can be used to track execution of workflow by polling operations.get. The Operation will complete when entire workflow is finished.The running workflow can be aborted via operations.cancel. This will cause any inflight jobs to be cancelled and workflow-owned clusters to be deleted.The Operation.metadata will be WorkflowMetadata.On successful completion, Operation.response will be Empty.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates:instantiateInline",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.workflowTemplates.instantiateInline",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "instanceId": {
+	//       "description": "Deprecated. Please use request_id field instead.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The \"resource name\" of the workflow template region, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "Optional. A tag that prevents multiple concurrent workflow instances with the same tag from running. This mitigates risk of concurrent instances started due to retries.It is recommended to always set this value to a UUID (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag must contain only letters (a-z, A-Z), numbers (0-9), underscores (_), and hyphens (-). The maximum length is 40 characters.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+parent}/workflowTemplates:instantiateInline",
+	//   "request": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.list":
+
+type ProjectsRegionsWorkflowTemplatesListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists workflows that match the specified filter in the request.
+func (r *ProjectsRegionsWorkflowTemplatesService) List(parent string) *ProjectsRegionsWorkflowTemplatesListCall {
+	c := &ProjectsRegionsWorkflowTemplatesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of results to return in each response.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) PageSize(pageSize int64) *ProjectsRegionsWorkflowTemplatesListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The page token,
+// returned by a previous call, to request the next page of results.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) PageToken(pageToken string) *ProjectsRegionsWorkflowTemplatesListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) IfNoneMatch(entityTag string) *ProjectsRegionsWorkflowTemplatesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+parent}/workflowTemplates")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.list" call.
+// Exactly one of *ListWorkflowTemplatesResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *ListWorkflowTemplatesResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) Do(opts ...googleapi.CallOption) (*ListWorkflowTemplatesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListWorkflowTemplatesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists workflows that match the specified filter in the request.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates",
+	//   "httpMethod": "GET",
+	//   "id": "dataproc.projects.regions.workflowTemplates.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "Optional. The maximum number of results to return in each response.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "Optional. The page token, returned by a previous call, to request the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The \"resource name\" of the region, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+parent}/workflowTemplates",
+	//   "response": {
+	//     "$ref": "ListWorkflowTemplatesResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsRegionsWorkflowTemplatesListCall) Pages(ctx context.Context, f func(*ListWorkflowTemplatesResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.setIamPolicy":
+
+type ProjectsRegionsWorkflowTemplatesSetIamPolicyCall struct {
+	s                   *Service
+	resource            string
+	setiampolicyrequest *SetIamPolicyRequest
+	urlParams_          gensupport.URLParams
+	ctx_                context.Context
+	header_             http.Header
+}
+
+// SetIamPolicy: Sets the access control policy on the specified
+// resource. Replaces any existing policy.
+func (r *ProjectsRegionsWorkflowTemplatesService) SetIamPolicy(resource string, setiampolicyrequest *SetIamPolicyRequest) *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall {
+	c := &ProjectsRegionsWorkflowTemplatesSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.setiampolicyrequest = setiampolicyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setiampolicyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:setIamPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.setIamPolicy" call.
+// Exactly one of *Policy or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsRegionsWorkflowTemplatesSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}:setIamPolicy",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.workflowTemplates.setIamPolicy",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:setIamPolicy",
+	//   "request": {
+	//     "$ref": "SetIamPolicyRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Policy"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.testIamPermissions":
+
+type ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall struct {
+	s                         *Service
+	resource                  string
+	testiampermissionsrequest *TestIamPermissionsRequest
+	urlParams_                gensupport.URLParams
+	ctx_                      context.Context
+	header_                   http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the
+// specified resource. If the resource does not exist, this will return
+// an empty set of permissions, not a NOT_FOUND error.Note: This
+// operation is designed to be used for building permission-aware UIs
+// and command-line tools, not for authorization checking. This
+// operation may "fail open" without warning.
+func (r *ProjectsRegionsWorkflowTemplatesService) TestIamPermissions(resource string, testiampermissionsrequest *TestIamPermissionsRequest) *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall {
+	c := &ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.testiampermissionsrequest = testiampermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testiampermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+resource}:testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.testIamPermissions" call.
+// Exactly one of *TestIamPermissionsResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *TestIamPermissionsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestIamPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &TestIamPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a NOT_FOUND error.Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}:testIamPermissions",
+	//   "httpMethod": "POST",
+	//   "id": "dataproc.projects.regions.workflowTemplates.testIamPermissions",
+	//   "parameterOrder": [
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "resource": {
+	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+resource}:testIamPermissions",
+	//   "request": {
+	//     "$ref": "TestIamPermissionsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "TestIamPermissionsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "dataproc.projects.regions.workflowTemplates.update":
+
+type ProjectsRegionsWorkflowTemplatesUpdateCall struct {
+	s                *Service
+	name             string
+	workflowtemplate *WorkflowTemplate
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// Update: Updates (replaces) workflow template. The updated template
+// must contain version that matches the current server version.
+func (r *ProjectsRegionsWorkflowTemplatesService) Update(name string, workflowtemplate *WorkflowTemplate) *ProjectsRegionsWorkflowTemplatesUpdateCall {
+	c := &ProjectsRegionsWorkflowTemplatesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.workflowtemplate = workflowtemplate
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsRegionsWorkflowTemplatesUpdateCall) Fields(s ...googleapi.Field) *ProjectsRegionsWorkflowTemplatesUpdateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsRegionsWorkflowTemplatesUpdateCall) Context(ctx context.Context) *ProjectsRegionsWorkflowTemplatesUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsRegionsWorkflowTemplatesUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsRegionsWorkflowTemplatesUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workflowtemplate)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta2/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("PUT", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "dataproc.projects.regions.workflowTemplates.update" call.
+// Exactly one of *WorkflowTemplate or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkflowTemplate.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsRegionsWorkflowTemplatesUpdateCall) Do(opts ...googleapi.CallOption) (*WorkflowTemplate, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkflowTemplate{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates (replaces) workflow template. The updated template must contain version that matches the current server version.",
+	//   "flatPath": "v1beta2/projects/{projectsId}/regions/{regionsId}/workflowTemplates/{workflowTemplatesId}",
+	//   "httpMethod": "PUT",
+	//   "id": "dataproc.projects.regions.workflowTemplates.update",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Output only. The \"resource name\" of the template, as described in https://cloud.google.com/apis/design/resource_names of the form projects/{project_id}/regions/{region}/workflowTemplates/{template_id}",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/regions/[^/]+/workflowTemplates/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta2/{+name}",
+	//   "request": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "response": {
+	//     "$ref": "WorkflowTemplate"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
 }
