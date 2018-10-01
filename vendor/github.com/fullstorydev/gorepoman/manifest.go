@@ -49,21 +49,42 @@ type RepoList map[string]PackageData
 
 type PackageData struct {
 	GitRemote      string `json:"git-remote"`
+	TrackingBranch string `json:"git-remote-branch,omitempty"`
 	CurrentGitHash string `json:"current-version-git-hash"`
 	ContentHash    string `json:"content-hash"`
+}
+
+func (pd PackageData) TrackingRef() string {
+	if pd.TrackingBranch == "" {
+		return "HEAD"
+	}
+	return pd.TrackingBranch
 }
 
 func (manifest *RepoManifest) Repository(packageName string) PackageData {
 	return manifest.Repositories[packageName]
 }
 
-func (manifest *RepoManifest) SetRepository(packageName string, gitRemote string, gitHash string, contentHash string) {
-	manifest.Repositories[packageName] = PackageData{GitRemote: gitRemote, CurrentGitHash: gitHash, ContentHash: contentHash}
+func (manifest *RepoManifest) SetRepository(packageName string, gitRemote string, gitBranch string, gitHash string, contentHash string) {
+	manifest.Repositories[packageName] = PackageData{GitRemote: gitRemote, TrackingBranch: gitBranch, CurrentGitHash: gitHash, ContentHash: contentHash}
 }
 
 func (manifest *RepoManifest) HasRepository(packageName string) bool {
 	_, ok := manifest.Repositories[packageName]
 	return ok
+}
+
+func (manifest *RepoManifest) LikelyMatch(packageName string) string {
+	for pkg := range manifest.Repositories {
+		prefix := pkg
+		if !strings.HasSuffix(prefix, "/") {
+			prefix = prefix + "/"
+		}
+		if strings.HasPrefix(packageName, prefix) {
+			return pkg
+		}
+	}
+	return ""
 }
 
 func (manifest *RepoManifest) RemoveRepository(packageName string) {
@@ -85,137 +106,17 @@ func (manifest *RepoManifest) Each(f func(string, PackageData) error) error {
 	return nil
 }
 
-// Handler for all of the package reconcile functionality
-func (manifest *RepoManifest) PkgReconcile(pkgName string, args []string) error {
+func (manifest *RepoManifest) packageLocation(pkgName string) string {
+	return filepath.Join(manifest.srcDir, pkgName)
+}
+
+// Handler for the package reconcile functionality
+func (manifest *RepoManifest) PkgReconcile(pkgName string) error {
 	pkg, ok := manifest.Repositories[pkgName]
 	if !ok {
 		panic(fmt.Sprintf("package %s not found in manifest, should not get here", pkgName))
 	}
 
-	// Check to see if they passed a stage argument, or if we are just getting started
-	if len(args) < 3 {
-		return manifest.recStart(pkgName, pkg)
-	}
-
-	// Figure out which step of the reconcile process we are in
-	stage := strings.ToLower(args[2])
-	switch stage {
-	case "cancel":
-		return manifest.recCancel(pkgName, pkg)
-	case "done":
-		return manifest.recDone(pkgName, pkg)
-	default:
-		return errors.Errorf("You are trying to work with the reconcile mode, but the extra parameter %s is not recognized", stage)
-	}
-}
-
-// Handler for the completion of reconcile mode
-func (manifest *RepoManifest) recDone(pkgName string, pkg PackageData) error {
-	exportPath := filepath.Join(exportDir, pkgName)
-
-	// Make sure a reconcile has been started
-	if !Exists(filepath.Join(exportPath, ".git")) {
-		return errors.Errorf("No export directory found at %q, no reconcile was ever started for package %s", exportDir, pkgName)
-	}
-
-	exportGit := TempGit(exportPath)
-	// Make sure the export directory is clean.
-	if modified, err := exportGit.IsLocallyModified(""); err != nil {
-		return err
-	} else if modified {
-		return errors.Errorf("export directory %q has local modifications; cannot reconcile; please commit or revert your changes", exportPath)
-	}
-
-	// Grab the hash of the reconciled package
-	exportHash, err := exportGit.CommitHash()
-	if err != nil {
-		return err
-	}
-
-	// Fetch latest version of the package so we have an up to date ancestry tree
-	fmt.Println("Confirming ancestry between reconcile repo and upstream source")
-	remote, err := exportGit.Remote() // Possibly update the remote.
-	if err != nil {
-		return err
-	}
-
-	remoteVersion, err := exportGit.LsRemote(remote)
-	if err != nil {
-		return err
-	}
-
-	// Fetch the remote version into the temp repo so we can compute a merge base.
-	if _, err := exportGit.Command("fetch", remote, remoteVersion); err != nil {
-		return err
-	}
-
-	// now run merge base to determine the common ancestor between the reconciled repo and the remote.
-	mergeBase, err := exportGit.MergeBase(remoteVersion, exportHash)
-	if err != nil {
-		return ErrWithMessagef(err, "could not find common ancestor between local commit %s and remote head %s; please fix", exportHash, remoteVersion)
-	}
-
-	// The "clean" content hash for change detection is the content hash of mergeBase
-	mergeBaseContentHash, err := exportGit.TreeHash(mergeBase, "")
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Found common ancestor commit %s with content hash %s\n", mergeBase, mergeBaseContentHash)
-	fmt.Println("Copying reconcile directory back into your main repo")
-
-	pathInBaseRepo := filepath.Join(manifest.srcDir, pkgName)
-	if err := os.RemoveAll(pathInBaseRepo); err != nil {
-		return ErrWithMessagef(err, "Could not remove %q from main repo to finish reconcile", pathInBaseRepo)
-	}
-
-	// Copy the contents of our exported directory back into our main repo
-	if err := copyDir(exportPath, filepath.Dir(pathInBaseRepo)); err != nil {
-		return err
-	}
-	// Delete the .git subdir from our main repo.
-	if err := os.RemoveAll(filepath.Join(pathInBaseRepo, ".git")); err != nil {
-		return ErrWithMessagef(err, "Could not remove %q/.git from main repo to finish reconcile", pathInBaseRepo)
-	}
-	// git add the results so we're ready to commit
-	if _, err := BaseGit().Command("add", "-f", "--", pathInBaseRepo); err != nil {
-		return err
-	}
-
-	manifest.SetRepository(pkgName, pkg.GitRemote, mergeBase, mergeBaseContentHash)
-	fmt.Println("Writing new package manifest")
-	if err := manifest.writeManifest(); err != nil {
-		return err
-	}
-
-	// That's all done, manifest is rewritten, time to nuke the reconcile directory
-	if err := os.RemoveAll(exportPath); err != nil {
-		return errors.Wrapf(err, "Failed to clean up (remove) the reconcile directory at %s", exportPath)
-	}
-
-	fmt.Println("Reconcile complete!")
-	return nil
-}
-
-// Handler for canceling reconcile mode
-func (manifest *RepoManifest) recCancel(pkgName string, pkg PackageData) error {
-	// Path for this specific package to be exported to
-	exportPath := filepath.Join(exportDir, pkgName)
-
-	if !Exists(exportPath) {
-		return errors.Errorf("Unable to find a reconcile directory at %s - nothing to cancel. Did you ever start a reconcile for this package?", exportPath)
-	}
-
-	fmt.Println("Cancelling reconcile, cleaning up reconcile directory at " + exportPath)
-
-	if err := os.RemoveAll(exportPath); err != nil {
-		return errors.Wrapf(err, "Failed to remove reconcile working directory at %s", exportPath)
-	}
-
-	return nil
-}
-
-// Handler for starting reconcile mode
-func (manifest *RepoManifest) recStart(pkgName string, pkg PackageData) error {
 	// Check the status of the package to be upgraded
 	status, modified, err := manifest.packageStatus(pkgName)
 	if err != nil {
@@ -234,7 +135,7 @@ func (manifest *RepoManifest) recStart(pkgName string, pkg PackageData) error {
 	fmt.Printf("Prepping package %s for reconcile\n", pkgName)
 
 	// If the target package has local mods, abort.
-	pathInBaseRepo := filepath.Join(manifest.srcDir, pkgName)
+	pathInBaseRepo := manifest.packageLocation(pkgName)
 	if isModified, err := BaseGit().IsLocallyModified(pathInBaseRepo); err != nil {
 		return err
 	} else if isModified {
@@ -259,7 +160,12 @@ func (manifest *RepoManifest) recStart(pkgName string, pkg PackageData) error {
 
 	// Clone, but don't check out, since we'll copy in the content.
 	exportGit := TempGit(exportPath)
-	if _, err := exportGit.Command("clone", "--no-checkout", pkg.GitRemote, "."); err != nil {
+	params := []string{"clone", "--no-checkout"}
+	if pkg.TrackingBranch != "" {
+		params = append(params, "--branch", pkg.TrackingBranch)
+	}
+	params = append(params, pkg.GitRemote, ".")
+	if _, err := exportGit.Command(params...); err != nil {
 		return ErrWithMessagef(err, "failed to clone pkg %q from git remote %q", pkgName, pkg.GitRemote)
 	}
 
@@ -311,6 +217,128 @@ func (manifest *RepoManifest) recStart(pkgName string, pkg PackageData) error {
 	fmt.Printf("Successfully exported package %s to working directory:\n%s\n", pkgName, exportPath)
 	fmt.Println("Poke at it, shave the yaks, and then run this tool again with 'done' as a trailing param to move the changes back to our repo and strip the git metadata")
 	fmt.Println("If you for some reason want to cancel, run the tool again with 'cancel' as a trailing param")
+
+	return nil
+}
+
+// Handler for the completion of reconcile mode
+func (manifest *RepoManifest) PkgReconcileDone(pkgName string) error {
+	pkg, ok := manifest.Repositories[pkgName]
+	if !ok {
+		panic(fmt.Sprintf("package %s not found in manifest, should not get here", pkgName))
+	}
+
+	exportPath := filepath.Join(exportDir, pkgName)
+
+	// Make sure a reconcile has been started
+	if !Exists(filepath.Join(exportPath, ".git")) {
+		return errors.Errorf("No export directory found at %q, no reconcile was ever started for package %s", exportDir, pkgName)
+	}
+
+	exportGit := TempGit(exportPath)
+	// Make sure the export directory is clean.
+	if modified, err := exportGit.IsLocallyModified(""); err != nil {
+		return err
+	} else if modified {
+		return errors.Errorf("export directory %q has local modifications; cannot reconcile; please commit or revert your changes", exportPath)
+	}
+
+	// Grab the hash of the reconciled package
+	exportHash, err := exportGit.CommitHash()
+	if err != nil {
+		return err
+	}
+
+	// Fetch latest version of the package so we have an up to date ancestry tree
+	fmt.Println("Confirming ancestry between reconcile repo and upstream source")
+	remote, err := exportGit.Remote() // Possibly update the remote.
+	if err != nil {
+		return err
+	}
+	remoteBranch, err := exportGit.RemoteTrackingBranch() // Possibly update branch
+	if err != nil {
+		return err
+	}
+	if remoteBranch == "" {
+		// assume unchanged tracking branch
+		remoteBranch = pkg.TrackingBranch
+	}
+
+	lsBranch := remoteBranch
+	if lsBranch == "" {
+		lsBranch = pkg.TrackingRef()
+	}
+	remoteVersion, err := exportGit.LsRemote(remote, lsBranch)
+	if err != nil {
+		return err
+	}
+
+	// Fetch the remote version into the temp repo so we can compute a merge base.
+	if _, err := exportGit.Command("fetch", remote, remoteVersion); err != nil {
+		return err
+	}
+
+	// now run merge base to determine the common ancestor between the reconciled repo and the remote.
+	mergeBase, err := exportGit.MergeBase(remoteVersion, exportHash)
+	if err != nil {
+		return ErrWithMessagef(err, "could not find common ancestor between local commit %s and remote head %s; please fix", exportHash, remoteVersion)
+	}
+
+	// The "clean" content hash for change detection is the content hash of mergeBase
+	mergeBaseContentHash, err := exportGit.TreeHash(mergeBase, "")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Found common ancestor commit %s with content hash %s\n", mergeBase, mergeBaseContentHash)
+	fmt.Println("Copying reconcile directory back into your main repo")
+
+	pathInBaseRepo := manifest.packageLocation(pkgName)
+	if err := os.RemoveAll(pathInBaseRepo); err != nil {
+		return ErrWithMessagef(err, "Could not remove %q from main repo to finish reconcile", pathInBaseRepo)
+	}
+
+	// Copy the contents of our exported directory back into our main repo
+	if err := copyDir(exportPath, filepath.Dir(pathInBaseRepo)); err != nil {
+		return err
+	}
+	// Delete the .git subdir from our main repo.
+	if err := os.RemoveAll(filepath.Join(pathInBaseRepo, ".git")); err != nil {
+		return ErrWithMessagef(err, "Could not remove %q/.git from main repo to finish reconcile", pathInBaseRepo)
+	}
+	// git add the results so we're ready to commit
+	if _, err := BaseGit().Command("add", "-f", "--", pathInBaseRepo); err != nil {
+		return err
+	}
+
+	manifest.SetRepository(pkgName, remote, remoteBranch, mergeBase, mergeBaseContentHash)
+	fmt.Println("Writing new package manifest")
+	if err := manifest.writeManifest(); err != nil {
+		return err
+	}
+
+	// That's all done, manifest is rewritten, time to nuke the reconcile directory
+	if err := os.RemoveAll(exportPath); err != nil {
+		return errors.Wrapf(err, "Failed to clean up (remove) the reconcile directory at %s", exportPath)
+	}
+
+	fmt.Println("Reconcile complete!")
+	return nil
+}
+
+// Handler for canceling reconcile mode
+func (manifest *RepoManifest) PkgReconcileCancel(pkgName string) error {
+	// Path for this specific package to be exported to
+	exportPath := filepath.Join(exportDir, pkgName)
+
+	if !Exists(exportPath) {
+		return errors.Errorf("Unable to find a reconcile directory at %s - nothing to cancel. Did you ever start a reconcile for this package?", exportPath)
+	}
+
+	fmt.Println("Cancelling reconcile, cleaning up reconcile directory at " + exportPath)
+
+	if err := os.RemoveAll(exportPath); err != nil {
+		return errors.Wrapf(err, "Failed to remove reconcile working directory at %s", exportPath)
+	}
 
 	return nil
 }
@@ -408,12 +436,12 @@ func (manifest *RepoManifest) EachConcurrent(f func(pkgName string, pkg PackageD
 
 // List all of the packages that could use freshening
 func (manifest *RepoManifest) PkgListStale() error {
-	fmt.Println("Packages are stale if a newer version exists upstream")
-	fmt.Println("They should be brought up to date using 'gorepoman update <pkg>'")
+	fmt.Println("Packages are stale if a newer version exists upstream.")
+	fmt.Println("They should be brought up to date using 'gorepoman update <pkg>'.")
 
 	git := BaseGit()
 	results := manifest.EachConcurrent(func(pkgName string, pkg PackageData) (string, error) {
-		remoteVersion, err := git.LsRemote(pkg.GitRemote)
+		remoteVersion, err := git.LsRemote(pkg.GitRemote, pkg.TrackingRef())
 		if err != nil {
 			return "", err
 		}
@@ -437,11 +465,12 @@ func (manifest *RepoManifest) PkgListStale() error {
 
 // List all of the packages that have had local changes made to them
 func (manifest *RepoManifest) PkgListChanged() error {
-	fmt.Println("Modified packages have been changed locally and don't match their corresponding upstream git hash")
+	fmt.Println("Modified packages have been changed locally and don't match their corresponding")
+	fmt.Println("upstream git hash.")
 
 	git := BaseGit()
 	results := manifest.EachConcurrent(func(pkgName string, pkg PackageData) (string, error) {
-		pathInBaseRepo := filepath.Join(manifest.srcDir, pkgName)
+		pathInBaseRepo := manifest.packageLocation(pkgName)
 		isLocallyModified, err := git.IsLocallyModified(pathInBaseRepo)
 		if err != nil {
 			return "", err
@@ -488,7 +517,7 @@ func (manifest *RepoManifest) packageStatus(pkgName string) (string, bool, error
 		panic(fmt.Sprintf("package %s not found in manifest, should not get here", pkgName))
 	}
 
-	pathInBaseRepo := filepath.Join(manifest.srcDir, pkgName)
+	pathInBaseRepo := manifest.packageLocation(pkgName)
 
 	// If the target package has local mods, abort.
 	if isModified, err := BaseGit().IsLocallyModified(pathInBaseRepo); err != nil {
@@ -506,7 +535,7 @@ func (manifest *RepoManifest) packageStatus(pkgName string) (string, bool, error
 	}
 
 	// Now check for up-to-date ness.
-	remoteVersion, err := BaseGit().LsRemote(pkg.GitRemote)
+	remoteVersion, err := BaseGit().LsRemote(pkg.GitRemote, pkg.TrackingRef())
 	if err != nil {
 		return "", false, err
 	}
@@ -527,7 +556,7 @@ func (manifest *RepoManifest) packageStatus(pkgName string) (string, bool, error
 	if _, err := tmpGit.Command("init", "--bare"); err != nil {
 		return "", false, ErrWithMessagef(err, "could not initialize temp repo for package %q at %q", pkgName, tmpRepo)
 	}
-	if _, err := tmpGit.Command("fetch", pkg.GitRemote, "HEAD"); err != nil {
+	if _, err := tmpGit.Command("fetch", pkg.GitRemote, pkg.TrackingRef()); err != nil {
 		return "", false, err
 	}
 
@@ -550,7 +579,7 @@ func (manifest *RepoManifest) packageStatus(pkgName string) (string, bool, error
 // Returns the manifest data after it has been mutated because of the delete
 func (manifest *RepoManifest) PkgDelete(pkg string, writeManifest bool) error {
 	// It is in the manifest, so the package should exist in the repo - try and delete it
-	if err := os.RemoveAll(filepath.Join(manifest.srcDir, pkg)); err != nil {
+	if err := os.RemoveAll(manifest.packageLocation(pkg)); err != nil {
 		return errors.Wrapf(err, "Failed to delete package %s from the repository", pkg)
 	}
 
@@ -636,7 +665,7 @@ func (manifest *RepoManifest) installPackages() error {
 
 			fmt.Printf("Installing package %s ... \n", name)
 			// Create parent directory(ies) for the package (does nothing if it exists already)
-			if err := os.MkdirAll(filepath.Join(manifest.srcDir, filepath.Dir(name)), directoryPerm); err != nil {
+			if err := os.MkdirAll(manifest.packageLocation(filepath.Dir(name)), directoryPerm); err != nil {
 				return errors.Errorf("Failed to create parent directories for package %s", name)
 			}
 			// Remove git metadata from temp package
@@ -644,7 +673,7 @@ func (manifest *RepoManifest) installPackages() error {
 				return errors.Errorf("Failed to remove .git metadata from cloned package %s", name)
 			}
 			// Copy into new location in src
-			path := filepath.Join(manifest.srcDir, name)
+			path := manifest.packageLocation(name)
 			if err := os.Rename(filepath.Dir(newRepo), path); err != nil {
 				return errors.Wrapf(err, "Failed to move package %s from temporary directory to source folder", name)
 			}
@@ -655,11 +684,10 @@ func (manifest *RepoManifest) installPackages() error {
 
 			// We have made it this far without an error, theoretically everything succeeded, time to add the git hash
 			// to the map of packages
-			manifest.SetRepository(name, remote, newHash, contentHash)
+			manifest.SetRepository(name, remote, "", newHash, contentHash)
 			// Mark manifest for update
 			manifest.Stale = true
-			fmt.Printf("Successfuly installed package %s \n", name)
-
+			fmt.Printf("Successfully installed package %s \n", name)
 		}
 	}
 
@@ -672,12 +700,6 @@ func (manifest *RepoManifest) installPackages() error {
 // Helper function to display all of the packages currently in the manifest file
 // You can supply the list of packages if it is already loaded, or just nil, and it will be loaded here
 func (manifest *RepoManifest) PkgList() error {
-	if manifest == nil {
-		return errors.New("Unable to find a manifest file!")
-	}
-
-	fmt.Println("Packages currently in the repo/manifest:")
-
 	return manifest.Each(func(pkgName string, pkg PackageData) error {
 		fmt.Println(pkgName)
 		return nil
@@ -690,7 +712,7 @@ func goGet(pkg string, tmpDir string) error {
 	_, err := execBinary("go", []string{"GOPATH=" + tmpDir}, "get", pkg)
 	if err != nil {
 		// If we downloaded the package, but couldn't find any gocode in the root
-		if strings.Contains(err.Error(), "no buildable Go source files") {
+		if strings.Contains(err.Error(), "no Go files in") || strings.Contains(err.Error(), "no buildable Go source files") || strings.Contains(err.Error(), "build constraints exclude all Go files") || strings.Contains(err.Error(), "no non-test Go files in"){
 			fmt.Printf("No go source found in package root %s - probably a single repo that contains sub packages\n", pkg)
 			fmt.Println("The source was cloned successfully, should be fine")
 			return nil
@@ -701,12 +723,12 @@ func goGet(pkg string, tmpDir string) error {
 }
 
 func (manifest *RepoManifest) Path() string {
-	return filepath.Join(filepath.Dir(manifest.srcDir), manifestFile)
+	return filepath.Join(manifest.srcDir, manifestFile)
 }
 
-// Read in the Manifest file containing the packages we already have checked in
-// Return an empty manifest if there is no manifest file to be found
-func ReadManifest(srcDir string, tmpDir string) (*RepoManifest, error) {
+// Read in the Manifest file containing the packages we already have fetched.
+// Returns an error if there is no manifest file to be found.
+func ReadManifest(srcDir, tmpDir string) (*RepoManifest, error) {
 	manifest := RepoManifest{
 		Repositories: make(RepoList),
 		Stale:        false,
@@ -716,19 +738,36 @@ func ReadManifest(srcDir string, tmpDir string) (*RepoManifest, error) {
 
 	manifestPath := manifest.Path()
 	if !Exists(manifestPath) {
-		fmt.Printf("no existing manifest found, creating new empty manifest at %s\n", manifestPath)
-		if err := manifest.writeManifest(); err != nil {
-			return nil, ErrWithMessagef(err, "create not create new manifest at %s", manifestPath)
-		}
+		return nil, fmt.Errorf("No existing manifest found at %s\n", manifestPath)
 	}
 
 	bytes, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to read Manifest file")
+		return nil, errors.Wrap(err, "Failed to read manifest file")
 	}
 	// We wrote the JSON, so if it doesn't unmarshal it has probably been tampered with
 	if err := json.Unmarshal(bytes, &manifest.Repositories); err != nil {
-		return nil, errors.Wrap(err, "Failed to unmarshall JSON from Manifest, did the file get modified externally?")
+		return nil, errors.Wrap(err, "Failed to unmarshall JSON from manifest; did the file get modified externally?")
+	}
+
+	return &manifest, nil
+}
+
+// Create a new, empty Manifest file. Returns an error if a manifest file already exists.
+func CreateManifest(srcDir, tmpDir string) (*RepoManifest, error) {
+	manifest := RepoManifest{
+		Repositories: make(RepoList),
+		Stale:        false,
+		srcDir:       srcDir,
+		tmpDir:       tmpDir,
+	}
+
+	manifestPath := manifest.Path()
+	if Exists(manifestPath) {
+		return nil, fmt.Errorf("A manifest file already exists at %s", manifestPath)
+	}
+	if err := manifest.writeManifest(); err != nil {
+		return nil, ErrWithMessagef(err, "Could not create new manifest at %s", manifestPath)
 	}
 
 	return &manifest, nil

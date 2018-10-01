@@ -26,8 +26,13 @@ import (
 )
 
 var (
-	srcDir  string
-	tempDir = filepath.Join(os.TempDir(), "gorepoman")
+	manifestLocation = flag.String("d", "",
+		"`directory` that contains the manifest file to manipulate. If not set,\n" +
+		"    	defaults to GOREPOMAN_ROOT environment variable. If that is not set\n" +
+		"    	either, then GOPATH/src will be used.")
+
+	// TODO: make a flag for specifying a branch name, to use with the 'update'
+	// command (maybe 'fetch' and 'reconcile' commands, too?)
 )
 
 // NOTES
@@ -37,173 +42,318 @@ var (
 func main() {
 	// Define the usage of the command line utility
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "manage copies of external, upstream go dependencies/repositories")
-		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "gorepoman fetch <dep>                   - Download and install the specified dep")
-		fmt.Fprintln(os.Stderr, "gorepoman update <dep>                  - Attempt to freshen the specified dep")
-		fmt.Fprintln(os.Stderr, "gorepoman delete <dep>                  - Delete the specified dep")
-		fmt.Fprintln(os.Stderr, "gorepoman list                          - List all managed deps")
-		fmt.Fprintln(os.Stderr, "gorepoman list stale                    - List all out-of-date deps")
-		fmt.Fprintln(os.Stderr, "gorepoman list changed                  - List all deps with local changes")
-		fmt.Fprintln(os.Stderr, "gorepoman reconcile <dep> [cancel|done] - (advanced) Reconcile a locally-changed dep with the upstream")
-		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "<dep> is e.g. 'github.com/pkg/errors'")
+		os.Stderr.WriteString(
+`Manage copies of external, upstream go dependencies/repositories.
+
+gorepoman fetch <dep> [init]            - Download and install the specified dep
+gorepoman update <dep>                  - Attempt to freshen the specified dep
+gorepoman delete <dep>                  - Delete the specified dep
+gorepoman list                          - List all managed deps
+gorepoman list stale                    - List all out-of-date deps
+gorepoman list changed                  - List all deps with local changes
+gorepoman reconcile <dep> [cancel|done] - Reconcile a locally-changed dep with
+                                          the upstream repo
+
+<dep> is a Go package, e.g. 'github.com/pkg/errors'")
+
+When fetching a dep into a directory in which gorepoman has never been used
+before, use the init option. This will create the initial version of the
+gorepomanifest.json file. Otherwise, fetch requires the directory already
+contain a gorepomanifest.json file.
+
+All other operations require the directory have a gorepomanifest.json file.
+
+Flags must be passed before the action name. For example:
+    gorepoman -d some/package/vendor list
+Passing them after the action name will NOT work:
+    gorepoman list -d some/package/vendor
+
+Flags:`)
+		flag.PrintDefaults()
+		fmt.Fprintln(os.Stderr)
 	}
 
 	// Parse command line arguments
 	flag.Parse()
 
+	args := flag.Args()
+
 	// If no arguments were passed, display the help doc
-	if len(flag.Args()) == 0 {
+	if len(args) == 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if err := run(); err != nil {
+	action, args := args[0], args[1:]
+	var handler handlerFunc
+	switch strings.ToLower(action) {
+	case "list":
+		handler = listRepos
+	case "fetch":
+		handler = fetchRepo
+	case "update":
+		handler = updateRepo
+	case "delete":
+		handler = deleteRepo
+	case "reconcile":
+		handler = reconcileRepo
+	case "help":
+		flag.Usage()
+		return
+	default:
+		fmt.Fprintf(os.Stderr, "Unrecognized action %s - use 'gorepoman help' to see usage", action)
+		os.Exit(1)
+	}
+
+	// Create a temporary directory for us to work out of; we will want one no matter the action
+	tempDir := filepath.Join(os.TempDir(), "gorepoman")
+	os.RemoveAll(tempDir)
+	if err := os.Mkdir(tempDir, 0777); err != nil {
+		gorepoman.PrintError(os.Stderr, errors.Wrap(err, "Failed to create temporary working directory"))
+		os.Exit(1)
+	}
+	defer os.RemoveAll(tempDir)
+
+	srcDir, err := determineManifestLocation()
+	if err != nil {
+		gorepoman.PrintError(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	if err := handler(srcDir, tempDir, args); err != nil {
 		gorepoman.PrintError(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-// Wrapper for the code that we want to run, so that we can be sure we always gracefully exit and clean up temp
-func run() (err error) {
-	// Sanity check the system setup.
-	// 1) We should be in a git repo.
-	out, err := gorepoman.BaseGit().Command("rev-parse", "--show-toplevel")
+// handlerFunc implements a single action supported by gorepoman (e.g. "list", "update", etc).
+// It should first validate args, then construct a manifest, then perform the action.
+type handlerFunc func(srcDir, tempDir string, args []string) error
+
+func determineManifestLocation() (string, error) {
+	loc := os.Getenv("GOREPOMAN_ROOT")
+	if *manifestLocation != "" {
+		loc = *manifestLocation
+	} else if loc == "" {
+		goPath := os.Getenv("GOPATH")
+		if len(goPath) == 0 {
+			return "", fmt.Errorf("failed to determine default manifest directory: GOPATH is not set")
+		}
+		goPaths := strings.Split(goPath, string(os.PathListSeparator))
+		loc = filepath.Join(goPaths[0], "src")
+	}
+
+	loc, err := filepath.Abs(loc)
 	if err != nil {
-		return errors.WithMessage(err, "You do not appear to be inside of a git repo, this tool is meant to be used in a git repo")
+		return "", fmt.Errorf("failed to determine absolute path of manifest directory: %s", err)
 	}
-	gitRepoStr := strings.TrimSpace(out)
-	gitRepoPath, err := filepath.Abs(gitRepoStr)
+	loc = filepath.Clean(loc)
+
+	fi, err := os.Stat(loc)
 	if err != nil {
-		return errors.Wrapf(err, "Could not resolve current git repo %q into an absolute path", gitRepoStr)
-	}
-
-	// 2) GOPATH should be defined, and it should be a subdirectory of the git repo.
-	goPaths := filepath.SplitList(os.Getenv("GOPATH"))
-	if len(goPaths) == 0 {
-		return errors.New("GOPATH is not defined, please define it")
-	}
-	goPathStr := goPaths[0]
-	goPath, err := filepath.Abs(goPathStr)
-	if err != nil {
-		return errors.Wrapf(err, "Could not resolve first GOPATH etnry %q into an absolute path", goPathStr)
-	}
-
-	if !strings.HasPrefix(goPath, gitRepoPath) {
-		return errors.Errorf("GOPATH=%q is not a subdirectory of the current git repo %q; see README.md", goPath, gitRepoPath)
-	}
-
-	if !gorepoman.Exists(goPath) {
-		return errors.Errorf("GOPATH=%q does not exist; please fix", goPath)
-	}
-
-	// Check to make sure that the source folder exists
-	srcDir = filepath.Join(goPath, "src")
-	if !gorepoman.Exists(srcDir) {
-		if err := os.Mkdir(srcDir, 0777); err != nil {
-			return gorepoman.ErrWithMessagef(err, "directory %q does not exist, and we couldn't create it!", srcDir)
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("manifest location does not exist: %s", loc)
+		} else {
+			return "", fmt.Errorf("failed to stat manifest location %s: %s", loc, err)
 		}
 	}
-
-	// Create a temporary directory for us to work out of, we will want one no matter the action
-	os.RemoveAll(tempDir)
-	if err := os.Mkdir(tempDir, 0777); err != nil {
-		return errors.Wrap(err, "Failed to create temporary working directory")
+	if !fi.IsDir() {
+		return "", fmt.Errorf("manifest location %s must be a directory", loc)
 	}
-	defer os.RemoveAll(tempDir)
 
-	// Read in the package manifest
+	if filepath.Base(loc) != "vendor" && !isGoPathSrcDir(loc) {
+		return "", fmt.Errorf("manifest location must be named 'vendor' or be the 'src' sub-directory of GOPATH")
+	}
+
+	if *manifestLocation == "" {
+		// No location was specified, so we decided on one based on environment. So
+		// let's be helpful to the user and show them the directory we came up with.
+		fmt.Printf("Using manifest directory %s\n", loc)
+	}
+
+	return loc, nil
+}
+
+func isGoPathSrcDir(loc string) bool {
+	if filepath.Base(loc) != "src" {
+		return false
+	}
+	dirStat, err := os.Stat(filepath.Dir(loc))
+	if err != nil {
+		return false
+	}
+	goPath := os.Getenv("GOPATH")
+	for _, path := range strings.Split(goPath, string(os.PathListSeparator)) {
+		pathStat, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+		if os.SameFile(dirStat, pathStat) {
+			return true
+		}
+	}
+	return false
+}
+
+func fetchRepo(srcDir, tempDir string, args []string) error {
+	pkg, args, err := requirePackage(args)
+	if err != nil {
+		return err
+	}
+	option, err := getOption(args, "init")
+	if err != nil {
+		return err
+	}
+
+	var manifest *gorepoman.RepoManifest
+	if option == "init" {
+		manifest, err = gorepoman.CreateManifest(srcDir, tempDir)
+	} else {
+		manifest, err = gorepoman.ReadManifest(srcDir, tempDir)
+	}
+	if err != nil {
+		return err
+	}
+
+	return manifest.PkgFetch(pkg)
+}
+
+func listRepos(srcDir, tempDir string, args []string) error {
+	option, err := getOption(args, "stale", "changed")
+	if err != nil {
+		return err
+	}
+
 	manifest, err := gorepoman.ReadManifest(srcDir, tempDir)
 	if err != nil {
 		return err
 	}
 
-	// ---------- FINISH SETUP -----------
-
-	// Lets go to work!
-	return actionHandler(manifest, flag.Args())
+	switch option {
+	case "stale":
+		return manifest.PkgListStale()
+	case "changed":
+		return manifest.PkgListChanged()
+	default:
+		return manifest.PkgList()
+	}
 }
 
-func setOf(vals ...string) map[string]bool {
-	ret := map[string]bool{}
-	for _, v := range vals {
-		ret[v] = true
+func updateRepo(srcDir, tempDir string, args []string) error {
+	pkg, args, err := requirePackage(args)
+	if err != nil {
+		return err
 	}
-	return ret
+	if _, err = getOption(args); err != nil {
+		return err
+	}
+
+	manifest, err := gorepoman.ReadManifest(srcDir, tempDir)
+	if err != nil {
+		return err
+	}
+	if err := checkPackageExistsInManifest(manifest, pkg); err != nil {
+		return err
+	}
+
+	return manifest.PkgUpdate(pkg)
 }
 
-// General method to handle determining which action needs to be preformed
-func actionHandler(manifest *gorepoman.RepoManifest, args []string) error {
-	// Normalize the case of the action
-	action := strings.ToLower(args[0])
-
-	// List of actions we accept at the CLI
-	actions := setOf("fetch", "list", "update", "reconcile", "delete", "help")
-	options := setOf("done", "cancel", "stale", "changed")
-
-	// Confirm that the specified action is one we support
-	if !actions[action] {
-		return errors.Errorf("Unrecognized action %s - use 'gorepoman help' to see usage", action)
+func deleteRepo(srcDir, tempDir string, args []string) error {
+	pkg, args, err := requirePackage(args)
+	if err != nil {
+		return err
+	}
+	if _, err = getOption(args); err != nil {
+		return err
 	}
 
-	// Handle the help action
-	if action == "help" {
-		flag.Usage()
-		return nil
+	manifest, err := gorepoman.ReadManifest(srcDir, tempDir)
+	if err != nil {
+		return err
+	}
+	if err := checkPackageExistsInManifest(manifest, pkg); err != nil {
+		return err
 	}
 
-	// Handle the list action
-	if action == "list" {
-		if len(args) == 1 {
-			return manifest.PkgList()
-		} else if args[1] == "stale" {
-			return manifest.PkgListStale()
-		} else if args[1] == "changed" {
-			return manifest.PkgListChanged()
-		} else {
-			return errors.Errorf("Unrecognized argument to list: %s - Expecting stale or changed", args[1])
+	return manifest.PkgDelete(pkg, true)
+}
+
+func reconcileRepo(srcDir, tempDir string, args []string) error {
+	pkg, args, err := requirePackage(args)
+	if err != nil {
+		return err
+	}
+	if len(args) > 0 {
+		opt := strings.ToLower(args[0])
+		if (pkg == "cancel" || pkg == "done") && opt != "cancel" && opt != "done" {
+			// user specified package and option backwards; we'll allow it
+			pkg, args[0] = args[0], pkg
 		}
 	}
+	option, err := getOption(args, "cancel", "done")
+	if err != nil {
+		return err
+	}
 
-	// All of the other actions require at least one more parameter (the package to work with)
+	manifest, err := gorepoman.ReadManifest(srcDir, tempDir)
+	if err != nil {
+		return err
+	}
+	if err := checkPackageExistsInManifest(manifest, pkg); err != nil {
+		return err
+	}
+
+	switch option {
+	case "cancel":
+		return manifest.PkgReconcileCancel(pkg)
+	case "done":
+		return manifest.PkgReconcileDone(pkg)
+	default:
+		return manifest.PkgReconcile(pkg)
+	}
+}
+
+func requirePackage(args []string) (string, []string, error) {
+	if len(args) == 0 {
+		return "", nil, fmt.Errorf("You must specify a package.")
+	}
+	pkg, newArgs := args[0], args[1:]
+	pkg = strings.TrimRight(pkg, "/")
+	return pkg, newArgs, nil
+}
+
+func getOption(args []string, allowedOptions ...string) (string, error) {
+	if len(args) == 0 {
+		return "", nil
+	}
+	if len(allowedOptions) == 0 {
+		return "", fmt.Errorf("Unrecognized arguments: %v", strings.Join(args, " "))
+	}
 	if len(args) == 1 {
-		return errors.Errorf("Too few arguments for action %s - please specify a package", action)
+		// see if it's an allowed option
+		for _, opt := range allowedOptions {
+			if opt == args[0] {
+				return args[0], nil
+			}
+		}
 	}
-
-	// Trim leading and trailing slashes from provided package to put it in the standard format
-	pkg := strings.Trim(args[1], "/")
-
-	// If they have the options out of order
-	if options[pkg] || actions[pkg] {
-		fmt.Printf("You are trying to use the flag '%s' as a package name\n", pkg)
-		fmt.Println("Check the order of your parameters")
-		fmt.Println("")
-		flag.Usage()
-		return nil
+	for i, o := range allowedOptions {
+		allowedOptions[i] = fmt.Sprintf("%q", o)
 	}
+	return "", fmt.Errorf("Unrecognized arguments: %v\nExpecting %s or none", strings.Join(args, " "), strings.Join(allowedOptions, ", "))
+}
 
-	// Handle the fetch action
-	if action == "fetch" {
-		return manifest.PkgFetch(pkg)
-	}
-
-	// If the package isn't in our repo, let the user know
+func checkPackageExistsInManifest(manifest *gorepoman.RepoManifest, pkg string) error {
 	if !manifest.HasRepository(pkg) {
-		return errors.Errorf(`The package %s was not found in the manifest file
-Was it ever checked in in the first place?
-Or, the package you are looking for is actually a subpackage, and you need the name of the parent package`, pkg)
+		maybe := manifest.LikelyMatch(pkg)
+		if maybe == "" {
+			return fmt.Errorf(`The package %s was not found in the manifest file.
+Was it ever checked-in in the first place?`, pkg)
+		} else {
+			return fmt.Errorf(`The package %s was not found in the manifest file.
+Did you mean %s (which is present in manifest)?`, pkg, maybe)
+		}
 	}
-
-	// Handle the rest of the actions
-	switch action {
-	case "update":
-		return manifest.PkgUpdate(pkg)
-	case "reconcile":
-		return manifest.PkgReconcile(pkg, args)
-	case "delete":
-		return manifest.PkgDelete(pkg, true)
-	}
-
 	return nil
 }
