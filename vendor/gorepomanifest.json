@@ -66,8 +66,8 @@
  },
  "google.golang.org/genproto": {
   "git-remote": "https://github.com/google/go-genproto",
-  "current-version-git-hash": "1e559d0a00eef8a9a43151db4665280bd8dd5886",
-  "content-hash": "026c92ef6b538ba4477cd7037c418e7379186d96"
+  "current-version-git-hash": "c7e5094acea1ca1b899e2259d80a6b0f882f81f8",
+  "content-hash": "763e9895f02b4d9c896f60809385545d21ad89c6"
  },
  "google.golang.org/grpc": {
   "git-remote": "https://github.com/grpc/grpc-go",
