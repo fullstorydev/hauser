@@ -1951,7 +1951,11 @@ type Job struct {
 	// Languages](https://tools.ietf.org/html/bcp47){:
 	// class="external" target="_blank" }.
 	//
-	// The default value is `en-US`.
+	// If this field is unspecified and Job.description is present,
+	// detected
+	// language code based on Job.description is assigned,
+	// otherwise
+	// defaults to 'en_US'.
 	LanguageCode string `json:"languageCode,omitempty"`
 
 	// Name: Required during job update.
@@ -2359,32 +2363,33 @@ type JobQuery struct {
 	// the
 	// Job.custom_attributes marked as `filterable`.
 	//
-	// The syntax for this expression is a subset of Google SQL
-	// syntax.
+	// The syntax for this expression is a subset of SQL syntax.
 	//
-	// Supported operators are: =, !=, <, <=, >, >= where the left of the
-	// operator
-	// is a custom field key and the right of the operator is a number or
-	// string
-	// (surrounded by quotes) value.
-	//
-	// Supported functions are LOWER(<field_name>) to
-	// perform case insensitive match and EMPTY(<field_name>) to filter on
+	// Supported operators are: `=`, `!=`, `<`, `<=`, `>`, and `>=` where
 	// the
+	// left of the operator is a custom field key and the right of the
+	// operator
+	// is a number or a quoted string. You must escape backslash (\\)
+	// and
+	// quote (\") characters.
+	//
+	// Supported functions are `LOWER([field_name])` to
+	// perform a case insensitive match and `EMPTY([field_name])` to filter
+	// on the
 	// existence of a key.
 	//
 	// Boolean expressions (AND/OR/NOT) are supported up to 3 levels
 	// of
 	// nesting (for example, "((A AND B AND C) OR NOT D) AND E"), a maximum
 	// of 50
-	// comparisons/functions are allowed in the expression. The
+	// comparisons or functions are allowed in the expression. The
 	// expression
-	// must be < 2000 characters in length.
+	// must be < 3000 characters in length.
 	//
 	// Sample Query:
-	// (LOWER(driving_license)="class a" OR EMPTY(driving_license))
+	// `(LOWER(driving_license)="class \"a\"" OR EMPTY(driving_license))
 	// AND
-	// driving_years > 10
+	// driving_years > 10`
 	CustomAttributeFilter string `json:"customAttributeFilter,omitempty"`
 
 	// DisableSpellCheck: Optional.
@@ -3641,34 +3646,34 @@ type SearchJobsRequest struct {
 	// algorithms. Relevance thresholding of query results is only
 	// available
 	// with this ordering.
-	// * "posting_publish_time desc": By Job.posting_publish_time
+	// * "posting`_`publish`_`time desc": By Job.posting_publish_time
 	// descending.
-	// * "posting_update_time desc": By Job.posting_update_time
+	// * "posting`_`update`_`time desc": By Job.posting_update_time
 	// descending.
 	// * "title": By Job.title ascending.
 	// * "title desc": By Job.title descending.
-	// * "annualized_base_compensation": By
+	// * "annualized`_`base`_`compensation": By
 	// job's
 	// CompensationInfo.annualized_base_compensation_range ascending.
 	// Jobs
 	// whose annualized base compensation is unspecified are put at the end
 	// of
 	// search results.
-	// * "annualized_base_compensation desc": By
+	// * "annualized`_`base`_`compensation desc": By
 	// job's
 	// CompensationInfo.annualized_base_compensation_range descending.
 	// Jobs
 	// whose annualized base compensation is unspecified are put at the end
 	// of
 	// search results.
-	// * "annualized_total_compensation": By
+	// * "annualized`_`total`_`compensation": By
 	// job's
 	// CompensationInfo.annualized_total_compensation_range ascending.
 	// Jobs
 	// whose annualized base compensation is unspecified are put at the end
 	// of
 	// search results.
-	// * "annualized_total_compensation desc": By
+	// * "annualized`_`total`_`compensation desc": By
 	// job's
 	// CompensationInfo.annualized_total_compensation_range descending.
 	// Jobs
@@ -3825,7 +3830,7 @@ type SearchJobsResponse struct {
 	// TotalSize: The precise result count, which is available only if the
 	// client set
 	// enable_precise_result_size to `true` or if the response
-	// is the last page of results. Otherwise, the value will be `-1`.
+	// is the last page of results. Otherwise, the value is `-1`.
 	TotalSize int64 `json:"totalSize,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -4211,7 +4216,10 @@ func (c *ProjectsCompleteCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}:complete")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -4387,7 +4395,10 @@ func (c *ProjectsCompaniesCreateCall) doRequest(alt string) (*http.Response, err
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/companies")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -4517,7 +4528,10 @@ func (c *ProjectsCompaniesDeleteCall) doRequest(alt string) (*http.Response, err
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -4658,7 +4672,10 @@ func (c *ProjectsCompaniesGetCall) doRequest(alt string) (*http.Response, error)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -4826,7 +4843,10 @@ func (c *ProjectsCompaniesListCall) doRequest(alt string) (*http.Response, error
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/companies")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -5001,7 +5021,10 @@ func (c *ProjectsCompaniesPatchCall) doRequest(alt string) (*http.Response, erro
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -5138,7 +5161,10 @@ func (c *ProjectsJobsBatchDeleteCall) doRequest(alt string) (*http.Response, err
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/jobs:batchDelete")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -5279,7 +5305,10 @@ func (c *ProjectsJobsCreateCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/jobs")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -5413,7 +5442,10 @@ func (c *ProjectsJobsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -5556,7 +5588,10 @@ func (c *ProjectsJobsGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -5757,7 +5792,10 @@ func (c *ProjectsJobsListCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/jobs")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -5944,7 +5982,10 @@ func (c *ProjectsJobsPatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+name}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
@@ -6086,7 +6127,10 @@ func (c *ProjectsJobsSearchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/jobs:search")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -6258,7 +6302,10 @@ func (c *ProjectsJobsSearchForAlertCall) doRequest(alt string) (*http.Response, 
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v3/{+parent}/jobs:searchForAlert")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,

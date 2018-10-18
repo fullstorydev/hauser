@@ -2363,7 +2363,10 @@ func (c *AclDeleteCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/{ruleId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -2483,7 +2486,10 @@ func (c *AclGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/{ruleId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -2631,7 +2637,10 @@ func (c *AclInsertCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -2817,7 +2826,10 @@ func (c *AclListCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -3004,7 +3016,10 @@ func (c *AclPatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/{ruleId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -3162,7 +3177,10 @@ func (c *AclUpdateCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/{ruleId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -3349,7 +3367,10 @@ func (c *AclWatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/watch")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -3500,7 +3521,10 @@ func (c *CalendarListDeleteCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -3610,7 +3634,10 @@ func (c *CalendarListGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -3750,7 +3777,10 @@ func (c *CalendarListInsertCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -3947,7 +3977,10 @@ func (c *CalendarListListCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -4144,7 +4177,10 @@ func (c *CalendarListPatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -4293,7 +4329,10 @@ func (c *CalendarListUpdateCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -4495,7 +4534,10 @@ func (c *CalendarListWatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/watch")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -4658,7 +4700,10 @@ func (c *CalendarsClearCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/clear")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -4755,7 +4800,10 @@ func (c *CalendarsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -4865,7 +4913,10 @@ func (c *CalendarsGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -4995,7 +5046,10 @@ func (c *CalendarsInsertCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -5116,7 +5170,10 @@ func (c *CalendarsPatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -5250,7 +5307,10 @@ func (c *CalendarsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -5382,7 +5442,10 @@ func (c *ChannelsStopCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channels/stop")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -5484,7 +5547,10 @@ func (c *ColorsGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "colors")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -5562,10 +5628,28 @@ func (r *EventsService) Delete(calendarId string, eventId string) *EventsDeleteC
 }
 
 // SendNotifications sets the optional parameter "sendNotifications":
-// Whether to send notifications about the deletion of the event.  The
-// default is False.
+// Deprecated. Please use sendUpdates instead.
+//
+// Whether to send notifications about the deletion of the event. Note
+// that some emails might still be sent even if you set the value to
+// false. The default is false.
 func (c *EventsDeleteCall) SendNotifications(sendNotifications bool) *EventsDeleteCall {
 	c.urlParams_.Set("sendNotifications", fmt.Sprint(sendNotifications))
+	return c
+}
+
+// SendUpdates sets the optional parameter "sendUpdates": Guests who
+// should receive notifications about the deletion of the event.
+//
+// Possible values:
+//   "all" - Notifications are sent to all guests.
+//   "externalOnly" - Notifications are sent to non-Google Calendar
+// guests only.
+//   "none" - No notifications are sent. This value should only be used
+// for migration use cases (note that in most migration cases the import
+// method should be used).
+func (c *EventsDeleteCall) SendUpdates(sendUpdates string) *EventsDeleteCall {
+	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
 }
 
@@ -5605,7 +5689,10 @@ func (c *EventsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -5648,9 +5735,24 @@ func (c *EventsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//       "type": "string"
 	//     },
 	//     "sendNotifications": {
-	//       "description": "Whether to send notifications about the deletion of the event. Optional. The default is False.",
+	//       "description": "Deprecated. Please use sendUpdates instead.\n\nWhether to send notifications about the deletion of the event. Note that some emails might still be sent even if you set the value to false. The default is false.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "sendUpdates": {
+	//       "description": "Guests who should receive notifications about the deletion of the event.",
+	//       "enum": [
+	//         "all",
+	//         "externalOnly",
+	//         "none"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Notifications are sent to all guests.",
+	//         "Notifications are sent to non-Google Calendar guests only.",
+	//         "No notifications are sent. This value should only be used for migration use cases (note that in most migration cases the import method should be used)."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
 	//     }
 	//   },
 	//   "path": "calendars/{calendarId}/events/{eventId}",
@@ -5759,7 +5861,10 @@ func (c *EventsGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -5939,7 +6044,10 @@ func (c *EventsImportCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/import")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -6068,10 +6176,29 @@ func (c *EventsInsertCall) MaxAttendees(maxAttendees int64) *EventsInsertCall {
 }
 
 // SendNotifications sets the optional parameter "sendNotifications":
+// Deprecated. Please use sendUpdates instead.
+//
 // Whether to send notifications about the creation of the new event.
-// The default is False.
+// Note that some emails might still be sent even if you set the value
+// to false. The default is false.
 func (c *EventsInsertCall) SendNotifications(sendNotifications bool) *EventsInsertCall {
 	c.urlParams_.Set("sendNotifications", fmt.Sprint(sendNotifications))
+	return c
+}
+
+// SendUpdates sets the optional parameter "sendUpdates": Whether to
+// send notifications about the creation of the new event. Note that
+// some emails might still be sent. The default is false.
+//
+// Possible values:
+//   "all" - Notifications are sent to all guests.
+//   "externalOnly" - Notifications are sent to non-Google Calendar
+// guests only.
+//   "none" - No notifications are sent. This value should only be used
+// for migration use cases (note that in most migration cases the import
+// method should be used).
+func (c *EventsInsertCall) SendUpdates(sendUpdates string) *EventsInsertCall {
+	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
 }
 
@@ -6124,7 +6251,10 @@ func (c *EventsInsertCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -6199,9 +6329,24 @@ func (c *EventsInsertCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	//       "type": "integer"
 	//     },
 	//     "sendNotifications": {
-	//       "description": "Whether to send notifications about the creation of the new event. Optional. The default is False.",
+	//       "description": "Deprecated. Please use sendUpdates instead.\n\nWhether to send notifications about the creation of the new event. Note that some emails might still be sent even if you set the value to false. The default is false.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "sendUpdates": {
+	//       "description": "Whether to send notifications about the creation of the new event. Note that some emails might still be sent. The default is false.",
+	//       "enum": [
+	//         "all",
+	//         "externalOnly",
+	//         "none"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Notifications are sent to all guests.",
+	//         "Notifications are sent to non-Google Calendar guests only.",
+	//         "No notifications are sent. This value should only be used for migration use cases (note that in most migration cases the import method should be used)."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "supportsAttachments": {
 	//       "description": "Whether API client performing operation supports event attachments. Optional. The default is False.",
@@ -6370,7 +6515,10 @@ func (c *EventsInstancesCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}/instances")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -6776,7 +6924,10 @@ func (c *EventsListCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -6997,10 +7148,29 @@ func (r *EventsService) Move(calendarId string, eventId string, destinationid st
 }
 
 // SendNotifications sets the optional parameter "sendNotifications":
+// Deprecated. Please use sendUpdates instead.
+//
 // Whether to send notifications about the change of the event's
-// organizer.  The default is False.
+// organizer. Note that some emails might still be sent even if you set
+// the value to false. The default is false.
 func (c *EventsMoveCall) SendNotifications(sendNotifications bool) *EventsMoveCall {
 	c.urlParams_.Set("sendNotifications", fmt.Sprint(sendNotifications))
+	return c
+}
+
+// SendUpdates sets the optional parameter "sendUpdates": Guests who
+// should receive notifications about the change of the event's
+// organizer.
+//
+// Possible values:
+//   "all" - Notifications are sent to all guests.
+//   "externalOnly" - Notifications are sent to non-Google Calendar
+// guests only.
+//   "none" - No notifications are sent. This value should only be used
+// for migration use cases (note that in most migration cases the import
+// method should be used).
+func (c *EventsMoveCall) SendUpdates(sendUpdates string) *EventsMoveCall {
+	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
 }
 
@@ -7040,7 +7210,10 @@ func (c *EventsMoveCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}/move")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -7115,9 +7288,24 @@ func (c *EventsMoveCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	//       "type": "string"
 	//     },
 	//     "sendNotifications": {
-	//       "description": "Whether to send notifications about the change of the event's organizer. Optional. The default is False.",
+	//       "description": "Deprecated. Please use sendUpdates instead.\n\nWhether to send notifications about the change of the event's organizer. Note that some emails might still be sent even if you set the value to false. The default is false.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "sendUpdates": {
+	//       "description": "Guests who should receive notifications about the change of the event's organizer.",
+	//       "enum": [
+	//         "all",
+	//         "externalOnly",
+	//         "none"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Notifications are sent to all guests.",
+	//         "Notifications are sent to non-Google Calendar guests only.",
+	//         "No notifications are sent. This value should only be used for migration use cases (note that in most migration cases the import method should be used)."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
 	//     }
 	//   },
 	//   "path": "calendars/{calendarId}/events/{eventId}/move",
@@ -7187,10 +7375,29 @@ func (c *EventsPatchCall) MaxAttendees(maxAttendees int64) *EventsPatchCall {
 }
 
 // SendNotifications sets the optional parameter "sendNotifications":
-// Whether to send notifications about the event update (e.g. attendee's
-// responses, title changes, etc.).  The default is False.
+// Deprecated. Please use sendUpdates instead.
+//
+// Whether to send notifications about the event update (for example,
+// description changes, etc.). Note that some emails might still be sent
+// even if you set the value to false. The default is false.
 func (c *EventsPatchCall) SendNotifications(sendNotifications bool) *EventsPatchCall {
 	c.urlParams_.Set("sendNotifications", fmt.Sprint(sendNotifications))
+	return c
+}
+
+// SendUpdates sets the optional parameter "sendUpdates": Guests who
+// should receive notifications about the event update (for example,
+// title changes, etc.).
+//
+// Possible values:
+//   "all" - Notifications are sent to all guests.
+//   "externalOnly" - Notifications are sent to non-Google Calendar
+// guests only.
+//   "none" - No notifications are sent. This value should only be used
+// for migration use cases (note that in most migration cases the import
+// method should be used).
+func (c *EventsPatchCall) SendUpdates(sendUpdates string) *EventsPatchCall {
+	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
 }
 
@@ -7243,7 +7450,10 @@ func (c *EventsPatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -7331,9 +7541,24 @@ func (c *EventsPatchCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	//       "type": "integer"
 	//     },
 	//     "sendNotifications": {
-	//       "description": "Whether to send notifications about the event update (e.g. attendee's responses, title changes, etc.). Optional. The default is False.",
+	//       "description": "Deprecated. Please use sendUpdates instead.\n\nWhether to send notifications about the event update (for example, description changes, etc.). Note that some emails might still be sent even if you set the value to false. The default is false.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "sendUpdates": {
+	//       "description": "Guests who should receive notifications about the event update (for example, title changes, etc.).",
+	//       "enum": [
+	//         "all",
+	//         "externalOnly",
+	//         "none"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Notifications are sent to all guests.",
+	//         "Notifications are sent to non-Google Calendar guests only.",
+	//         "No notifications are sent. This value should only be used for migration use cases (note that in most migration cases the import method should be used)."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "supportsAttachments": {
 	//       "description": "Whether API client performing operation supports event attachments. Optional. The default is False.",
@@ -7375,10 +7600,28 @@ func (r *EventsService) QuickAdd(calendarId string, text string) *EventsQuickAdd
 }
 
 // SendNotifications sets the optional parameter "sendNotifications":
-// Whether to send notifications about the creation of the event.  The
-// default is False.
+// Deprecated. Please use sendUpdates instead.
+//
+// Whether to send notifications about the creation of the event. Note
+// that some emails might still be sent even if you set the value to
+// false. The default is false.
 func (c *EventsQuickAddCall) SendNotifications(sendNotifications bool) *EventsQuickAddCall {
 	c.urlParams_.Set("sendNotifications", fmt.Sprint(sendNotifications))
+	return c
+}
+
+// SendUpdates sets the optional parameter "sendUpdates": Guests who
+// should receive notifications about the creation of the new event.
+//
+// Possible values:
+//   "all" - Notifications are sent to all guests.
+//   "externalOnly" - Notifications are sent to non-Google Calendar
+// guests only.
+//   "none" - No notifications are sent. This value should only be used
+// for migration use cases (note that in most migration cases the import
+// method should be used).
+func (c *EventsQuickAddCall) SendUpdates(sendUpdates string) *EventsQuickAddCall {
+	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
 }
 
@@ -7418,7 +7661,10 @@ func (c *EventsQuickAddCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/quickAdd")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -7479,9 +7725,24 @@ func (c *EventsQuickAddCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	//       "type": "string"
 	//     },
 	//     "sendNotifications": {
-	//       "description": "Whether to send notifications about the creation of the event. Optional. The default is False.",
+	//       "description": "Deprecated. Please use sendUpdates instead.\n\nWhether to send notifications about the creation of the event. Note that some emails might still be sent even if you set the value to false. The default is false.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "sendUpdates": {
+	//       "description": "Guests who should receive notifications about the creation of the new event.",
+	//       "enum": [
+	//         "all",
+	//         "externalOnly",
+	//         "none"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Notifications are sent to all guests.",
+	//         "Notifications are sent to non-Google Calendar guests only.",
+	//         "No notifications are sent. This value should only be used for migration use cases (note that in most migration cases the import method should be used)."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "text": {
 	//       "description": "The text describing the event to be created.",
@@ -7557,10 +7818,29 @@ func (c *EventsUpdateCall) MaxAttendees(maxAttendees int64) *EventsUpdateCall {
 }
 
 // SendNotifications sets the optional parameter "sendNotifications":
-// Whether to send notifications about the event update (e.g. attendee's
-// responses, title changes, etc.).  The default is False.
+// Deprecated. Please use sendUpdates instead.
+//
+// Whether to send notifications about the event update (for example,
+// description changes, etc.). Note that some emails might still be sent
+// even if you set the value to false. The default is false.
 func (c *EventsUpdateCall) SendNotifications(sendNotifications bool) *EventsUpdateCall {
 	c.urlParams_.Set("sendNotifications", fmt.Sprint(sendNotifications))
+	return c
+}
+
+// SendUpdates sets the optional parameter "sendUpdates": Guests who
+// should receive notifications about the event update (for example,
+// title changes, etc.).
+//
+// Possible values:
+//   "all" - Notifications are sent to all guests.
+//   "externalOnly" - Notifications are sent to non-Google Calendar
+// guests only.
+//   "none" - No notifications are sent. This value should only be used
+// for migration use cases (note that in most migration cases the import
+// method should be used).
+func (c *EventsUpdateCall) SendUpdates(sendUpdates string) *EventsUpdateCall {
+	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
 }
 
@@ -7613,7 +7893,10 @@ func (c *EventsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -7701,9 +7984,24 @@ func (c *EventsUpdateCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	//       "type": "integer"
 	//     },
 	//     "sendNotifications": {
-	//       "description": "Whether to send notifications about the event update (e.g. attendee's responses, title changes, etc.). Optional. The default is False.",
+	//       "description": "Deprecated. Please use sendUpdates instead.\n\nWhether to send notifications about the event update (for example, description changes, etc.). Note that some emails might still be sent even if you set the value to false. The default is false.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "sendUpdates": {
+	//       "description": "Guests who should receive notifications about the event update (for example, title changes, etc.).",
+	//       "enum": [
+	//         "all",
+	//         "externalOnly",
+	//         "none"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Notifications are sent to all guests.",
+	//         "Notifications are sent to non-Google Calendar guests only.",
+	//         "No notifications are sent. This value should only be used for migration use cases (note that in most migration cases the import method should be used)."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "supportsAttachments": {
 	//       "description": "Whether API client performing operation supports event attachments. Optional. The default is False.",
@@ -7970,7 +8268,10 @@ func (c *EventsWatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/watch")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
@@ -8210,7 +8511,10 @@ func (c *FreebusyQueryCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "freeBusy")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -8338,7 +8642,10 @@ func (c *SettingsGetCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/settings/{setting}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"setting": c.setting,
@@ -8505,7 +8812,10 @@ func (c *SettingsListCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/settings")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -8692,7 +9002,10 @@ func (c *SettingsWatchCall) doRequest(alt string) (*http.Response, error) {
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/settings/watch")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }

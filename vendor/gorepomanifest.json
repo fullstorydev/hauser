@@ -62,9 +62,8 @@
  },
  "google.golang.org/api": {
   "git-remote": "https://code.googlesource.com/google-api-go-client",
-  "git-remote-branch": "master",
-  "current-version-git-hash": "5da02d31af7d15cc65a207f8a46a6e3c50d41178",
-  "content-hash": "e7ff558748e89c1a3a4af57a98ae5efc75426e3f"
+  "current-version-git-hash": "1ee037c9707128cf915508b3051e3167243b7b7e",
+  "content-hash": "2eff140c71682a25ac552b93c8c1a260b4fa1e68"
  },
  "google.golang.org/genproto": {
   "git-remote": "https://github.com/google/go-genproto",
