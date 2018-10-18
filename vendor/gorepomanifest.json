@@ -12,8 +12,8 @@
  },
  "github.com/aws/aws-sdk-go": {
   "git-remote": "https://github.com/aws/aws-sdk-go",
-  "current-version-git-hash": "a720d87b081f6f3c1829ceeed58950ccb346cf6a",
-  "content-hash": "f825071f822cfbc5ec42919d79df8cedfa86bbc0"
+  "current-version-git-hash": "0e8c61841163762f870f6976775800ded4a789b0",
+  "content-hash": "816c901894c9d80779bcc2c1d6b1ff05ae0a35f0"
  },
  "github.com/fullstorydev/gorepoman": {
   "git-remote": "https://github.com/fullstorydev/gorepoman",

@@ -1,3 +1,142 @@
+Release v1.15.58 (2018-10-18)
+===
+
+### Service Client Updates
+* `service/appstream`: Updates service API and documentation
+  * This API update adds support for creating, managing, and deleting users in the AppStream 2.0 user pool.
+* `service/medialive`: Updates service API and documentation
+  * This release allows you to now turn on Quality-Defined Variable Bitrate (QVBR) encoding for your AWS Elemental MediaLive channels. You can now deliver a consistently high-quality video viewing experience while reducing overall distribution bitrates by using Quality-Defined Variable Bitrate (QVBR) encoding with AWS Elemental MediaLive. QVBR is a video compression technique that automatically adjusts output bitrates to the complexity of source content and only use the bits required to maintain a defined level of quality. This means using QVBR encoding, you can save on distribution cost, while maintaining, or increasing video quality for your viewers.
+* `service/route53`: Updates service API and documentation
+  * This change allows customers to disable health checks.
+
+Release v1.15.57 (2018-10-17)
+===
+
+### Service Client Updates
+* `service/apigateway`: Updates service documentation
+  * Documentation updates for API Gateway
+* `service/events`: Updates service API and documentation
+  * AWS Events - AWS Organizations Support in Event-Bus Policies. This release introduces a new parameter in the PutPermission API named Condition. Using the Condition parameter, customers can allow one or more AWS Organizations to access their CloudWatch Events Event-Bus resource.
+
+Release v1.15.56 (2018-10-16)
+===
+
+### Service Client Updates
+* `service/glue`: Updates service API and documentation
+  * New Glue APIs for creating, updating, reading and deleting Data Catalog resource-based policies.
+* `service/lightsail`: Updates service API and documentation
+  * Adds support for Lightsail managed databases.
+* `service/resource-groups`: Updates service API and documentation
+
+Release v1.15.55 (2018-10-15)
+===
+
+### Service Client Updates
+* `service/lambda`: Updates service API and documentation
+  * Documentation updates for lambda
+* `service/rds`: Updates service API and documentation
+  * This release adds a new parameter to specify the DB instance or cluster parameter group for restore from DB snapshot and restore to point int time operations. For more information, see Amazon RDS Documentation.
+* `service/servicecatalog`: Updates service API, documentation, and paginators
+  * AWS Service Catalog enables you to reduce administrative maintenance and end-user training while adhering to compliance and security measures. With service actions, you as the administrator can enable end users to perform operational tasks, troubleshoot issues, run approved commands, or request permissions within Service Catalog. Service actions are defined using AWS Systems Manager documents, where you have access to pre-defined actions that implement AWS best practices, such asEC2 stop and reboot, as well as the ability to define custom actions.
+
+Release v1.15.54 (2018-10-12)
+===
+
+### Service Client Updates
+* `service/cloudtrail`: Updates service API and documentation
+  * The LookupEvents API now supports two new attribute keys: ReadOnly and AccessKeyId
+
+### SDK Enhancements
+* `aws/session`: Add support for credential source(#2201)
+  * Allows for shared config file to contain `credential_source` with any of the given values `EcsContainer`, `Environment` or `Ec2InstanceMetadata`
+
+Release v1.15.53 (2018-10-11)
+===
+
+### Service Client Updates
+* `service/athena`: Updates service API and documentation
+  * 1. GetQueryExecution API changes to return statementType of a submitted Athena query.  2. GetQueryResults API changes to return the number of rows added to a table when a CTAS query is executed.
+* `service/directconnect`: Updates service API and documentation
+  * This release adds support for Jumbo Frames over AWS Direct Connect. You can now set MTU value when creating new virtual interfaces. This release also includes a new API to modify MTU value of existing virtual interfaces.
+* `service/ec2`: Updates service API
+  * You can now launch the smaller-sized G3 instance called g3s.xlarge. G3s.xlarge provides 4 vCPU, 30.5 GB RAM and a NVIDIA Tesla M60 GPU. It is ideal for remote workstations, engineering and architectural applications, and 3D visualizations and rendering for visual effects.
+* `service/mediaconvert`: Updates service paginators
+  * Added Paginators for all the MediaConvert list operations
+* `service/transcribe`: Updates service API and documentation
+
+Release v1.15.52 (2018-10-10)
+===
+
+### Service Client Updates
+* `service/comprehend`: Updates service API
+* `service/es`: Updates service API and documentation
+  * Amazon Elasticsearch Service now supports customer-scheduled service software updates. When new service software becomes available, you can request an update to your domain and benefit from new features more quickly. If you take no action, we update the service software automatically after a certain time frame.
+* `service/transcribe`: Updates service API and documentation
+
+Release v1.15.51 (2018-10-09)
+===
+
+### Service Client Updates
+* `service/ssm`: Updates service API and documentation
+  * Adds StartDate, EndDate, and ScheduleTimezone to CreateMaintenanceWindow and UpdateMaintenanceWindow; Adds NextExecutionTime to GetMaintenanceWindow and DescribeMaintenanceWindows; Adds CancelMaintenanceWindowExecution, DescribeMaintenanceWindowSchedule and DescribeMaintenanceWindowsForTarget APIs.
+
+Release v1.15.50 (2018-10-08)
+===
+
+### Service Client Updates
+* `service/iot`: Updates service API and documentation
+  * We are releasing job execution timeout functionalities to customers. Customer now can set job execution timeout on the job level when creating a job.
+* `service/iot-jobs-data`: Updates service API and documentation
+
+Release v1.15.49 (2018-10-05)
+===
+
+### Service Client Updates
+* `service/ds`: Updates service API and documentation
+  * SDK changes to create a new type of trust for active directory
+
+Release v1.15.48 (2018-10-04)
+===
+
+### Service Client Updates
+* `service/apigateway`: Updates service API and documentation
+  * Adding support for multi-value parameters in TestInvokeMethod and TestInvokeAuthorizer.
+* `service/codebuild`: Updates service API and documentation
+  * Add resolved source version field in build output
+* `service/ssm`: Updates service API and documentation
+  * Adds RejectedPatchesAction to baseline to enable stricted validation of the rejected Patches List ; Add InstalledRejected and InstallOverrideList to compliance reporting
+* `service/storagegateway`: Updates service API and documentation
+  * AWS Storage Gateway now enables you to specify folders and subfolders when you update your file gateway's view of your S3 objects using the Refresh Cache API.
+
+Release v1.15.47 (2018-10-02)
+===
+
+### Service Client Updates
+* `service/sagemaker`: Updates service waiters
+  * Waiter for SageMaker Batch Transform Jobs.
+* `service/secretsmanager`: Updates service documentation
+  * Documentation updates for secretsmanager
+
+### SDK Enhancements
+* `aws/config`: fix typo in Config struct documentation (#2169)
+  * fix typo in Config struct documentation in aws-sdk-go/aws/config.go
+* `internal/csm`: Add region to api call metrics (#2175)
+* `private/model/api`: Use modeled service signing version in code generation (#2162)
+  * Updates the SDK's code generate to make use of the model's service signature version when generating the client for the service. This allows the SDK to generate a client using the correct signature version, e.g v4 vs s3v4 without the need for additional customizations.
+
+### SDK Bugs
+* `service/cloudfront/sign`: Do not Escape HTML when encode the cloudfront sign policy (#2164)
+  * Fixes the signer escaping HTML elements `<`, `>`, and `&` in the signature policy incorrectly. Allows use of multiple query parameters in the URL to be signed.
+  * Fixes #2163
+Release v1.15.46 (2018-10-01)
+===
+
+### Service Client Updates
+* `service/guardduty`: Updates service API and documentation
+  * Support optional FindingPublishingFrequency parameter in CreateDetector and UpdateDetector operations, and ClientToken on Create* operations
+* `service/rekognition`: Updates service documentation
+  * Documentation updates for Amazon Rekognition
+
 Release v1.15.45 (2018-09-28)
 ===
 
