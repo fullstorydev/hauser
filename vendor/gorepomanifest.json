@@ -42,8 +42,8 @@
  },
  "github.com/pkg/errors": {
   "git-remote": "https://github.com/pkg/errors",
-  "current-version-git-hash": "c059e472caf75dbe73903f6521a20abac245b17f",
-  "content-hash": "7b255dd8bfab1c857b90614f745956c634582e2e"
+  "current-version-git-hash": "2233dee583dcf88f3c8b22cb7a33f05a499800d8",
+  "content-hash": "6e27ce7b7c8670da05631a3bf746672566f87928"
  },
  "golang.org/x/net": {
   "git-remote": "https://go.googlesource.com/net",
