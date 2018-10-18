@@ -19,7 +19,9 @@
 package test
 
 import (
+	"reflect"
 	"testing"
+	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -28,6 +30,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/internal/leakcheck"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/resolver"
 	testpb "google.golang.org/grpc/test/grpc_testing"
 	"google.golang.org/grpc/testdata"
@@ -44,6 +47,8 @@ type testBalancer struct {
 	sc balancer.SubConn
 
 	newSubConnOptions balancer.NewSubConnOptions
+	pickOptions       []balancer.PickOptions
+	doneInfo          []balancer.DoneInfo
 }
 
 func (b *testBalancer) Build(cc balancer.ClientConn, opt balancer.BuildOptions) balancer.Balancer {
@@ -63,7 +68,7 @@ func (b *testBalancer) HandleResolvedAddrs(addrs []resolver.Address, err error) 
 			grpclog.Errorf("testBalancer: failed to NewSubConn: %v", err)
 			return
 		}
-		b.cc.UpdateBalancerState(connectivity.Idle, &picker{sc: b.sc})
+		b.cc.UpdateBalancerState(connectivity.Idle, &picker{sc: b.sc, bal: b})
 		b.sc.Connect()
 	}
 }
@@ -81,11 +86,11 @@ func (b *testBalancer) HandleSubConnStateChange(sc balancer.SubConn, s connectiv
 
 	switch s {
 	case connectivity.Ready, connectivity.Idle:
-		b.cc.UpdateBalancerState(s, &picker{sc: sc})
+		b.cc.UpdateBalancerState(s, &picker{sc: sc, bal: b})
 	case connectivity.Connecting:
-		b.cc.UpdateBalancerState(s, &picker{err: balancer.ErrNoSubConnAvailable})
+		b.cc.UpdateBalancerState(s, &picker{err: balancer.ErrNoSubConnAvailable, bal: b})
 	case connectivity.TransientFailure:
-		b.cc.UpdateBalancerState(s, &picker{err: balancer.ErrTransientFailure})
+		b.cc.UpdateBalancerState(s, &picker{err: balancer.ErrTransientFailure, bal: b})
 	}
 }
 
@@ -95,13 +100,15 @@ func (b *testBalancer) Close() {
 type picker struct {
 	err error
 	sc  balancer.SubConn
+	bal *testBalancer
 }
 
 func (p *picker) Pick(ctx context.Context, opts balancer.PickOptions) (balancer.SubConn, func(balancer.DoneInfo), error) {
+	p.bal.pickOptions = append(p.bal.pickOptions, opts)
 	if p.err != nil {
 		return nil, nil, p.err
 	}
-	return p.sc, nil, nil
+	return p.sc, func(d balancer.DoneInfo) { p.bal.doneInfo = append(p.bal.doneInfo, d) }, nil
 }
 
 func TestCredsBundleFromBalancer(t *testing.T) {
@@ -130,5 +137,54 @@ func TestCredsBundleFromBalancer(t *testing.T) {
 	tc := testpb.NewTestServiceClient(cc)
 	if _, err := tc.EmptyCall(context.Background(), &testpb.Empty{}); err != nil {
 		t.Fatalf("Test failed. Reason: %v", err)
+	}
+}
+
+func TestPickAndDone(t *testing.T) {
+	defer leakcheck.Check(t)
+	for _, e := range listTestEnv() {
+		testPickAndDone(t, e)
+	}
+}
+
+func testPickAndDone(t *testing.T, e env) {
+	te := newTest(t, e)
+	b := &testBalancer{}
+	balancer.Register(b)
+	te.customDialOptions = []grpc.DialOption{
+		grpc.WithBalancerName(testBalancerName),
+	}
+	te.userAgent = failAppUA
+	te.startServer(&testServer{security: e.security})
+	defer te.tearDown()
+
+	cc := te.clientConn()
+	tc := testpb.NewTestServiceClient(cc)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	wantErr := detailedError
+	if _, err := tc.EmptyCall(ctx, &testpb.Empty{}); !reflect.DeepEqual(err, wantErr) {
+		t.Fatalf("TestService/EmptyCall(_, _) = _, %v, want _, %v", err, wantErr)
+	}
+	md := metadata.Pairs("testMDKey", "testMDVal")
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	if _, err := tc.UnaryCall(ctx, &testpb.SimpleRequest{}); err != nil {
+		t.Fatalf("TestService.UnaryCall(%v, _, _, _) = _, %v; want _, <nil>", ctx, err)
+	}
+
+	poWant := []balancer.PickOptions{
+		{FullMethodName: "/grpc.testing.TestService/EmptyCall"},
+		{FullMethodName: "/grpc.testing.TestService/UnaryCall", Header: md},
+	}
+	if !reflect.DeepEqual(b.pickOptions, poWant) {
+		t.Fatalf("b.pickOptions = %v; want %v", b.pickOptions, poWant)
+	}
+
+	if len(b.doneInfo) < 1 || !reflect.DeepEqual(b.doneInfo[0].Err, wantErr) {
+		t.Fatalf("b.doneInfo = %v; want b.doneInfo[0].Err = %v", b.doneInfo, wantErr)
+	}
+	if len(b.doneInfo) < 2 || !reflect.DeepEqual(b.doneInfo[1].Trailer, testTrailerMetadata) {
+		t.Fatalf("b.doneInfo = %v; want b.doneInfo[1].Trailer = %v", b.doneInfo, testTrailerMetadata)
 	}
 }

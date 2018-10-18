@@ -41,6 +41,7 @@ import (
 	"google.golang.org/grpc/internal/channelz"
 	"google.golang.org/grpc/internal/transport"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/resolver"
 	_ "google.golang.org/grpc/resolver/dns"         // To register dns resolver.
 	_ "google.golang.org/grpc/resolver/passthrough" // To register passthrough resolver.
@@ -643,11 +644,9 @@ func (cc *ClientConn) incrCallsFailed() {
 	atomic.AddInt64(&cc.czData.callsFailed, 1)
 }
 
-// connect starts to creating transport and also starts the transport monitor
-// goroutine for this ac.
+// connect starts creating a transport.
 // It does nothing if the ac is not IDLE.
 // TODO(bar) Move this to the addrConn section.
-// This was part of resetAddrConn, keep it here to make the diff look clean.
 func (ac *addrConn) connect() error {
 	ac.mu.Lock()
 	if ac.state == connectivity.Shutdown {
@@ -718,8 +717,10 @@ func (cc *ClientConn) GetMethodConfig(method string) MethodConfig {
 }
 
 func (cc *ClientConn) getTransport(ctx context.Context, failfast bool, method string) (transport.ClientTransport, func(balancer.DoneInfo), error) {
+	hdr, _ := metadata.FromOutgoingContext(ctx)
 	t, done, err := cc.blockingpicker.pick(ctx, failfast, balancer.PickOptions{
 		FullMethodName: method,
+		Header:         hdr,
 	})
 	if err != nil {
 		return nil, nil, toRPCErr(err)
@@ -749,6 +750,13 @@ func (cc *ClientConn) handleServiceConfig(js string) error {
 		return err
 	}
 	cc.mu.Lock()
+	// Check if the ClientConn is already closed. Some fields (e.g.
+	// balancerWrapper) are set to nil when closing the ClientConn, and could
+	// cause nil pointer panic if we don't have this check.
+	if cc.conns == nil {
+		cc.mu.Unlock()
+		return nil
+	}
 	cc.scRaw = js
 	cc.sc = sc
 
@@ -880,9 +888,6 @@ type addrConn struct {
 
 	// Use updateConnectivityState for updating addrConn's connectivity state.
 	state connectivity.State
-	// ready is closed and becomes nil when a new transport is up or failed
-	// due to timeout.
-	ready chan struct{}
 
 	tearDownErr error // The reason this addrConn is torn down.
 
@@ -963,6 +968,23 @@ func (ac *addrConn) resetTransport(resolveNow bool) {
 			ac.mu.Unlock()
 		}
 
+		ac.mu.Lock()
+		if ac.state == connectivity.Shutdown {
+			ac.mu.Unlock()
+			return
+		}
+
+		// If the connection is READY, a failure must have occurred.
+		// Otherwise, we'll consider this is a transient failure when:
+		//   We've exhausted all addresses
+		//   We're in CONNECTING
+		//   And it's not the very first addr to try TODO(deklerk) find a better way to do this than checking ac.successfulHandshake
+		if ac.state == connectivity.Ready || (ac.addrIdx == len(ac.addrs)-1 && ac.state == connectivity.Connecting && !ac.successfulHandshake) {
+			ac.updateConnectivityState(connectivity.TransientFailure)
+			ac.cc.handleSubConnStateChange(ac.acbw, ac.state)
+		}
+		ac.mu.Unlock()
+
 		if err := ac.nextAddr(); err != nil {
 			return
 		}
@@ -971,10 +993,6 @@ func (ac *addrConn) resetTransport(resolveNow bool) {
 		if ac.state == connectivity.Shutdown {
 			ac.mu.Unlock()
 			return
-		}
-		if ac.ready != nil {
-			close(ac.ready)
-			ac.ready = nil
 		}
 		ac.transport = nil
 
@@ -1041,6 +1059,10 @@ func (ac *addrConn) createTransport(backoffNum int, addr resolver.Address, copts
 	prefaceReceived := make(chan struct{})
 	onCloseCalled := make(chan struct{})
 
+	var prefaceMu sync.Mutex
+	var serverPrefaceReceived bool
+	var clientPrefaceWrote bool
+
 	onGoAway := func(r transport.GoAwayReason) {
 		ac.mu.Lock()
 		ac.adjustParams(r)
@@ -1082,11 +1104,18 @@ func (ac *addrConn) createTransport(backoffNum int, addr resolver.Address, copts
 
 		// TODO(deklerk): optimization; does anyone else actually use this lock? maybe we can just remove it for this scope
 		ac.mu.Lock()
-		ac.successfulHandshake = true
-		ac.backoffDeadline = time.Time{}
-		ac.connectDeadline = time.Time{}
-		ac.addrIdx = 0
-		ac.backoffIdx = 0
+
+		prefaceMu.Lock()
+		serverPrefaceReceived = true
+		if clientPrefaceWrote {
+			ac.successfulHandshake = true
+			ac.backoffDeadline = time.Time{}
+			ac.connectDeadline = time.Time{}
+			ac.addrIdx = 0
+			ac.backoffIdx = 0
+		}
+		prefaceMu.Unlock()
+
 		ac.mu.Unlock()
 	}
 
@@ -1099,6 +1128,13 @@ func (ac *addrConn) createTransport(backoffNum int, addr resolver.Address, copts
 	newTr, err := transport.NewClientTransport(connectCtx, ac.cc.ctx, target, copts, onPrefaceReceipt, onGoAway, onClose)
 
 	if err == nil {
+		prefaceMu.Lock()
+		clientPrefaceWrote = true
+		if serverPrefaceReceived {
+			ac.successfulHandshake = true
+		}
+		prefaceMu.Unlock()
+
 		if ac.dopts.waitForHandshake {
 			select {
 			case <-prefaceTimer.C:
@@ -1109,6 +1145,8 @@ func (ac *addrConn) createTransport(backoffNum int, addr resolver.Address, copts
 				// We got the preface - huzzah! things are good.
 			case <-onCloseCalled:
 				// The transport has already closed - noop.
+				close(allowedToReset)
+				return nil
 			}
 		} else {
 			go func() {
@@ -1140,8 +1178,6 @@ func (ac *addrConn) createTransport(backoffNum int, addr resolver.Address, copts
 
 			return errConnClosing
 		}
-		ac.updateConnectivityState(connectivity.TransientFailure)
-		ac.cc.handleSubConnStateChange(ac.acbw, ac.state)
 		ac.mu.Unlock()
 		grpclog.Warningf("grpc: addrConn.createTransport failed to connect to %v. Err :%v. Reconnecting...", addr, err)
 
@@ -1170,10 +1206,6 @@ func (ac *addrConn) createTransport(backoffNum int, addr resolver.Address, copts
 	ac.cc.handleSubConnStateChange(ac.acbw, ac.state)
 	ac.transport = newTr
 	ac.curAddr = addr
-	if ac.ready != nil {
-		close(ac.ready)
-		ac.ready = nil
-	}
 
 	ac.mu.Unlock()
 
@@ -1213,13 +1245,7 @@ func (ac *addrConn) nextAddr() error {
 		ac.mu.Unlock()
 		return errConnClosing
 	}
-	ac.updateConnectivityState(connectivity.TransientFailure)
-	ac.cc.handleSubConnStateChange(ac.acbw, ac.state)
 	ac.cc.resolveNow(resolver.ResolveNowOption{})
-	if ac.ready != nil {
-		close(ac.ready)
-		ac.ready = nil
-	}
 	backoffDeadline := ac.backoffDeadline
 	b := ac.resetBackoff
 	ac.mu.Unlock()
@@ -1296,10 +1322,6 @@ func (ac *addrConn) tearDown(err error) {
 	if ac.events != nil {
 		ac.events.Finish()
 		ac.events = nil
-	}
-	if ac.ready != nil {
-		close(ac.ready)
-		ac.ready = nil
 	}
 	if channelz.IsOn() {
 		channelz.AddTraceEvent(ac.channelzID, &channelz.TraceEventDesc{

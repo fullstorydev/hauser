@@ -72,7 +72,7 @@
  },
  "google.golang.org/grpc": {
   "git-remote": "https://github.com/grpc/grpc-go",
-  "current-version-git-hash": "b48e364c83c8b7a222f4b43cf5348b3583950ac6",
-  "content-hash": "38837a0041f71f1d56b77279a4afd0a4a40e4e2e"
+  "current-version-git-hash": "13b2b26aae70b3b5fd750e5046e65670473ee0a3",
+  "content-hash": "d7fd6a167ee767a85201ab6e1a8006be2318543f"
  }
 }
