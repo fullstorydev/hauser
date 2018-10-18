@@ -57,8 +57,8 @@
  },
  "golang.org/x/text": {
   "git-remote": "https://go.googlesource.com/text",
-  "current-version-git-hash": "905a57155faa8230500121607930ebb9dd8e139c",
-  "content-hash": "e2e7d1b0659b416cd8247ac64c50e112feeb7e81"
+  "current-version-git-hash": "4d1c5fb19474adfe9562c9847ba425e7da817e81",
+  "content-hash": "91ce1f45d692aa17908f832416228c250c3b9b9e"
  },
  "google.golang.org/api": {
   "git-remote": "https://code.googlesource.com/google-api-go-client",
