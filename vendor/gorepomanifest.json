@@ -52,8 +52,8 @@
  },
  "golang.org/x/oauth2": {
   "git-remote": "https://go.googlesource.com/oauth2",
-  "current-version-git-hash": "d2e6202438beef2727060aa7cabdd924d92ebfd9",
-  "content-hash": "912cc0da4e8e9674f1b15ca4d72bbf597b6601b1"
+  "current-version-git-hash": "9dcd33a902f40452422c2367fefcb95b54f9f8f8",
+  "content-hash": "cd678221502616a2d1722a646d8979b28c06d2b1"
  },
  "golang.org/x/text": {
   "git-remote": "https://go.googlesource.com/text",
