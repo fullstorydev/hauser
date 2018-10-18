@@ -77,7 +77,7 @@ $ gcloud config set project $GCLOUD_TESTS_GOLANG_PROJECT_ID
 $ gcloud auth login
 
 # Create the indexes used in the datastore integration tests.
-$ gcloud preview datastore create-indexes datastore/testdata/index.yaml
+$ gcloud datastore create-indexes datastore/testdata/index.yaml
 
 # Create a Google Cloud storage bucket with the same name as your test project,
 # and with the Stackdriver Logging service account as owner, for the sink
@@ -87,6 +87,8 @@ $ gsutil acl ch -g cloud-logs@google.com:O gs://$GCLOUD_TESTS_GOLANG_PROJECT_ID
 
 # Create a PubSub topic for integration tests of storage notifications.
 $ gcloud beta pubsub topics create go-storage-notification-test
+# Next, go to the Pub/Sub dashboard in GCP console. Authorize the user
+# "service-<numberic project id>@gs-project-accounts.iam.gserviceaccount.com" as a publisher to that topic.
 
 # Create a Spanner instance for the spanner integration tests.
 $ gcloud beta spanner instances create go-integration-test --config regional-us-central1 --nodes 1 --description 'Instance for go client test'
@@ -95,13 +97,15 @@ $ gcloud beta spanner instances create go-integration-test --config regional-us-
 
 # For Storage integration tests:
 # Enable KMS for your project in the Cloud Console.
+$ export MY_KEYRING=some-keyring-name
+$ export MY_LOCATION=global
 # Create a KMS keyring, in the same location as the default location for your project's buckets.
-$ gcloud kms keyrings create MY_KEYRING --location MY_LOCATION
+$ gcloud kms keyrings create $MY_KEYRING --location $MY_LOCATION
 # Create two keys in the keyring, named key1 and key2.
-$ gcloud kms keys create key1 --keyring MY_KEYRING --location MY_LOCATION --purpose encryption
-$ gcloud kms keys create key2 --keyring MY_KEYRING --location MY_LOCATION --purpose encryption
+$ gcloud kms keys create key1 --keyring $MY_KEYRING --location $MY_LOCATION --purpose encryption
+$ gcloud kms keys create key2 --keyring $MY_KEYRING --location $MY_LOCATION --purpose encryption
 # As mentioned above, set the GCLOUD_TESTS_GOLANG_KEYRING environment variable.
-$ export GCLOUD_TESTS_GOLANG_KEYRING=projects/$GCLOUD_TESTS_GOLANG_PROJECT_ID/locations/MY_LOCATION/keyRings/MY_KEYRING
+$ export GCLOUD_TESTS_GOLANG_KEYRING=projects/$GCLOUD_TESTS_GOLANG_PROJECT_ID/locations/$MY_LOCATION/keyRings/$MY_KEYRING
 # Authorize Google Cloud Storage to encrypt and decrypt using key1.
 gsutil kms authorize -p $GCLOUD_TESTS_GOLANG_PROJECT_ID -k $GCLOUD_TESTS_GOLANG_KEYRING/cryptoKeys/key1
 ```
