@@ -22,8 +22,8 @@
  },
  "github.com/golang/protobuf": {
   "git-remote": "https://github.com/golang/protobuf",
-  "current-version-git-hash": "7011d38ac0d201eeddff4a4085a657c3da322d75",
-  "content-hash": "f74d327b6452684004ac47aeb90c06d6f51a0c6e"
+  "current-version-git-hash": "ddf22928ea3c56eb4292a0adbbf5001b1e8e7d0d",
+  "content-hash": "43f274ec499f2f092a83c9fac2ff448f243d1c02"
  },
  "github.com/googleapis/gax-go": {
   "git-remote": "https://github.com/googleapis/gax-go",
