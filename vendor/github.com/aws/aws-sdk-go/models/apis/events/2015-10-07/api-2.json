@@ -6,6 +6,7 @@
     "jsonVersion":"1.1",
     "protocol":"json",
     "serviceFullName":"Amazon CloudWatch Events",
+    "serviceId":"CloudWatch Events",
     "signatureVersion":"v4",
     "targetPrefix":"AWSEvents",
     "uid":"events-2015-10-07"
@@ -134,7 +135,8 @@
       "errors":[
         {"shape":"ResourceNotFoundException"},
         {"shape":"PolicyLengthExceededException"},
-        {"shape":"InternalException"}
+        {"shape":"InternalException"},
+        {"shape":"ConcurrentModificationException"}
       ]
     },
     "PutRule":{
@@ -176,7 +178,8 @@
       "input":{"shape":"RemovePermissionRequest"},
       "errors":[
         {"shape":"ResourceNotFoundException"},
-        {"shape":"InternalException"}
+        {"shape":"InternalException"},
+        {"shape":"ConcurrentModificationException"}
       ]
     },
     "RemoveTargets":{
@@ -219,12 +222,66 @@
       "max":1600,
       "min":1
     },
+    "AssignPublicIp":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "AwsVpcConfiguration":{
+      "type":"structure",
+      "required":["Subnets"],
+      "members":{
+        "Subnets":{"shape":"StringList"},
+        "SecurityGroups":{"shape":"StringList"},
+        "AssignPublicIp":{"shape":"AssignPublicIp"}
+      }
+    },
+    "BatchArrayProperties":{
+      "type":"structure",
+      "members":{
+        "Size":{"shape":"Integer"}
+      }
+    },
+    "BatchParameters":{
+      "type":"structure",
+      "required":[
+        "JobDefinition",
+        "JobName"
+      ],
+      "members":{
+        "JobDefinition":{"shape":"String"},
+        "JobName":{"shape":"String"},
+        "ArrayProperties":{"shape":"BatchArrayProperties"},
+        "RetryStrategy":{"shape":"BatchRetryStrategy"}
+      }
+    },
+    "BatchRetryStrategy":{
+      "type":"structure",
+      "members":{
+        "Attempts":{"shape":"Integer"}
+      }
+    },
     "Boolean":{"type":"boolean"},
     "ConcurrentModificationException":{
       "type":"structure",
       "members":{
       },
       "exception":true
+    },
+    "Condition":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Type":{"shape":"String"},
+        "Key":{"shape":"String"},
+        "Value":{"shape":"String"}
+      }
     },
     "DeleteRuleRequest":{
       "type":"structure",
@@ -277,7 +334,11 @@
       "required":["TaskDefinitionArn"],
       "members":{
         "TaskDefinitionArn":{"shape":"Arn"},
-        "TaskCount":{"shape":"LimitMin1"}
+        "TaskCount":{"shape":"LimitMin1"},
+        "LaunchType":{"shape":"LaunchType"},
+        "NetworkConfiguration":{"shape":"NetworkConfiguration"},
+        "PlatformVersion":{"shape":"String"},
+        "Group":{"shape":"String"}
       }
     },
     "EnableRuleRequest":{
@@ -290,10 +351,7 @@
     "ErrorCode":{"type":"string"},
     "ErrorMessage":{"type":"string"},
     "EventId":{"type":"string"},
-    "EventPattern":{
-      "type":"string",
-      "max":2048
-    },
+    "EventPattern":{"type":"string"},
     "EventResource":{"type":"string"},
     "EventResourceList":{
       "type":"list",
@@ -334,6 +392,13 @@
       "members":{
         "PartitionKeyPath":{"shape":"TargetPartitionKeyPath"}
       }
+    },
+    "LaunchType":{
+      "type":"string",
+      "enum":[
+        "EC2",
+        "FARGATE"
+      ]
     },
     "LimitExceededException":{
       "type":"structure",
@@ -395,6 +460,13 @@
       "members":{
         "Targets":{"shape":"TargetList"},
         "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "MessageGroupId":{"type":"string"},
+    "NetworkConfiguration":{
+      "type":"structure",
+      "members":{
+        "awsvpcConfiguration":{"shape":"AwsVpcConfiguration"}
       }
     },
     "NextToken":{
@@ -466,7 +538,8 @@
       "members":{
         "Action":{"shape":"Action"},
         "Principal":{"shape":"Principal"},
-        "StatementId":{"shape":"StatementId"}
+        "StatementId":{"shape":"StatementId"},
+        "Condition":{"shape":"Condition"}
       }
     },
     "PutRuleRequest":{
@@ -652,6 +725,12 @@
       "type":"string",
       "max":256
     },
+    "SqsParameters":{
+      "type":"structure",
+      "members":{
+        "MessageGroupId":{"shape":"MessageGroupId"}
+      }
+    },
     "StatementId":{
       "type":"string",
       "max":64,
@@ -659,6 +738,10 @@
       "pattern":"[a-zA-Z0-9-_]+"
     },
     "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
     "Target":{
       "type":"structure",
       "required":[
@@ -674,7 +757,9 @@
         "InputTransformer":{"shape":"InputTransformer"},
         "KinesisParameters":{"shape":"KinesisParameters"},
         "RunCommandParameters":{"shape":"RunCommandParameters"},
-        "EcsParameters":{"shape":"EcsParameters"}
+        "EcsParameters":{"shape":"EcsParameters"},
+        "BatchParameters":{"shape":"BatchParameters"},
+        "SqsParameters":{"shape":"SqsParameters"}
       }
     },
     "TargetArn":{

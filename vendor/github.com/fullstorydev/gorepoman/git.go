@@ -112,12 +112,12 @@ func (g *Gitter) TreeHash(gitRev string, pkgPath string) (string, error) {
 	}
 }
 
-var lsRemoteRegex = regexp.MustCompile(`^([0-9a-f]+)\s+HEAD$`)
+var lsRemoteRegex = regexp.MustCompile(`^([0-9a-f]+)\s+\S+$`)
 
 // LsRemote returns the server-side commit SHA of the default branch (e.g. usually master) for
 // the given git remote url. Used for staleness checks.
-func (g *Gitter) LsRemote(remoteUrl string) (string, error) {
-	out, err := g.Command("ls-remote", remoteUrl, "HEAD")
+func (g *Gitter) LsRemote(remoteUrl, branch string) (string, error) {
+	out, err := g.Command("ls-remote", remoteUrl, branch)
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +141,7 @@ func (g *Gitter) Remote() (string, error) {
 
 	for _, line := range strings.Split(output, "\n") {
 		line = strings.TrimSpace(line)
-		if strings.Contains(line, "(fetch)") {
+		if strings.HasPrefix(line, "origin") && strings.Contains(line, "(fetch)") {
 			if !remoteRegex.MatchString(line) {
 				return "", errors.New("git remote output did not match regex: " + line)
 			}
@@ -151,6 +151,39 @@ func (g *Gitter) Remote() (string, error) {
 	}
 
 	return "", errors.New("git remote output did not contain an origin fetch line: " + output)
+}
+
+var remoteBranchRegex = regexp.MustCompile(`^origin/(\S+)$`)
+
+// RemoteTrackingBranch returns the name of the branch of the `origin` remote that
+// the currently checked-out branch tracks. If the current head is detached, has no
+// tracking branch, or tracks a branch at a remote other than `origin`, an empty
+// string is returned.
+func (g *Gitter) RemoteTrackingBranch() (string, error) {
+	output, err := g.Command("rev-parse", "--abbrev-ref", "@{U}")
+	if err != nil {
+		if strings.Contains(err.Error(), "no upstream configured") {
+			// no remote for this branch
+			return "", nil
+		}
+		return "", err
+	}
+
+	lines := strings.Split(output, "\n")
+	if len(lines) == 0 {
+		return "", nil
+	}
+	line := lines[0]
+	if !strings.HasPrefix(line, "origin/") {
+		// tracks a different remote
+		return "", nil
+	}
+
+	if !remoteBranchRegex.MatchString(line) {
+		return "", errors.New("git rev-parse output did not match regex: " + line)
+	}
+
+	return remoteBranchRegex.FindStringSubmatch(line)[1], nil
 }
 
 // Command executs a git command with the given arguments and returns either the combined output,

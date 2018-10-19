@@ -1,4 +1,6 @@
-// Package pubsub provides access to the Google Cloud Pub/Sub API.
+// Package pubsub provides access to the Cloud Pub/Sub API.
+//
+// This package is DEPRECATED. Use package cloud.google.com/go/pubsub instead.
 //
 // See https://cloud.google.com/pubsub/docs
 //
@@ -127,8 +129,8 @@ type AcknowledgeRequest struct {
 }
 
 func (s *AcknowledgeRequest) MarshalJSON() ([]byte, error) {
-	type noMethod AcknowledgeRequest
-	raw := noMethod(*s)
+	type NoMethod AcknowledgeRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -209,8 +211,8 @@ type Label struct {
 }
 
 func (s *Label) MarshalJSON() ([]byte, error) {
-	type noMethod Label
-	raw := noMethod(*s)
+	type NoMethod Label
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -248,8 +250,8 @@ type ListSubscriptionsResponse struct {
 }
 
 func (s *ListSubscriptionsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListSubscriptionsResponse
-	raw := noMethod(*s)
+	type NoMethod ListSubscriptionsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -287,8 +289,8 @@ type ListTopicsResponse struct {
 }
 
 func (s *ListTopicsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListTopicsResponse
-	raw := noMethod(*s)
+	type NoMethod ListTopicsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -338,8 +340,8 @@ type ModifyAckDeadlineRequest struct {
 }
 
 func (s *ModifyAckDeadlineRequest) MarshalJSON() ([]byte, error) {
-	type noMethod ModifyAckDeadlineRequest
-	raw := noMethod(*s)
+	type NoMethod ModifyAckDeadlineRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -371,8 +373,8 @@ type ModifyPushConfigRequest struct {
 }
 
 func (s *ModifyPushConfigRequest) MarshalJSON() ([]byte, error) {
-	type noMethod ModifyPushConfigRequest
-	raw := noMethod(*s)
+	type NoMethod ModifyPushConfigRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -402,8 +404,8 @@ type PublishBatchRequest struct {
 }
 
 func (s *PublishBatchRequest) MarshalJSON() ([]byte, error) {
-	type noMethod PublishBatchRequest
-	raw := noMethod(*s)
+	type NoMethod PublishBatchRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -438,8 +440,8 @@ type PublishBatchResponse struct {
 }
 
 func (s *PublishBatchResponse) MarshalJSON() ([]byte, error) {
-	type noMethod PublishBatchResponse
-	raw := noMethod(*s)
+	type NoMethod PublishBatchResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -469,8 +471,8 @@ type PublishRequest struct {
 }
 
 func (s *PublishRequest) MarshalJSON() ([]byte, error) {
-	type noMethod PublishRequest
-	raw := noMethod(*s)
+	type NoMethod PublishRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -511,8 +513,8 @@ type PubsubEvent struct {
 }
 
 func (s *PubsubEvent) MarshalJSON() ([]byte, error) {
-	type noMethod PubsubEvent
-	raw := noMethod(*s)
+	type NoMethod PubsubEvent
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -557,8 +559,8 @@ type PubsubMessage struct {
 }
 
 func (s *PubsubMessage) MarshalJSON() ([]byte, error) {
-	type noMethod PubsubMessage
-	raw := noMethod(*s)
+	type NoMethod PubsubMessage
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -601,8 +603,8 @@ type PullBatchRequest struct {
 }
 
 func (s *PullBatchRequest) MarshalJSON() ([]byte, error) {
-	type noMethod PullBatchRequest
-	raw := noMethod(*s)
+	type NoMethod PullBatchRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -639,8 +641,8 @@ type PullBatchResponse struct {
 }
 
 func (s *PullBatchResponse) MarshalJSON() ([]byte, error) {
-	type noMethod PullBatchResponse
-	raw := noMethod(*s)
+	type NoMethod PullBatchResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -679,8 +681,8 @@ type PullRequest struct {
 }
 
 func (s *PullRequest) MarshalJSON() ([]byte, error) {
-	type noMethod PullRequest
-	raw := noMethod(*s)
+	type NoMethod PullRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -717,8 +719,8 @@ type PullResponse struct {
 }
 
 func (s *PullResponse) MarshalJSON() ([]byte, error) {
-	type noMethod PullResponse
-	raw := noMethod(*s)
+	type NoMethod PullResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -747,8 +749,8 @@ type PushConfig struct {
 }
 
 func (s *PushConfig) MarshalJSON() ([]byte, error) {
-	type noMethod PushConfig
-	raw := noMethod(*s)
+	type NoMethod PushConfig
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -822,8 +824,8 @@ type Subscription struct {
 }
 
 func (s *Subscription) MarshalJSON() ([]byte, error) {
-	type noMethod Subscription
-	raw := noMethod(*s)
+	type NoMethod Subscription
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -854,8 +856,8 @@ type Topic struct {
 }
 
 func (s *Topic) MarshalJSON() ([]byte, error) {
-	type noMethod Topic
-	raw := noMethod(*s)
+	type NoMethod Topic
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -922,9 +924,13 @@ func (c *SubscriptionsAcknowledgeCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/acknowledge")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -962,7 +968,7 @@ func (c *SubscriptionsAcknowledgeCall) Do(opts ...googleapi.CallOption) (*Empty,
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1050,9 +1056,13 @@ func (c *SubscriptionsCreateCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -1090,7 +1100,7 @@ func (c *SubscriptionsCreateCall) Do(opts ...googleapi.CallOption) (*Subscriptio
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1170,9 +1180,13 @@ func (c *SubscriptionsDeleteCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/{+subscription}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"subscription": c.subscription,
@@ -1213,7 +1227,7 @@ func (c *SubscriptionsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, erro
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1310,9 +1324,13 @@ func (c *SubscriptionsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/{+subscription}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"subscription": c.subscription,
@@ -1353,7 +1371,7 @@ func (c *SubscriptionsGetCall) Do(opts ...googleapi.CallOption) (*Subscription, 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1470,9 +1488,13 @@ func (c *SubscriptionsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -1510,7 +1532,7 @@ func (c *SubscriptionsListCall) Do(opts ...googleapi.CallOption) (*ListSubscript
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1627,9 +1649,13 @@ func (c *SubscriptionsModifyAckDeadlineCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/modifyAckDeadline")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -1667,7 +1693,7 @@ func (c *SubscriptionsModifyAckDeadlineCall) Do(opts ...googleapi.CallOption) (*
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1756,9 +1782,13 @@ func (c *SubscriptionsModifyPushConfigCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/modifyPushConfig")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -1796,7 +1826,7 @@ func (c *SubscriptionsModifyPushConfigCall) Do(opts ...googleapi.CallOption) (*E
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1884,9 +1914,13 @@ func (c *SubscriptionsPullCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/pull")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -1924,7 +1958,7 @@ func (c *SubscriptionsPullCall) Do(opts ...googleapi.CallOption) (*PullResponse,
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2010,9 +2044,13 @@ func (c *SubscriptionsPullBatchCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/subscriptions/pullBatch")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2050,7 +2088,7 @@ func (c *SubscriptionsPullBatchCall) Do(opts ...googleapi.CallOption) (*PullBatc
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2131,9 +2169,13 @@ func (c *TopicsCreateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/topics")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2171,7 +2213,7 @@ func (c *TopicsCreateCall) Do(opts ...googleapi.CallOption) (*Topic, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2251,9 +2293,13 @@ func (c *TopicsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/topics/{+topic}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"topic": c.topic,
@@ -2294,7 +2340,7 @@ func (c *TopicsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2396,9 +2442,13 @@ func (c *TopicsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/topics/{+topic}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"topic": c.topic,
@@ -2439,7 +2489,7 @@ func (c *TopicsGetCall) Do(opts ...googleapi.CallOption) (*Topic, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2556,9 +2606,13 @@ func (c *TopicsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/topics")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2596,7 +2650,7 @@ func (c *TopicsListCall) Do(opts ...googleapi.CallOption) (*ListTopicsResponse, 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2714,9 +2768,13 @@ func (c *TopicsPublishCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/topics/publish")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2754,7 +2812,7 @@ func (c *TopicsPublishCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2837,9 +2895,13 @@ func (c *TopicsPublishBatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1a/topics/publishBatch")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2877,7 +2939,7 @@ func (c *TopicsPublishBatchCall) Do(opts ...googleapi.CallOption) (*PublishBatch
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil

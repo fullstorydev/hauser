@@ -296,7 +296,11 @@ func (bq *BigQuery) createSyncTable() error {
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.SyncTable)
-	if err := table.Create(bq.ctx, schema); err != nil {
+	tableMetaData := bigquery.TableMetadata {
+		Schema: schema,
+	}
+
+	if err := table.Create(bq.ctx, &tableMetaData); err != nil {
 		return err
 	}
 
@@ -315,8 +319,13 @@ func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
+	tableMetaData := bigquery.TableMetadata {
+		Schema: hauserSchema,
+		TimePartitioning: &bigquery.TimePartitioning{},
+	}
+
 	// create export table as date partitioned, with no expiration date (it can be set later)
-	if err := table.Create(bq.ctx, hauserSchema, &bigquery.TimePartitioning{}); err != nil {
+	if err := table.Create(bq.ctx, &tableMetaData); err != nil {
 		return err
 	}
 

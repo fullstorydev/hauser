@@ -1,5 +1,7 @@
 // Package logging provides access to the Stackdriver Logging API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/logging instead.
+//
 // See https://cloud.google.com/logging/docs/
 //
 // Usage example:
@@ -248,8 +250,8 @@ type BucketOptions struct {
 }
 
 func (s *BucketOptions) MarshalJSON() ([]byte, error) {
-	type noMethod BucketOptions
-	raw := noMethod(*s)
+	type NoMethod BucketOptions
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -297,8 +299,8 @@ type Explicit struct {
 }
 
 func (s *Explicit) MarshalJSON() ([]byte, error) {
-	type noMethod Explicit
-	raw := noMethod(*s)
+	type NoMethod Explicit
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -337,19 +339,19 @@ type Exponential struct {
 }
 
 func (s *Exponential) MarshalJSON() ([]byte, error) {
-	type noMethod Exponential
-	raw := noMethod(*s)
+	type NoMethod Exponential
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *Exponential) UnmarshalJSON(data []byte) error {
-	type noMethod Exponential
+	type NoMethod Exponential
 	var s1 struct {
 		GrowthFactor gensupport.JSONFloat64 `json:"growthFactor"`
 		Scale        gensupport.JSONFloat64 `json:"scale"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
@@ -444,8 +446,8 @@ type HttpRequest struct {
 }
 
 func (s *HttpRequest) MarshalJSON() ([]byte, error) {
-	type noMethod HttpRequest
-	raw := noMethod(*s)
+	type NoMethod HttpRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -483,8 +485,8 @@ type LabelDescriptor struct {
 }
 
 func (s *LabelDescriptor) MarshalJSON() ([]byte, error) {
-	type noMethod LabelDescriptor
-	raw := noMethod(*s)
+	type NoMethod LabelDescriptor
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -523,19 +525,19 @@ type Linear struct {
 }
 
 func (s *Linear) MarshalJSON() ([]byte, error) {
-	type noMethod Linear
-	raw := noMethod(*s)
+	type NoMethod Linear
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *Linear) UnmarshalJSON(data []byte) error {
-	type noMethod Linear
+	type NoMethod Linear
 	var s1 struct {
 		Offset gensupport.JSONFloat64 `json:"offset"`
 		Width  gensupport.JSONFloat64 `json:"width"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
@@ -612,8 +614,8 @@ type ListLogEntriesRequest struct {
 }
 
 func (s *ListLogEntriesRequest) MarshalJSON() ([]byte, error) {
-	type noMethod ListLogEntriesRequest
-	raw := noMethod(*s)
+	type NoMethod ListLogEntriesRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -658,8 +660,8 @@ type ListLogEntriesResponse struct {
 }
 
 func (s *ListLogEntriesResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListLogEntriesResponse
-	raw := noMethod(*s)
+	type NoMethod ListLogEntriesResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -696,8 +698,8 @@ type ListLogMetricsResponse struct {
 }
 
 func (s *ListLogMetricsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListLogMetricsResponse
-	raw := noMethod(*s)
+	type NoMethod ListLogMetricsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -736,8 +738,8 @@ type ListLogsResponse struct {
 }
 
 func (s *ListLogsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListLogsResponse
-	raw := noMethod(*s)
+	type NoMethod ListLogsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -775,8 +777,8 @@ type ListMonitoredResourceDescriptorsResponse struct {
 }
 
 func (s *ListMonitoredResourceDescriptorsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListMonitoredResourceDescriptorsResponse
-	raw := noMethod(*s)
+	type NoMethod ListMonitoredResourceDescriptorsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -813,8 +815,8 @@ type ListSinksResponse struct {
 }
 
 func (s *ListSinksResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListSinksResponse
-	raw := noMethod(*s)
+	type NoMethod ListSinksResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -825,12 +827,11 @@ type LogEntry struct {
 	HttpRequest *HttpRequest `json:"httpRequest,omitempty"`
 
 	// InsertId: Optional. A unique identifier for the log entry. If you
-	// provide a value, then Stackdriver Logging considers other log entries
-	// in the same project, with the same timestamp, and with the same
-	// insert_id to be duplicates which can be removed. If omitted in new
-	// log entries, then Stackdriver Logging assigns its own unique
-	// identifier. The insert_id is also used to order log entries that have
-	// the same timestamp value.
+	// provide a value, then Logging considers other log entries in the same
+	// project, with the same timestamp, and with the same insert_id to be
+	// duplicates which can be removed. If omitted in new log entries, then
+	// Logging assigns its own unique identifier. The insert_id is also used
+	// to order log entries that have the same timestamp value.
 	InsertId string `json:"insertId,omitempty"`
 
 	// JsonPayload: The log entry payload, represented as a structure that
@@ -850,7 +851,10 @@ type LogEntry struct {
 	// "billingAccounts/[BILLING_ACCOUNT_ID]/logs/[L
 	// OG_ID]"
 	// "folders/[FOLDER_ID]/logs/[LOG_ID]"
-	// [LOG_ID] must be URL-encoded within log_name. Example:
+	// A project number may optionally be used in place of PROJECT_ID. The
+	// project number is translated to its corresponding PROJECT_ID
+	// internally  and the log_name field will contain PROJECT_ID in queries
+	// and exports.[LOG_ID] must be URL-encoded within log_name. Example:
 	// "organizations/1234567890/logs/cloudresourcemanager.googleapis.com%2Fa
 	// ctivity". [LOG_ID] must be less than 512 characters long and can only
 	// include the following characters: upper and lower case alphanumeric
@@ -862,6 +866,11 @@ type LogEntry struct {
 	// never return any results.
 	LogName string `json:"logName,omitempty"`
 
+	// Metadata: Output only. Additional metadata about the monitored
+	// resource. Only k8s_container, k8s_pod, and k8s_node
+	// MonitoredResources have this field populated.
+	Metadata *MonitoredResourceMetadata `json:"metadata,omitempty"`
+
 	// Operation: Optional. Information about an operation associated with
 	// the log entry, if applicable.
 	Operation *LogEntryOperation `json:"operation,omitempty"`
@@ -872,13 +881,13 @@ type LogEntry struct {
 	ProtoPayload googleapi.RawMessage `json:"protoPayload,omitempty"`
 
 	// ReceiveTimestamp: Output only. The time the log entry was received by
-	// Stackdriver Logging.
+	// Logging.
 	ReceiveTimestamp string `json:"receiveTimestamp,omitempty"`
 
-	// Resource: Required. The monitored resource associated with this log
-	// entry. Example: a log entry that reports a database error would be
-	// associated with the monitored resource designating the particular
-	// database that reported the error.
+	// Resource: Required. The primary monitored resource associated with
+	// this log entry. Example: a log entry that reports a database error
+	// would be associated with the monitored resource designating the
+	// particular database that reported the error.
 	Resource *MonitoredResource `json:"resource,omitempty"`
 
 	// Severity: Optional. The severity of the log entry. The default value
@@ -903,6 +912,12 @@ type LogEntry struct {
 	// with the log entry, if any.
 	SourceLocation *LogEntrySourceLocation `json:"sourceLocation,omitempty"`
 
+	// SpanId: Optional. The span ID within the trace associated with the
+	// log entry. For Trace spans, this is the same format that the Trace
+	// API v2 uses: a 16-character hexadecimal encoding of an 8-byte array,
+	// such as <code>"000000000000004a"</code>.
+	SpanId string `json:"spanId,omitempty"`
+
 	// TextPayload: The log entry payload, represented as a Unicode string
 	// (UTF-8).
 	TextPayload string `json:"textPayload,omitempty"`
@@ -910,10 +925,14 @@ type LogEntry struct {
 	// Timestamp: Optional. The time the event described by the log entry
 	// occurred. This time is used to compute the log entry's age and to
 	// enforce the logs retention period. If this field is omitted in a new
-	// log entry, then Stackdriver Logging assigns it the current
-	// time.Incoming log entries should have timestamps that are no more
-	// than the logs retention period in the past, and no more than 24 hours
-	// in the future. See the entries.write API method for more information.
+	// log entry, then Logging assigns it the current time. Timestamps have
+	// nanosecond accuracy, but trailing zeros in the fractional seconds
+	// might be omitted when the timestamp is displayed.Incoming log entries
+	// should have timestamps that are no more than the logs retention
+	// period in the past, and no more than 24 hours in the future. Log
+	// entries outside those time boundaries will not be available when
+	// calling entries.list, but those log entries can still be exported
+	// with LogSinks.
 	Timestamp string `json:"timestamp,omitempty"`
 
 	// Trace: Optional. Resource name of the trace associated with the log
@@ -921,6 +940,15 @@ type LogEntry struct {
 	// assumed to be relative to //tracing.googleapis.com. Example:
 	// projects/my-projectid/traces/06796866738c859f2f19b7cfb3214824
 	Trace string `json:"trace,omitempty"`
+
+	// TraceSampled: Optional. The sampling decision of the trace associated
+	// with the log entry. True means that the trace resource name in the
+	// trace field was sampled for storage in a trace backend. False means
+	// that the trace was not sampled for storage when this log entry was
+	// written, or the sampling decision was unknown at the time. A
+	// non-sampled trace value is still useful as a request correlation
+	// identifier. The default is False.
+	TraceSampled bool `json:"traceSampled,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "HttpRequest") to
 	// unconditionally include in API requests. By default, fields with
@@ -940,8 +968,8 @@ type LogEntry struct {
 }
 
 func (s *LogEntry) MarshalJSON() ([]byte, error) {
-	type noMethod LogEntry
-	raw := noMethod(*s)
+	type NoMethod LogEntry
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -983,8 +1011,8 @@ type LogEntryOperation struct {
 }
 
 func (s *LogEntryOperation) MarshalJSON() ([]byte, error) {
-	type noMethod LogEntryOperation
-	raw := noMethod(*s)
+	type NoMethod LogEntryOperation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1025,8 +1053,8 @@ type LogEntrySourceLocation struct {
 }
 
 func (s *LogEntrySourceLocation) MarshalJSON() ([]byte, error) {
-	type noMethod LogEntrySourceLocation
-	raw := noMethod(*s)
+	type NoMethod LogEntrySourceLocation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1077,8 +1105,8 @@ type LogLine struct {
 }
 
 func (s *LogLine) MarshalJSON() ([]byte, error) {
-	type noMethod LogLine
-	raw := noMethod(*s)
+	type NoMethod LogLine
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1172,8 +1200,8 @@ type LogMetric struct {
 	// metric. The v2 format is used by default and cannot be changed.
 	//
 	// Possible values:
-	//   "V2" - Stackdriver Logging API v2.
-	//   "V1" - Stackdriver Logging API v1.
+	//   "V2" - Logging API v2.
+	//   "V1" - Logging API v1.
 	Version string `json:"version,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1198,8 +1226,8 @@ type LogMetric struct {
 }
 
 func (s *LogMetric) MarshalJSON() ([]byte, error) {
-	type noMethod LogMetric
-	raw := noMethod(*s)
+	type NoMethod LogMetric
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1274,14 +1302,14 @@ type LogSink struct {
 	StartTime string `json:"startTime,omitempty"`
 
 	// WriterIdentity: Output only. An IAM identity&mdash;a service account
-	// or group&mdash;under which Stackdriver Logging writes the exported
-	// log entries to the sink's destination. This field is set by
-	// sinks.create and sinks.update, based on the setting of
-	// unique_writer_identity in those methods.Until you grant this identity
-	// write-access to the destination, log entry exports from this sink
-	// will fail. For more information, see Granting access for a resource.
-	// Consult the destination service's documentation to determine the
-	// appropriate IAM roles to assign to the identity.
+	// or group&mdash;under which Logging writes the exported log entries to
+	// the sink's destination. This field is set by sinks.create and
+	// sinks.update, based on the setting of unique_writer_identity in those
+	// methods.Until you grant this identity write-access to the
+	// destination, log entry exports from this sink will fail. For more
+	// information, see Granting access for a resource. Consult the
+	// destination service's documentation to determine the appropriate IAM
+	// roles to assign to the identity.
 	WriterIdentity string `json:"writerIdentity,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1306,8 +1334,8 @@ type LogSink struct {
 }
 
 func (s *LogSink) MarshalJSON() ([]byte, error) {
-	type noMethod LogSink
-	raw := noMethod(*s)
+	type NoMethod LogSink
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1321,7 +1349,9 @@ type MetricDescriptor struct {
 
 	// DisplayName: A concise name for the metric, which can be displayed in
 	// user interfaces. Use sentence case without an ending period, for
-	// example "Request count".
+	// example "Request count". This field is optional but it is recommended
+	// to be set for any metrics associated with user-visible concepts, such
+	// as Quota.
 	DisplayName string `json:"displayName,omitempty"`
 
 	// Labels: The set of labels that can be used to describe a specific
@@ -1331,6 +1361,10 @@ type MetricDescriptor struct {
 	// look at latencies for successful responses or just for responses that
 	// failed.
 	Labels []*LabelDescriptor `json:"labels,omitempty"`
+
+	// Metadata: Optional. Metadata which can be used to guide usage of the
+	// metric.
+	Metadata *MetricDescriptorMetadata `json:"metadata,omitempty"`
 
 	// MetricKind: Whether the metric records instantaneous values, changes
 	// to a value, etc. Some combinations of metric_kind and value_type
@@ -1346,26 +1380,19 @@ type MetricDescriptor struct {
 	// zero and sets a new start time for the following points.
 	MetricKind string `json:"metricKind,omitempty"`
 
-	// Name: The resource name of the metric descriptor. Depending on the
-	// implementation, the name typically includes: (1) the parent resource
-	// name that defines the scope of the metric type or of its data; and
-	// (2) the metric's URL-encoded type, which also appears in the type
-	// field of this descriptor. For example, following is the resource name
-	// of a custom metric within the GCP project
-	// my-project-id:
-	// "projects/my-project-id/metricDescriptors/custom.google
-	// apis.com%2Finvoice%2Fpaid%2Famount"
-	//
+	// Name: The resource name of the metric descriptor.
 	Name string `json:"name,omitempty"`
 
 	// Type: The metric type, including its DNS name prefix. The type is not
-	// URL-encoded. All user-defined custom metric types have the DNS name
-	// custom.googleapis.com. Metric types should use a natural hierarchical
-	// grouping. For
+	// URL-encoded. All user-defined metric types have the DNS name
+	// custom.googleapis.com or external.googleapis.com. Metric types should
+	// use a natural hierarchical grouping. For
 	// example:
 	// "custom.googleapis.com/invoice/paid/amount"
-	// "appengine.google
-	// apis.com/http/server/response_latencies"
+	// "external.googlea
+	// pis.com/prometheus/up"
+	// "appengine.googleapis.com/http/server/response_
+	// latencies"
 	//
 	Type string `json:"type,omitempty"`
 
@@ -1398,15 +1425,14 @@ type MetricDescriptor struct {
 	// Ki kibi (2**10)
 	// Mi mebi (2**20)
 	// Gi gibi (2**30)
-	// Ti tebi (2**40)GrammarThe grammar includes the dimensionless unit 1,
-	// such as 1/s.The grammar also includes these connectors:
+	// Ti tebi (2**40)GrammarThe grammar also includes these connectors:
 	// / division (as an infix operator, e.g. 1/s).
 	// . multiplication (as an infix operator, e.g. GBy.d)The grammar for a
 	// unit is as follows:
 	// Expression = Component { "." Component } { "/" Component }
 	// ;
 	//
-	// Component = [ PREFIX ] UNIT [ Annotation ]
+	// Component = ( [ PREFIX ] UNIT | "%" ) [ Annotation ]
 	//           | Annotation
 	//           | "1"
 	//           ;
@@ -1418,6 +1444,9 @@ type MetricDescriptor struct {
 	// By{transmitted}/s == By/s.
 	// NAME is a sequence of non-blank printable ASCII characters not
 	// containing '{' or '}'.
+	// 1 represents dimensionless value 1, such as in 1/s.
+	// % represents dimensionless value 1/100, and annotates values giving
+	// a percentage.
 	Unit string `json:"unit,omitempty"`
 
 	// ValueType: Whether the measurement is an integer, a floating-point
@@ -1454,8 +1483,78 @@ type MetricDescriptor struct {
 }
 
 func (s *MetricDescriptor) MarshalJSON() ([]byte, error) {
-	type noMethod MetricDescriptor
-	raw := noMethod(*s)
+	type NoMethod MetricDescriptor
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// MetricDescriptorMetadata: Additional annotations that can be used to
+// guide the usage of a metric.
+type MetricDescriptorMetadata struct {
+	// IngestDelay: The delay of data points caused by ingestion. Data
+	// points older than this age are guaranteed to be ingested and
+	// available to be read, excluding data loss due to errors.
+	IngestDelay string `json:"ingestDelay,omitempty"`
+
+	// LaunchStage: The launch stage of the metric definition.
+	//
+	// Possible values:
+	//   "LAUNCH_STAGE_UNSPECIFIED" - Do not use this default value.
+	//   "EARLY_ACCESS" - Early Access features are limited to a closed
+	// group of testers. To use these features, you must sign up in advance
+	// and sign a Trusted Tester agreement (which includes confidentiality
+	// provisions). These features may be unstable, changed in
+	// backward-incompatible ways, and are not guaranteed to be released.
+	//   "ALPHA" - Alpha is a limited availability test for releases before
+	// they are cleared for widespread use. By Alpha, all significant design
+	// issues are resolved and we are in the process of verifying
+	// functionality. Alpha customers need to apply for access, agree to
+	// applicable terms, and have their projects whitelisted. Alpha releases
+	// don’t have to be feature complete, no SLAs are provided, and there
+	// are no technical support obligations, but they will be far enough
+	// along that customers can actually use them in test environments or
+	// for limited-use tests -- just like they would in normal production
+	// cases.
+	//   "BETA" - Beta is the point at which we are ready to open a release
+	// for any customer to use. There are no SLA or technical support
+	// obligations in a Beta release. Products will be complete from a
+	// feature perspective, but may have some open outstanding issues. Beta
+	// releases are suitable for limited production use cases.
+	//   "GA" - GA features are open to all developers and are considered
+	// stable and fully qualified for production use.
+	//   "DEPRECATED" - Deprecated features are scheduled to be shut down
+	// and removed. For more information, see the “Deprecation Policy”
+	// section of our Terms of Service (https://cloud.google.com/terms/) and
+	// the Google Cloud Platform Subject to the Deprecation Policy
+	// (https://cloud.google.com/terms/deprecation) documentation.
+	LaunchStage string `json:"launchStage,omitempty"`
+
+	// SamplePeriod: The sampling period of metric data points. For metrics
+	// which are written periodically, consecutive data points are stored at
+	// this time interval, excluding data loss due to errors. Metrics with a
+	// higher granularity have a smaller sampling period.
+	SamplePeriod string `json:"samplePeriod,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "IngestDelay") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IngestDelay") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *MetricDescriptorMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod MetricDescriptorMetadata
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1502,8 +1601,8 @@ type MonitoredResource struct {
 }
 
 func (s *MonitoredResource) MarshalJSON() ([]byte, error) {
-	type noMethod MonitoredResource
-	raw := noMethod(*s)
+	type NoMethod MonitoredResource
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1564,8 +1663,52 @@ type MonitoredResourceDescriptor struct {
 }
 
 func (s *MonitoredResourceDescriptor) MarshalJSON() ([]byte, error) {
-	type noMethod MonitoredResourceDescriptor
-	raw := noMethod(*s)
+	type NoMethod MonitoredResourceDescriptor
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// MonitoredResourceMetadata: Auxiliary metadata for a MonitoredResource
+// object. MonitoredResource objects contain the minimum set of
+// information to uniquely identify a monitored resource instance. There
+// is some other useful auxiliary metadata. Monitoring and Logging use
+// an ingestion pipeline to extract metadata for cloud resources of all
+// types, and store the metadata in this message.
+type MonitoredResourceMetadata struct {
+	// SystemLabels: Output only. Values for predefined system metadata
+	// labels. System labels are a kind of metadata extracted by Google,
+	// including "machine_image", "vpc", "subnet_id", "security_group",
+	// "name", etc. System label values can be only strings, Boolean values,
+	// or a list of strings. For example:
+	// { "name": "my-test-instance",
+	//   "security_group": ["a", "b", "c"],
+	//   "spot_instance": false }
+	//
+	SystemLabels googleapi.RawMessage `json:"systemLabels,omitempty"`
+
+	// UserLabels: Output only. A map of user-defined metadata labels.
+	UserLabels map[string]string `json:"userLabels,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "SystemLabels") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SystemLabels") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *MonitoredResourceMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod MonitoredResourceMetadata
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1679,6 +1822,10 @@ type RequestLog struct {
 	// TraceId: Stackdriver Trace identifier for this request.
 	TraceId string `json:"traceId,omitempty"`
 
+	// TraceSampled: If true, the value in the 'trace_id' field was sampled
+	// for storage in a trace backend.
+	TraceSampled bool `json:"traceSampled,omitempty"`
+
 	// UrlMapEntry: File or class that handled the request.
 	UrlMapEntry string `json:"urlMapEntry,omitempty"`
 
@@ -1711,18 +1858,18 @@ type RequestLog struct {
 }
 
 func (s *RequestLog) MarshalJSON() ([]byte, error) {
-	type noMethod RequestLog
-	raw := noMethod(*s)
+	type NoMethod RequestLog
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *RequestLog) UnmarshalJSON(data []byte) error {
-	type noMethod RequestLog
+	type NoMethod RequestLog
 	var s1 struct {
 		Cost gensupport.JSONFloat64 `json:"cost"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
@@ -1765,8 +1912,8 @@ type SourceLocation struct {
 }
 
 func (s *SourceLocation) MarshalJSON() ([]byte, error) {
-	type noMethod SourceLocation
-	raw := noMethod(*s)
+	type NoMethod SourceLocation
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1799,30 +1946,36 @@ type SourceReference struct {
 }
 
 func (s *SourceReference) MarshalJSON() ([]byte, error) {
-	type noMethod SourceReference
-	raw := noMethod(*s)
+	type NoMethod SourceReference
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // WriteLogEntriesRequest: The parameters to WriteLogEntries.
 type WriteLogEntriesRequest struct {
-	// Entries: Required. The log entries to send to Stackdriver Logging.
-	// The order of log entries in this list does not matter. Values
-	// supplied in this method's log_name, resource, and labels fields are
-	// copied into those log entries in this list that do not include values
-	// for their corresponding fields. For more information, see the
-	// LogEntry type.If the timestamp or insert_id fields are missing in log
-	// entries, then this method supplies the current time or a unique
-	// identifier, respectively. The supplied values are chosen so that,
-	// among the log entries that did not supply their own values, the
-	// entries earlier in the list will sort before the entries later in the
-	// list. See the entries.list method.Log entries with timestamps that
-	// are more than the logs retention period in the past or more than 24
-	// hours in the future might be discarded. Discarding does not return an
-	// error.To improve throughput and to avoid exceeding the quota limit
-	// for calls to entries.write, you should try to include several log
-	// entries in this list, rather than calling this method for each
-	// individual log entry.
+	// DryRun: Optional. If true, the request should expect normal response,
+	// but the entries won't be persisted nor exported. Useful for checking
+	// whether the logging API endpoints are working properly before sending
+	// valuable data.
+	DryRun bool `json:"dryRun,omitempty"`
+
+	// Entries: Required. The log entries to send to Logging. The order of
+	// log entries in this list does not matter. Values supplied in this
+	// method's log_name, resource, and labels fields are copied into those
+	// log entries in this list that do not include values for their
+	// corresponding fields. For more information, see the LogEntry type.If
+	// the timestamp or insert_id fields are missing in log entries, then
+	// this method supplies the current time or a unique identifier,
+	// respectively. The supplied values are chosen so that, among the log
+	// entries that did not supply their own values, the entries earlier in
+	// the list will sort before the entries later in the list. See the
+	// entries.list method.Log entries with timestamps that are more than
+	// the logs retention period in the past or more than 24 hours in the
+	// future will not be available when calling entries.list. However,
+	// those log entries can still be exported with LogSinks.To improve
+	// throughput and to avoid exceeding the quota limit for calls to
+	// entries.write, you should try to include several log entries in this
+	// list, rather than calling this method for each individual log entry.
 	Entries []*LogEntry `json:"entries,omitempty"`
 
 	// Labels: Optional. Default labels that are added to the labels field
@@ -1840,10 +1993,15 @@ type WriteLogEntriesRequest struct {
 	// "billingAccounts/[BILLING_ACCOUNT_ID]/logs/[
 	// LOG_ID]"
 	// "folders/[FOLDER_ID]/logs/[LOG_ID]"
-	// [LOG_ID] must be URL-encoded. For example,
-	// "projects/my-project-id/logs/syslog" or
-	// "organizations/1234567890/logs/cloudresourcemanager.googleapis.com%2Fa
-	// ctivity". For more information about log names, see LogEntry.
+	// [LOG_ID] must be URL-encoded. For
+	// example:
+	// "projects/my-project-id/logs/syslog"
+	// "organizations/123456789
+	// 0/logs/cloudresourcemanager.googleapis.com%2Factivity"
+	// The permission <code>logging.logEntries.create</code> is needed on
+	// each project, organization, billing account, or folder that is
+	// receiving new log entries, whether the resource is specified in
+	// <code>logName</code> or in an individual log entry.
 	LogName string `json:"logName,omitempty"`
 
 	// PartialSuccess: Optional. Whether valid entries should be written
@@ -1864,7 +2022,7 @@ type WriteLogEntriesRequest struct {
 	// See LogEntry.
 	Resource *MonitoredResource `json:"resource,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Entries") to
+	// ForceSendFields is a list of field names (e.g. "DryRun") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -1872,8 +2030,8 @@ type WriteLogEntriesRequest struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Entries") to include in
-	// API requests with the JSON null value. By default, fields with empty
+	// NullFields is a list of field names (e.g. "DryRun") to include in API
+	// requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
 	// null. It is an error if a field in this list has a non-empty value.
@@ -1882,8 +2040,8 @@ type WriteLogEntriesRequest struct {
 }
 
 func (s *WriteLogEntriesRequest) MarshalJSON() ([]byte, error) {
-	type noMethod WriteLogEntriesRequest
-	raw := noMethod(*s)
+	type NoMethod WriteLogEntriesRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1946,9 +2104,13 @@ func (c *BillingAccountsLogsDeleteCall) doRequest(alt string) (*http.Response, e
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+logName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"logName": c.logName,
@@ -1989,7 +2151,7 @@ func (c *BillingAccountsLogsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2106,9 +2268,13 @@ func (c *BillingAccountsLogsListCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/logs")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -2149,7 +2315,7 @@ func (c *BillingAccountsLogsListCall) Do(opts ...googleapi.CallOption) (*ListLog
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2227,8 +2393,7 @@ type EntriesListCall struct {
 }
 
 // List: Lists log entries. Use this method to retrieve log entries from
-// Stackdriver Logging. For ways to export log entries, see Exporting
-// Logs.
+// Logging. For ways to export log entries, see Exporting Logs.
 func (r *EntriesService) List(listlogentriesrequest *ListLogEntriesRequest) *EntriesListCall {
 	c := &EntriesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.listlogentriesrequest = listlogentriesrequest
@@ -2273,9 +2438,13 @@ func (c *EntriesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/entries:list")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2313,12 +2482,12 @@ func (c *EntriesListCall) Do(opts ...googleapi.CallOption) (*ListLogEntriesRespo
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists log entries. Use this method to retrieve log entries from Stackdriver Logging. For ways to export log entries, see Exporting Logs.",
+	//   "description": "Lists log entries. Use this method to retrieve log entries from Logging. For ways to export log entries, see Exporting Logs.",
 	//   "flatPath": "v2beta1/entries:list",
 	//   "httpMethod": "POST",
 	//   "id": "logging.entries.list",
@@ -2372,11 +2541,12 @@ type EntriesWriteCall struct {
 	header_                http.Header
 }
 
-// Write: Log entry resourcesWrites log entries to Stackdriver Logging.
-// This API method is the only way to send log entries to Stackdriver
-// Logging. This method is used, directly or indirectly, by the
-// Stackdriver Logging agent (fluentd) and all logging libraries
-// configured to use Stackdriver Logging.
+// Write: Writes log entries to Logging. This API method is the only way
+// to send log entries to Logging. This method is used, directly or
+// indirectly, by the Logging agent (fluentd) and all logging libraries
+// configured to use Logging. A single request may contain log entries
+// for a maximum of 1000 different resources (projects, organizations,
+// billing accounts or folders)
 func (r *EntriesService) Write(writelogentriesrequest *WriteLogEntriesRequest) *EntriesWriteCall {
 	c := &EntriesWriteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.writelogentriesrequest = writelogentriesrequest
@@ -2421,9 +2591,13 @@ func (c *EntriesWriteCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/entries:write")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2461,12 +2635,12 @@ func (c *EntriesWriteCall) Do(opts ...googleapi.CallOption) (*WriteLogEntriesRes
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Log entry resourcesWrites log entries to Stackdriver Logging. This API method is the only way to send log entries to Stackdriver Logging. This method is used, directly or indirectly, by the Stackdriver Logging agent (fluentd) and all logging libraries configured to use Stackdriver Logging.",
+	//   "description": "Writes log entries to Logging. This API method is the only way to send log entries to Logging. This method is used, directly or indirectly, by the Logging agent (fluentd) and all logging libraries configured to use Logging. A single request may contain log entries for a maximum of 1000 different resources (projects, organizations, billing accounts or folders)",
 	//   "flatPath": "v2beta1/entries:write",
 	//   "httpMethod": "POST",
 	//   "id": "logging.entries.write",
@@ -2499,7 +2673,7 @@ type MonitoredResourceDescriptorsListCall struct {
 }
 
 // List: Lists the descriptors for monitored resource types used by
-// Stackdriver Logging.
+// Logging.
 func (r *MonitoredResourceDescriptorsService) List() *MonitoredResourceDescriptorsListCall {
 	c := &MonitoredResourceDescriptorsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
@@ -2570,9 +2744,13 @@ func (c *MonitoredResourceDescriptorsListCall) doRequest(alt string) (*http.Resp
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/monitoredResourceDescriptors")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -2612,12 +2790,12 @@ func (c *MonitoredResourceDescriptorsListCall) Do(opts ...googleapi.CallOption) 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists the descriptors for monitored resource types used by Stackdriver Logging.",
+	//   "description": "Lists the descriptors for monitored resource types used by Logging.",
 	//   "flatPath": "v2beta1/monitoredResourceDescriptors",
 	//   "httpMethod": "GET",
 	//   "id": "logging.monitoredResourceDescriptors.list",
@@ -2722,9 +2900,13 @@ func (c *OrganizationsLogsDeleteCall) doRequest(alt string) (*http.Response, err
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+logName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"logName": c.logName,
@@ -2765,7 +2947,7 @@ func (c *OrganizationsLogsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2882,9 +3064,13 @@ func (c *OrganizationsLogsListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/logs")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -2925,7 +3111,7 @@ func (c *OrganizationsLogsListCall) Do(opts ...googleapi.CallOption) (*ListLogsR
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3044,9 +3230,13 @@ func (c *ProjectsLogsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+logName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"logName": c.logName,
@@ -3087,7 +3277,7 @@ func (c *ProjectsLogsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3204,9 +3394,13 @@ func (c *ProjectsLogsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/logs")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -3247,7 +3441,7 @@ func (c *ProjectsLogsListCall) Do(opts ...googleapi.CallOption) (*ListLogsRespon
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3371,9 +3565,13 @@ func (c *ProjectsMetricsCreateCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/metrics")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -3414,7 +3612,7 @@ func (c *ProjectsMetricsCreateCall) Do(opts ...googleapi.CallOption) (*LogMetric
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3501,9 +3699,13 @@ func (c *ProjectsMetricsDeleteCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+metricName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"metricName": c.metricName,
@@ -3544,7 +3746,7 @@ func (c *ProjectsMetricsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, er
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3642,9 +3844,13 @@ func (c *ProjectsMetricsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+metricName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"metricName": c.metricName,
@@ -3685,7 +3891,7 @@ func (c *ProjectsMetricsGetCall) Do(opts ...googleapi.CallOption) (*LogMetric, e
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3803,9 +4009,13 @@ func (c *ProjectsMetricsListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/metrics")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -3846,7 +4056,7 @@ func (c *ProjectsMetricsListCall) Do(opts ...googleapi.CallOption) (*ListLogMetr
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3970,9 +4180,13 @@ func (c *ProjectsMetricsUpdateCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+metricName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"metricName": c.metricName,
@@ -4013,7 +4227,7 @@ func (c *ProjectsMetricsUpdateCall) Do(opts ...googleapi.CallOption) (*LogMetric
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4078,13 +4292,12 @@ func (r *ProjectsSinksService) Create(parent string, logsink *LogSink) *Projects
 // as writer_identity in the new sink. If this value is omitted or set
 // to false, and if the sink's parent is a project, then the value
 // returned as writer_identity is the same group or service account used
-// by Stackdriver Logging before the addition of writer identities to
-// this API. The sink's destination must be in the same project as the
-// sink itself.If this field is set to true, or if the sink is owned by
-// a non-project resource such as an organization, then the value of
-// writer_identity will be a unique service account used only for
-// exports from the new sink. For more information, see writer_identity
-// in LogSink.
+// by Logging before the addition of writer identities to this API. The
+// sink's destination must be in the same project as the sink itself.If
+// this field is set to true, or if the sink is owned by a non-project
+// resource such as an organization, then the value of writer_identity
+// will be a unique service account used only for exports from the new
+// sink. For more information, see writer_identity in LogSink.
 func (c *ProjectsSinksCreateCall) UniqueWriterIdentity(uniqueWriterIdentity bool) *ProjectsSinksCreateCall {
 	c.urlParams_.Set("uniqueWriterIdentity", fmt.Sprint(uniqueWriterIdentity))
 	return c
@@ -4128,9 +4341,13 @@ func (c *ProjectsSinksCreateCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/sinks")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -4171,7 +4388,7 @@ func (c *ProjectsSinksCreateCall) Do(opts ...googleapi.CallOption) (*LogSink, er
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4192,7 +4409,7 @@ func (c *ProjectsSinksCreateCall) Do(opts ...googleapi.CallOption) (*LogSink, er
 	//       "type": "string"
 	//     },
 	//     "uniqueWriterIdentity": {
-	//       "description": "Optional. Determines the kind of IAM identity returned as writer_identity in the new sink. If this value is omitted or set to false, and if the sink's parent is a project, then the value returned as writer_identity is the same group or service account used by Stackdriver Logging before the addition of writer identities to this API. The sink's destination must be in the same project as the sink itself.If this field is set to true, or if the sink is owned by a non-project resource such as an organization, then the value of writer_identity will be a unique service account used only for exports from the new sink. For more information, see writer_identity in LogSink.",
+	//       "description": "Optional. Determines the kind of IAM identity returned as writer_identity in the new sink. If this value is omitted or set to false, and if the sink's parent is a project, then the value returned as writer_identity is the same group or service account used by Logging before the addition of writer identities to this API. The sink's destination must be in the same project as the sink itself.If this field is set to true, or if the sink is owned by a non-project resource such as an organization, then the value of writer_identity will be a unique service account used only for exports from the new sink. For more information, see writer_identity in LogSink.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     }
@@ -4263,9 +4480,13 @@ func (c *ProjectsSinksDeleteCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+sinkName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"sinkName": c.sinkNameid,
@@ -4306,7 +4527,7 @@ func (c *ProjectsSinksDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, erro
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4403,9 +4624,13 @@ func (c *ProjectsSinksGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+sinkName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"sinkName": c.sinkName,
@@ -4446,7 +4671,7 @@ func (c *ProjectsSinksGetCall) Do(opts ...googleapi.CallOption) (*LogSink, error
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4564,9 +4789,13 @@ func (c *ProjectsSinksListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+parent}/sinks")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
@@ -4607,7 +4836,7 @@ func (c *ProjectsSinksListCall) Do(opts ...googleapi.CallOption) (*ListSinksResp
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4720,7 +4949,7 @@ func (c *ProjectsSinksUpdateCall) UniqueWriterIdentity(uniqueWriterIdentity bool
 // compatibility purposes:  destination,filter,includeChildren At some
 // point in the future, behavior will be removed and specifying an empty
 // updateMask will be an error.For a detailed FieldMask definition, see
-// https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmaskExample:
+// https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#google.protobuf.FieldMaskExample:
 // updateMask=filter.
 func (c *ProjectsSinksUpdateCall) UpdateMask(updateMask string) *ProjectsSinksUpdateCall {
 	c.urlParams_.Set("updateMask", updateMask)
@@ -4765,9 +4994,13 @@ func (c *ProjectsSinksUpdateCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v2beta1/{+sinkName}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"sinkName": c.sinkNameid,
@@ -4808,7 +5041,7 @@ func (c *ProjectsSinksUpdateCall) Do(opts ...googleapi.CallOption) (*LogSink, er
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4834,7 +5067,7 @@ func (c *ProjectsSinksUpdateCall) Do(opts ...googleapi.CallOption) (*LogSink, er
 	//       "type": "boolean"
 	//     },
 	//     "updateMask": {
-	//       "description": "Optional. Field mask that specifies the fields in sink that need an update. A sink field will be overwritten if, and only if, it is in the update mask. name and output only fields cannot be updated.An empty updateMask is temporarily treated as using the following mask for backwards compatibility purposes:  destination,filter,includeChildren At some point in the future, behavior will be removed and specifying an empty updateMask will be an error.For a detailed FieldMask definition, see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmaskExample: updateMask=filter.",
+	//       "description": "Optional. Field mask that specifies the fields in sink that need an update. A sink field will be overwritten if, and only if, it is in the update mask. name and output only fields cannot be updated.An empty updateMask is temporarily treated as using the following mask for backwards compatibility purposes:  destination,filter,includeChildren At some point in the future, behavior will be removed and specifying an empty updateMask will be an error.For a detailed FieldMask definition, see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#google.protobuf.FieldMaskExample: updateMask=filter.",
 	//       "format": "google-fieldmask",
 	//       "location": "query",
 	//       "type": "string"

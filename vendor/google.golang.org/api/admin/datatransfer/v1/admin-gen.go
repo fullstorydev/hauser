@@ -140,8 +140,8 @@ type Application struct {
 }
 
 func (s *Application) MarshalJSON() ([]byte, error) {
-	type noMethod Application
-	raw := noMethod(*s)
+	type NoMethod Application
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -178,8 +178,8 @@ type ApplicationDataTransfer struct {
 }
 
 func (s *ApplicationDataTransfer) MarshalJSON() ([]byte, error) {
-	type noMethod ApplicationDataTransfer
-	raw := noMethod(*s)
+	type NoMethod ApplicationDataTransfer
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -211,8 +211,8 @@ type ApplicationTransferParam struct {
 }
 
 func (s *ApplicationTransferParam) MarshalJSON() ([]byte, error) {
-	type noMethod ApplicationTransferParam
-	raw := noMethod(*s)
+	type NoMethod ApplicationTransferParam
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -254,8 +254,8 @@ type ApplicationsListResponse struct {
 }
 
 func (s *ApplicationsListResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ApplicationsListResponse
-	raw := noMethod(*s)
+	type NoMethod ApplicationsListResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -314,8 +314,8 @@ type DataTransfer struct {
 }
 
 func (s *DataTransfer) MarshalJSON() ([]byte, error) {
-	type noMethod DataTransfer
-	raw := noMethod(*s)
+	type NoMethod DataTransfer
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -358,8 +358,8 @@ type DataTransfersListResponse struct {
 }
 
 func (s *DataTransfersListResponse) MarshalJSON() ([]byte, error) {
-	type noMethod DataTransfersListResponse
-	raw := noMethod(*s)
+	type NoMethod DataTransfersListResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -428,9 +428,13 @@ func (c *ApplicationsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "applications/{applicationId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"applicationId": strconv.FormatInt(c.applicationId, 10),
@@ -471,7 +475,7 @@ func (c *ApplicationsGetCall) Do(opts ...googleapi.CallOption) (*Application, er
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -587,9 +591,13 @@ func (c *ApplicationsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "applications")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -627,7 +635,7 @@ func (c *ApplicationsListCall) Do(opts ...googleapi.CallOption) (*ApplicationsLi
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -752,9 +760,13 @@ func (c *TransfersGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "transfers/{dataTransferId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"dataTransferId": c.dataTransferId,
@@ -795,7 +807,7 @@ func (c *TransfersGetCall) Do(opts ...googleapi.CallOption) (*DataTransfer, erro
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -881,9 +893,13 @@ func (c *TransfersInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "transfers")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -921,7 +937,7 @@ func (c *TransfersInsertCall) Do(opts ...googleapi.CallOption) (*DataTransfer, e
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1047,9 +1063,13 @@ func (c *TransfersListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "transfers")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -1087,7 +1107,7 @@ func (c *TransfersListCall) Do(opts ...googleapi.CallOption) (*DataTransfersList
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil

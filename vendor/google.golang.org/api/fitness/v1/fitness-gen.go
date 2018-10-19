@@ -243,8 +243,8 @@ type AggregateBucket struct {
 }
 
 func (s *AggregateBucket) MarshalJSON() ([]byte, error) {
-	type noMethod AggregateBucket
-	raw := noMethod(*s)
+	type NoMethod AggregateBucket
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -281,8 +281,8 @@ type AggregateBy struct {
 }
 
 func (s *AggregateBy) MarshalJSON() ([]byte, error) {
-	type noMethod AggregateBy
-	raw := noMethod(*s)
+	type NoMethod AggregateBy
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -365,8 +365,8 @@ type AggregateRequest struct {
 }
 
 func (s *AggregateRequest) MarshalJSON() ([]byte, error) {
-	type noMethod AggregateRequest
-	raw := noMethod(*s)
+	type NoMethod AggregateRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -396,8 +396,8 @@ type AggregateResponse struct {
 }
 
 func (s *AggregateResponse) MarshalJSON() ([]byte, error) {
-	type noMethod AggregateResponse
-	raw := noMethod(*s)
+	type NoMethod AggregateResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -442,8 +442,8 @@ type Application struct {
 }
 
 func (s *Application) MarshalJSON() ([]byte, error) {
-	type noMethod Application
-	raw := noMethod(*s)
+	type NoMethod Application
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -477,8 +477,8 @@ type BucketByActivity struct {
 }
 
 func (s *BucketByActivity) MarshalJSON() ([]byte, error) {
-	type noMethod BucketByActivity
-	raw := noMethod(*s)
+	type NoMethod BucketByActivity
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -507,8 +507,8 @@ type BucketBySession struct {
 }
 
 func (s *BucketBySession) MarshalJSON() ([]byte, error) {
-	type noMethod BucketBySession
-	raw := noMethod(*s)
+	type NoMethod BucketBySession
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -539,8 +539,8 @@ type BucketByTime struct {
 }
 
 func (s *BucketByTime) MarshalJSON() ([]byte, error) {
-	type noMethod BucketByTime
-	raw := noMethod(*s)
+	type NoMethod BucketByTime
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -574,8 +574,8 @@ type BucketByTimePeriod struct {
 }
 
 func (s *BucketByTimePeriod) MarshalJSON() ([]byte, error) {
-	type noMethod BucketByTimePeriod
-	raw := noMethod(*s)
+	type NoMethod BucketByTimePeriod
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -651,8 +651,8 @@ type DataPoint struct {
 }
 
 func (s *DataPoint) MarshalJSON() ([]byte, error) {
-	type noMethod DataPoint
-	raw := noMethod(*s)
+	type NoMethod DataPoint
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -779,8 +779,8 @@ type DataSource struct {
 }
 
 func (s *DataSource) MarshalJSON() ([]byte, error) {
-	type noMethod DataSource
-	raw := noMethod(*s)
+	type NoMethod DataSource
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -810,8 +810,8 @@ type DataType struct {
 }
 
 func (s *DataType) MarshalJSON() ([]byte, error) {
-	type noMethod DataType
-	raw := noMethod(*s)
+	type NoMethod DataType
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -862,8 +862,8 @@ type DataTypeField struct {
 }
 
 func (s *DataTypeField) MarshalJSON() ([]byte, error) {
-	type noMethod DataTypeField
-	raw := noMethod(*s)
+	type NoMethod DataTypeField
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -923,8 +923,8 @@ type Dataset struct {
 }
 
 func (s *Dataset) MarshalJSON() ([]byte, error) {
-	type noMethod Dataset
-	raw := noMethod(*s)
+	type NoMethod Dataset
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -988,8 +988,8 @@ type Device struct {
 }
 
 func (s *Device) MarshalJSON() ([]byte, error) {
-	type noMethod Device
-	raw := noMethod(*s)
+	type NoMethod Device
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -998,11 +998,11 @@ type ListDataPointChangesResponse struct {
 	// changes.
 	DataSourceId string `json:"dataSourceId,omitempty"`
 
-	// DeletedDataPoint: Data points that have been removed and will not be
-	// included in any other request for dataset contents.
+	// DeletedDataPoint: Deleted data points for the user. Note, for
+	// modifications this should be parsed before handling insertions.
 	DeletedDataPoint []*DataPoint `json:"deletedDataPoint,omitempty"`
 
-	// InsertedDataPoint: Data points listed.
+	// InsertedDataPoint: Inserted data points for the user.
 	InsertedDataPoint []*DataPoint `json:"insertedDataPoint,omitempty"`
 
 	// NextPageToken: The continuation token, which is used to page through
@@ -1032,8 +1032,8 @@ type ListDataPointChangesResponse struct {
 }
 
 func (s *ListDataPointChangesResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListDataPointChangesResponse
-	raw := noMethod(*s)
+	type NoMethod ListDataPointChangesResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1063,8 +1063,8 @@ type ListDataSourcesResponse struct {
 }
 
 func (s *ListDataSourcesResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListDataSourcesResponse
-	raw := noMethod(*s)
+	type NoMethod ListDataSourcesResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1109,8 +1109,8 @@ type ListSessionsResponse struct {
 }
 
 func (s *ListSessionsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod ListSessionsResponse
-	raw := noMethod(*s)
+	type NoMethod ListSessionsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1141,18 +1141,18 @@ type MapValue struct {
 }
 
 func (s *MapValue) MarshalJSON() ([]byte, error) {
-	type noMethod MapValue
-	raw := noMethod(*s)
+	type NoMethod MapValue
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *MapValue) UnmarshalJSON(data []byte) error {
-	type noMethod MapValue
+	type NoMethod MapValue
 	var s1 struct {
 		FpVal gensupport.JSONFloat64 `json:"fpVal"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
@@ -1220,8 +1220,8 @@ type Session struct {
 }
 
 func (s *Session) MarshalJSON() ([]byte, error) {
-	type noMethod Session
-	raw := noMethod(*s)
+	type NoMethod Session
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1269,18 +1269,18 @@ type Value struct {
 }
 
 func (s *Value) MarshalJSON() ([]byte, error) {
-	type noMethod Value
-	raw := noMethod(*s)
+	type NoMethod Value
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 func (s *Value) UnmarshalJSON(data []byte) error {
-	type noMethod Value
+	type NoMethod Value
 	var s1 struct {
 		FpVal gensupport.JSONFloat64 `json:"fpVal"`
-		*noMethod
+		*NoMethod
 	}
-	s1.noMethod = (*noMethod)(s)
+	s1.NoMethod = (*NoMethod)(s)
 	if err := json.Unmarshal(data, &s1); err != nil {
 		return err
 	}
@@ -1311,8 +1311,8 @@ type ValueMapValEntry struct {
 }
 
 func (s *ValueMapValEntry) MarshalJSON() ([]byte, error) {
-	type noMethod ValueMapValEntry
-	raw := noMethod(*s)
+	type NoMethod ValueMapValEntry
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1381,9 +1381,13 @@ func (c *UsersDataSourcesCreateCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
@@ -1424,7 +1428,7 @@ func (c *UsersDataSourcesCreateCall) Do(opts ...googleapi.CallOption) (*DataSour
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1518,9 +1522,13 @@ func (c *UsersDataSourcesDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -1562,7 +1570,7 @@ func (c *UsersDataSourcesDeleteCall) Do(opts ...googleapi.CallOption) (*DataSour
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1673,9 +1681,13 @@ func (c *UsersDataSourcesGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -1717,7 +1729,7 @@ func (c *UsersDataSourcesGetCall) Do(opts ...googleapi.CallOption) (*DataSource,
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1846,9 +1858,13 @@ func (c *UsersDataSourcesListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
@@ -1889,7 +1905,7 @@ func (c *UsersDataSourcesListCall) Do(opts ...googleapi.CallOption) (*ListDataSo
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2006,9 +2022,13 @@ func (c *UsersDataSourcesPatchCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -2050,7 +2070,7 @@ func (c *UsersDataSourcesPatchCall) Do(opts ...googleapi.CallOption) (*DataSourc
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2161,9 +2181,13 @@ func (c *UsersDataSourcesUpdateCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -2205,7 +2229,7 @@ func (c *UsersDataSourcesUpdateCall) Do(opts ...googleapi.CallOption) (*DataSour
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2265,7 +2289,8 @@ type UsersDataSourcesDataPointChangesListCall struct {
 	header_      http.Header
 }
 
-// List: results ordered by descending end_time
+// List: Queries for user's data point changes for a particular data
+// source.
 func (r *UsersDataSourcesDataPointChangesService) List(userId string, dataSourceId string) *UsersDataSourcesDataPointChangesListCall {
 	c := &UsersDataSourcesDataPointChangesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
@@ -2274,8 +2299,7 @@ func (r *UsersDataSourcesDataPointChangesService) List(userId string, dataSource
 }
 
 // Limit sets the optional parameter "limit": If specified, no more than
-// this many data point changes will be included in the response. The
-// default is 500 data point changes.
+// this many data point changes will be included in the response.
 func (c *UsersDataSourcesDataPointChangesListCall) Limit(limit int64) *UsersDataSourcesDataPointChangesListCall {
 	c.urlParams_.Set("limit", fmt.Sprint(limit))
 	return c
@@ -2336,9 +2360,13 @@ func (c *UsersDataSourcesDataPointChangesListCall) doRequest(alt string) (*http.
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}/dataPointChanges")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -2380,12 +2408,12 @@ func (c *UsersDataSourcesDataPointChangesListCall) Do(opts ...googleapi.CallOpti
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "results ordered by descending end_time",
+	//   "description": "Queries for user's data point changes for a particular data source.",
 	//   "httpMethod": "GET",
 	//   "id": "fitness.users.dataSources.dataPointChanges.list",
 	//   "parameterOrder": [
@@ -2400,7 +2428,7 @@ func (c *UsersDataSourcesDataPointChangesListCall) Do(opts ...googleapi.CallOpti
 	//       "type": "string"
 	//     },
 	//     "limit": {
-	//       "description": "If specified, no more than this many data point changes will be included in the response. The default is 500 data point changes.",
+	//       "description": "If specified, no more than this many data point changes will be included in the response.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
@@ -2411,7 +2439,7 @@ func (c *UsersDataSourcesDataPointChangesListCall) Do(opts ...googleapi.CallOpti
 	//       "type": "string"
 	//     },
 	//     "userId": {
-	//       "description": "List data points for the person identified. Use \"me\" to indicate the authenticated user. Only \"me\" is supported at this time.",
+	//       "description": "List data points for the person identified. Use me to indicate the authenticated user. Only me is supported at this time.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -2540,9 +2568,13 @@ func (c *UsersDataSourcesDatasetsDeleteCall) doRequest(alt string) (*http.Respon
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}/datasets/{datasetId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -2713,9 +2745,13 @@ func (c *UsersDataSourcesDatasetsGetCall) doRequest(alt string) (*http.Response,
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}/datasets/{datasetId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -2758,7 +2794,7 @@ func (c *UsersDataSourcesDatasetsGetCall) Do(opts ...googleapi.CallOption) (*Dat
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2925,9 +2961,13 @@ func (c *UsersDataSourcesDatasetsPatchCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataSources/{dataSourceId}/datasets/{datasetId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PATCH", urls, body)
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":       c.userId,
@@ -2970,7 +3010,7 @@ func (c *UsersDataSourcesDatasetsPatchCall) Do(opts ...googleapi.CallOption) (*D
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3112,9 +3152,13 @@ func (c *UsersDatasetAggregateCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/dataset:aggregate")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
@@ -3155,7 +3199,7 @@ func (c *UsersDatasetAggregateCall) Do(opts ...googleapi.CallOption) (*Aggregate
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3264,9 +3308,13 @@ func (c *UsersSessionsDeleteCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/sessions/{sessionId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":    c.userId,
@@ -3421,9 +3469,13 @@ func (c *UsersSessionsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/sessions")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
@@ -3464,7 +3516,7 @@ func (c *UsersSessionsListCall) Do(opts ...googleapi.CallOption) (*ListSessionsR
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3618,9 +3670,13 @@ func (c *UsersSessionsUpdateCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{userId}/sessions/{sessionId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId":    c.userId,
@@ -3662,7 +3718,7 @@ func (c *UsersSessionsUpdateCall) Do(opts ...googleapi.CallOption) (*Session, er
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil

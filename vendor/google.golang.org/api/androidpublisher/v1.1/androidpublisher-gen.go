@@ -120,12 +120,19 @@ type InappPurchase struct {
 	// PurchaseState: The purchase state of the order. Possible values are:
 	//
 	// - Purchased
-	// - Cancelled
+	// - Canceled
 	PurchaseState int64 `json:"purchaseState,omitempty"`
 
 	// PurchaseTime: The time the product was purchased, in milliseconds
 	// since the epoch (Jan 1, 1970).
 	PurchaseTime int64 `json:"purchaseTime,omitempty,string"`
+
+	// PurchaseType: The type of purchase of the inapp product. This field
+	// is only set if this purchase was not made using the standard in-app
+	// billing flow. Possible values are:
+	// - Test (i.e. purchased from a license testing account)
+	// - Promo (i.e. purchased using a promo code)
+	PurchaseType *int64 `json:"purchaseType,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -150,8 +157,8 @@ type InappPurchase struct {
 }
 
 func (s *InappPurchase) MarshalJSON() ([]byte, error) {
-	type noMethod InappPurchase
-	raw := noMethod(*s)
+	type NoMethod InappPurchase
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -196,8 +203,8 @@ type SubscriptionPurchase struct {
 }
 
 func (s *SubscriptionPurchase) MarshalJSON() ([]byte, error) {
-	type noMethod SubscriptionPurchase
-	raw := noMethod(*s)
+	type NoMethod SubscriptionPurchase
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -269,9 +276,13 @@ func (c *InapppurchasesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{packageName}/inapp/{productId}/purchases/{token}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"packageName": c.packageName,
@@ -314,7 +325,7 @@ func (c *InapppurchasesGetCall) Do(opts ...googleapi.CallOption) (*InappPurchase
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -413,9 +424,13 @@ func (c *PurchasesCancelCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{packageName}/subscriptions/{subscriptionId}/purchases/{token}/cancel")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"packageName":    c.packageName,
@@ -543,9 +558,13 @@ func (c *PurchasesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{packageName}/subscriptions/{subscriptionId}/purchases/{token}")
 	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"packageName":    c.packageName,
@@ -588,7 +607,7 @@ func (c *PurchasesGetCall) Do(opts ...googleapi.CallOption) (*SubscriptionPurcha
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil

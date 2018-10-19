@@ -1,4 +1,4 @@
-// Copyright 2015 Google Inc. All rights reserved.
+// Copyright 2015 Google LLC
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -493,7 +493,7 @@ func TestParseJSONTag(t *testing.T) {
 			t.Fatalf("parsing json:\n got err: %v\ntag: %q", err, tc.tag)
 		}
 		if !reflect.DeepEqual(got, tc.want) {
-			t.Errorf("parseJSONTage:\ngot :%s\nwant:%s", got, tc.want)
+			t.Errorf("parseJSONTage:\ngot :%v\nwant:%v", got, tc.want)
 		}
 	}
 }

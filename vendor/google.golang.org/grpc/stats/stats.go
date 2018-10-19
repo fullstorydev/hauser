@@ -135,8 +135,6 @@ func (s *OutPayload) isRPCStats() {}
 type OutHeader struct {
 	// Client is true if this OutHeader is from client side.
 	Client bool
-	// WireLength is the wire length of header.
-	WireLength int
 
 	// The following fields are valid only if Client is true.
 	// FullMethod is the full RPC method string, i.e., /package.service/method.
@@ -171,6 +169,8 @@ func (s *OutTrailer) isRPCStats() {}
 type End struct {
 	// Client is true if this End is from client side.
 	Client bool
+	// BeginTime is the time when the RPC began.
+	BeginTime time.Time
 	// EndTime is the time when the RPC ends.
 	EndTime time.Time
 	// Error is the error the RPC ended with. It is an error generated from

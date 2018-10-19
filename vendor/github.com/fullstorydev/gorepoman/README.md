@@ -61,7 +61,4 @@ re-fetch all your go deps on day 1.
 ## Caveats
 
 - `gorepoman` is git-centric; not only must you use git yourself, but gorepoman can only manage third-party dependencies
-that are also git. (This is almost never a problem in practice, everyone uses git!)
-
-- Your primary `GOPATH` entry must be _inside_ your git repo.  If `$GOPATH/src` lives inside your main repository,
-you're golden.
+that are also git. (This is almost never a problem in practice: everyone uses git!)
