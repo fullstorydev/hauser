@@ -10,6 +10,7 @@ import (
 
 // bundleEvent represents a single event, as it's structured inside a FullStory export bundle.
 type bundleEvent struct {
+	EventCustomName        string
 	EventStart             time.Time
 	EventType              string
 	EventTargetText        string
@@ -19,7 +20,7 @@ type bundleEvent struct {
 	EventModError          int64
 	EventModSuspicious     int64
 	IndvId                 int64
-	PageClusterId	       int64
+	PageClusterId	         int64
 	PageUrl                string
 	PageDuration           int64
 	PageActiveDuration     int64
