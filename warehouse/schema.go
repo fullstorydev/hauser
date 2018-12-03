@@ -10,6 +10,7 @@ import (
 
 // bundleEvent represents a single event, as it's structured inside a FullStory export bundle.
 type bundleEvent struct {
+	EventCustomName        string
 	EventStart             time.Time
 	EventType              string
 	EventTargetText        string
@@ -19,7 +20,7 @@ type bundleEvent struct {
 	EventModError          int64
 	EventModSuspicious     int64
 	IndvId                 int64
-	PageClusterId	       int64
+	PageClusterId          int64
 	PageUrl                string
 	PageDuration           int64
 	PageActiveDuration     int64
@@ -54,8 +55,8 @@ type syncTable struct {
 
 // WarehouseField contains metadata for a field/column in the warehouse.
 type WarehouseField struct {
-	Name        string
-	DBType      string
+	Name   string
+	DBType string
 }
 
 // BundleField contains metadata for an attribute on an event object in an export bundle JSON document.
@@ -113,8 +114,8 @@ func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
 	result := make(Schema, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		result[i] = WarehouseField{
-			Name:        t.Field(i).Name,
-			DBType:      convertType(ftm, t.Field(i).Type),
+			Name:   t.Field(i).Name,
+			DBType: convertType(ftm, t.Field(i).Type),
 		}
 	}
 	return result
