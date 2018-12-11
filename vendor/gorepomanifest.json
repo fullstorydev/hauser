@@ -44,6 +44,11 @@
   "current-version-git-hash": "2233dee583dcf88f3c8b22cb7a33f05a499800d8",
   "content-hash": "6e27ce7b7c8670da05631a3bf746672566f87928"
  },
+ "go.opencensus.io": {
+  "git-remote": "https://github.com/census-instrumentation/opencensus-go",
+  "current-version-git-hash": "aab39bd6a98b853ab66c8a564f5d6cfcad59ce8a",
+  "content-hash": "bb8a01578c860d87203f6aa7cb0b4fb3d45f8942"
+ },
  "golang.org/x/net": {
   "git-remote": "https://go.googlesource.com/net",
   "current-version-git-hash": "04a2e542c03f1d053ab3e4d6e5abcd4b66e2be8e",
@@ -53,6 +58,11 @@
   "git-remote": "https://go.googlesource.com/oauth2",
   "current-version-git-hash": "9dcd33a902f40452422c2367fefcb95b54f9f8f8",
   "content-hash": "cd678221502616a2d1722a646d8979b28c06d2b1"
+ },
+ "golang.org/x/sys": {
+  "git-remote": "https://go.googlesource.com/sys",
+  "current-version-git-hash": "7da8ea5c81829e397bdf930c5d8ba4b703616f33",
+  "content-hash": "ea086224ed95c6ab26dcd90edcc1f226138691fa"
  },
  "golang.org/x/text": {
   "git-remote": "https://go.googlesource.com/text",
