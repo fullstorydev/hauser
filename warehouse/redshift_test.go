@@ -49,10 +49,10 @@ func TestGetMissingFieldsRedshift(t *testing.T) {
 
 	var noHeaders []string
 	var testCases = []struct {
-		schema    Schema
-		columns   []string
-		expected  int
-	} {
+		schema   Schema
+		columns  []string
+		expected int
+	}{
 		// All columns from the schema are present in the export table columns, so there are 0 missing fields
 		{wh.exportSchema, schemaHeaders, 0},
 		// Only headers are present, therefore all schema fields are missing
@@ -63,7 +63,6 @@ func TestGetMissingFieldsRedshift(t *testing.T) {
 		{wh.exportSchema, []string{"PageUrl"}, len(schemaHeaders) - 1},
 		// Same as above, but with additional columns in the export table that we don't care about so still 1 missing field
 		{wh.exportSchema, []string{"Dummy Column1", "PageUrl", "Dummy Column2"}, len(schemaHeaders) - 1},
-
 	}
 
 	for _, testCase := range testCases {
