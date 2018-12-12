@@ -124,7 +124,7 @@ func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
 func convertType(ftm FieldTypeMapper, t reflect.Type) string {
 	dbtype, ok := ftm[t.String()]
 	if !ok {
-		log.Fatal("Type %s is not present in FieldTypeMapper", t)
+		log.Fatalf("Type %v is not present in FieldTypeMapper", t)
 	}
 	return dbtype
 }

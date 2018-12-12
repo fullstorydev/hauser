@@ -196,9 +196,9 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 
 // CopyInData copies data from the given s3File to the export table
 func (rs *Redshift) CopyInData(s3file string) error {
-	copy := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
+	copyStatement := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
 		rs.conf.Redshift.ExportTable, s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
-	_, err := rs.conn.Exec(copy)
+	_, err := rs.conn.Exec(copyStatement)
 	return err
 }
 
@@ -343,9 +343,11 @@ func (rs *Redshift) getTableColumns(name string) []string {
 	var columns []string
 
 	defer rows.Close()
-	for rows.Next(){
+	for rows.Next() {
 		var column string
-		err = rows.Scan(&column)
+		if err = rows.Scan(&column); err != nil {
+			log.Fatal(err)
+		}
 		columns = append(columns, column)
 	}
 

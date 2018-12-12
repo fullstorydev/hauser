@@ -220,10 +220,10 @@ func (bq *BigQuery) EnsureCompatibleExportTable() error {
 	return nil
 }
 
-func (bq *BigQuery) updateTable (table *bigquery.Table, schema bigquery.Schema) error {
+func (bq *BigQuery) updateTable(table *bigquery.Table, schema bigquery.Schema) error {
 	// update the table so we update the schema
 	log.Printf("Updating Export table schema")
-	tmd := bigquery.TableMetadataToUpdate {Schema: schema}
+	tmd := bigquery.TableMetadataToUpdate{Schema: schema}
 	if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
 		return err
 	}
@@ -296,7 +296,7 @@ func (bq *BigQuery) createSyncTable() error {
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.SyncTable)
-	tableMetaData := bigquery.TableMetadata {
+	tableMetaData := bigquery.TableMetadata{
 		Schema: schema,
 	}
 
@@ -306,7 +306,6 @@ func (bq *BigQuery) createSyncTable() error {
 
 	return nil
 }
-
 
 func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	log.Printf("Creating table %s", bq.conf.BigQuery.ExportTable)
@@ -319,8 +318,8 @@ func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	}
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
-	tableMetaData := bigquery.TableMetadata {
-		Schema: hauserSchema,
+	tableMetaData := bigquery.TableMetadata{
+		Schema:           hauserSchema,
 		TimePartitioning: &bigquery.TimePartitioning{},
 	}
 
@@ -405,7 +404,7 @@ func (bq *BigQuery) DeleteFile(objName string) {
 
 func (bq *BigQuery) removeSyncPointsAfter(t time.Time) error {
 	q := fmt.Sprintf("DELETE FROM %s.%s WHERE BundleEndTime > TIMESTAMP(\"%s\")", bq.conf.BigQuery.Dataset, bq.conf.BigQuery.SyncTable, t.UTC().Format(time.RFC3339))
-	log.Printf(q)
+	log.Printf("%s", q)
 	query := bq.bqClient.Query(q)
 	query.QueryConfig.UseStandardSQL = true
 

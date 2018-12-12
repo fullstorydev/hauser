@@ -11,45 +11,44 @@ var _ Warehouse = &BigQuery{}
 func TestGetMissingFields(t *testing.T) {
 	wh := &BigQuery{}
 
-	requiredField1 := bigquery.FieldSchema {
+	requiredField1 := bigquery.FieldSchema{
 		Name: "RequiredField1",
 	}
-	requiredField1Lowercase := bigquery.FieldSchema {
+	requiredField1Lowercase := bigquery.FieldSchema{
 		Name: "requiredfield1",
 	}
-	requiredField2 := bigquery.FieldSchema {
+	requiredField2 := bigquery.FieldSchema{
 		Name: "RequiredField2",
 	}
-	dummyField := bigquery.FieldSchema {
+	dummyField := bigquery.FieldSchema{
 		Name: "DummyField",
 	}
 
-	hauserSchema := bigquery.Schema([]*bigquery.FieldSchema {
+	hauserSchema := bigquery.Schema([]*bigquery.FieldSchema{
 		&requiredField1,
 		&requiredField2,
 	})
 
 	var testCases = []struct {
-		hauserSchema	bigquery.Schema
-		tableSchema		bigquery.Schema
-		missingFields	int
-	} {
+		hauserSchema  bigquery.Schema
+		tableSchema   bigquery.Schema
+		missingFields int
+	}{
 		{
 			hauserSchema,
-			bigquery.Schema([]*bigquery.FieldSchema {
-			}),
+			bigquery.Schema([]*bigquery.FieldSchema{}),
 			2,
 		},
 		{
 			hauserSchema,
-			bigquery.Schema([]*bigquery.FieldSchema {
+			bigquery.Schema([]*bigquery.FieldSchema{
 				&dummyField,
 			}),
 			2,
 		},
 		{
 			hauserSchema,
-			bigquery.Schema([]*bigquery.FieldSchema {
+			bigquery.Schema([]*bigquery.FieldSchema{
 				&requiredField2,
 				&dummyField,
 			}),
@@ -57,7 +56,7 @@ func TestGetMissingFields(t *testing.T) {
 		},
 		{
 			hauserSchema,
-			bigquery.Schema([]*bigquery.FieldSchema {
+			bigquery.Schema([]*bigquery.FieldSchema{
 				&requiredField1,
 				&requiredField2,
 			}),
@@ -65,7 +64,7 @@ func TestGetMissingFields(t *testing.T) {
 		},
 		{
 			hauserSchema,
-			bigquery.Schema([]*bigquery.FieldSchema {
+			bigquery.Schema([]*bigquery.FieldSchema{
 				&requiredField1Lowercase,
 				&requiredField2,
 			}),

@@ -185,11 +185,11 @@ func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullst
 	return len(processedBundles), nil
 }
 
-func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
+func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
 	var objPath string
 	var err error
 	if objPath, err = wh.UploadFile(filename); err != nil {
-		log.Printf(wh.GetUploadFailedMsg(filename, err))
+		log.Printf("%s", wh.GetUploadFailedMsg(filename, err))
 		return err
 	}
 
