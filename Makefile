@@ -63,4 +63,4 @@ errcheck:
 
 .PHONY: test
 test:
-	go test -race ./...
+	go test -race . $(dirs_to_check)
