@@ -1,10 +1,11 @@
-FsApiToken = "<your FullStory API token>"
+FsApiToken = "VE4xOmZpaFZPRmgzWWcvN0N2eWN2QVhRWGFGcFBuemdUU2NXSmhIMFRhQ0U0UDg9"
 Backoff = "30s"
 BackoffStepsMax = 8
 CheckInterval = "30m"
 TmpDir = "/tmp"
-Warehouse="redshift"
+Warehouse="local"
 GroupFilesByDay = false
+ExportURL = "https://export.staging.fullstory.com/api/v1"
 
 [s3]
 # bucket that will be used to stage files into Redshift
@@ -39,3 +40,7 @@ Project = "<your project>"
 Dataset = "<your dataset>"
 ExportTable = "<your export table>"
 SyncTable = "<your sync table>"
+
+[local]
+SaveDir = "/opt"
+SaveAsCSV = false
