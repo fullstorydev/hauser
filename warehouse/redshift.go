@@ -113,7 +113,7 @@ func (rs *Redshift) UploadFile(name string) (string, error) {
 
 	bucketParts := strings.Split(rs.conf.S3.Bucket, "/")
 	bucketName := bucketParts[0]
-	keyPath := strings.Trim(strings.Join(bucketParts[1:], "/"), "/");	
+	keyPath := strings.Trim(strings.Join(bucketParts[1:], "/"), "/")
 	key := fmt.Sprintf("%s/%s", keyPath, objName)
 
 	_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
