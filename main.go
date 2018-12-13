@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"io"
 
 	"github.com/nishanths/fullstory"
 
@@ -24,6 +25,8 @@ var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
 	bundleFieldsMap    = warehouse.BundleFields()
+	//TODO: this is hardcoded right now to get a manageable number of bundles
+	beginningOfTime = time.Date(2018, 12, 5, 0, 0, 0, 0, time.UTC)
 )
 
 const (
@@ -302,6 +305,62 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string,
 	return recordCount, nil
 }
 
+func SaveToLocalFile(conf *config.Config) {
+	log.Printf("Saving data to local filesystem")
+	t := beginningOfTime
+	// TODO: add a parameter to config file to specify the earliest date/time
+	fs := fullstory.NewClient(conf.FsApiToken)
+	if conf.ExportURL != "" {
+		log.Printf("Setting base url")
+		fs.Config.BaseURL = conf.ExportURL
+	}
+	exports, err := fs.ExportList(t)
+	if err != nil {
+		log.Printf("Failed to fetch export list: %s", err)
+		return
+	}
+
+	log.Printf("List contains %d exports", len(exports))
+
+	// TODO: add functionality to process files individually vs by date, and to write to csv
+	for _, e := range exports {
+		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
+		// TODO: add config parameter for folder
+		filename := filepath.Join("/opt/test", fmt.Sprintf("%d.gz", e.ID))
+		outfile, err := os.Create(filename)
+		if err != nil {
+			log.Printf("Failed to create tmp file: %s", err)
+			return
+		}
+		defer outfile.Close()
+		stream, err := getExportData(fs, e.ID)
+		if err != nil {
+			log.Printf("Failed to fetch bundle %d: %s", e.ID, err)
+			return
+		}
+		defer stream.Close()
+
+		//gzstream, err := gzip.NewReader(stream)
+		//if err != nil {
+		//	log.Printf("Failed gzip reader: %s", err)
+		//	continue
+		//}
+		//defer gzstream.Close()
+		//
+		//written, err := io.Copy(outfile, gzstream)
+		written, err := io.Copy(outfile, stream)
+		if err != nil {
+			log.Printf("Failed to copy input stream to file: %s", err)
+			return
+		}
+
+		log.Printf("Copied %d bytes to file", written)
+	}
+
+	log.Printf("Finished downloading exports")
+
+}
+
 func BackoffOnError(err error) bool {
 	if err != nil {
 		if currentBackoffStep == uint(conf.BackoffStepsMax) {
@@ -333,6 +392,9 @@ func main() {
 
 	var wh warehouse.Warehouse
 	switch conf.Warehouse {
+	case "local":
+		SaveToLocalFile(conf)
+		return
 	case "redshift":
 		wh = warehouse.NewRedshift(conf)
 	case "bigquery":
