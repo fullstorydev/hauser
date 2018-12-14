@@ -111,10 +111,7 @@ func (rs *Redshift) UploadFile(name string) (string, error) {
 
 	_, objName := filepath.Split(name)
 
-	bucketParts := strings.Split(rs.conf.S3.Bucket, "/")
-	bucketName := bucketParts[0]
-	keyPath := strings.Trim(strings.Join(bucketParts[1:], "/"), "/")
-	key := fmt.Sprintf("%s/%s", keyPath, objName)
+	bucketName, key := getBucketAndKey(rs.conf.S3.Bucket, objName)
 
 	_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
@@ -124,6 +121,15 @@ func (rs *Redshift) UploadFile(name string) (string, error) {
 
 	s3path := fmt.Sprintf("s3://%s/%s", bucketName, key)
 	return s3path, err
+}
+
+func getBucketAndKey(bucketConfig, objName string) (string, string) {
+	bucketParts := strings.Split(bucketConfig, "/")
+	bucketName := bucketParts[0]
+	keyPath := strings.Trim(strings.Join(bucketParts[1:], "/"), "/")
+	key := strings.Trim(fmt.Sprintf("%s/%s", keyPath, objName), "/")
+
+	return bucketName, key
 }
 
 func (rs *Redshift) DeleteFile(s3obj string) {
