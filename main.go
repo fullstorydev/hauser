@@ -321,8 +321,7 @@ func SaveToLocalFile(conf *config.Config) {
 	}
 
 	log.Printf("List contains %d exports", len(exports))
-
-	// TODO: add functionality to process files individually vs by date, and to write to csv
+	
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
 		// TODO: add config parameter for folder
