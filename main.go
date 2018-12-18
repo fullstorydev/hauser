@@ -324,7 +324,7 @@ func SaveToLocalFile(conf *config.Config) {
 
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
-		filename := filepath.Join(conf.Local.SaveDir, fmt.Sprintf("%d.gz", e.ID))
+		filename := filepath.Join(conf.Local.SaveDir, fmt.Sprintf("%d.json", e.ID))
 		outfile, err := os.Create(filename)
 		if err != nil {
 			log.Printf("Failed to create tmp file: %s", err)
