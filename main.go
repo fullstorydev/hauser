@@ -25,8 +25,7 @@ var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
 	bundleFieldsMap    = warehouse.BundleFields()
-	//TODO: this is hardcoded right now to get a manageable number of bundles
-	beginningOfTime = time.Date(2018, 12, 5, 0, 0, 0, 0, time.UTC)
+	beginningOfTime = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
 )
 
 const (
@@ -308,7 +307,10 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string,
 func SaveToLocalFile(conf *config.Config) {
 	log.Printf("Saving data to local filesystem")
 	t := beginningOfTime
-	// TODO: add a parameter to config file to specify the earliest date/time
+	if t.Before(conf.Local.StartTime) {
+		t = conf.Local.StartTime
+	}
+
 	fs := fullstory.NewClient(conf.FsApiToken)
 	if conf.ExportURL != "" {
 		log.Printf("Setting base url")
@@ -321,11 +323,10 @@ func SaveToLocalFile(conf *config.Config) {
 	}
 
 	log.Printf("List contains %d exports", len(exports))
-	
+
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
-		// TODO: add config parameter for folder
-		filename := filepath.Join("/opt/test", fmt.Sprintf("%d.gz", e.ID))
+		filename := filepath.Join(conf.Local.SaveDir, fmt.Sprintf("%d.gz", e.ID))
 		outfile, err := os.Create(filename)
 		if err != nil {
 			log.Printf("Failed to create tmp file: %s", err)
