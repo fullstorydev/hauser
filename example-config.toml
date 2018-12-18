@@ -44,3 +44,4 @@ SyncTable = "<your sync table>"
 
 [local]
 SaveDir = "/opt/test"
+StartTime = 2018-12-10T01:30:00Z

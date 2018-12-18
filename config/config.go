@@ -27,6 +27,9 @@ type Config struct {
 	// gcloud: GCS + BigQuery
 	GCS      GCSConfig
 	BigQuery BigQueryConfig
+
+	// local filesystem: Local
+	Local    LocalConfig
 }
 
 type S3Config struct {
@@ -63,6 +66,11 @@ type BigQueryConfig struct {
 
 type duration struct {
 	time.Duration
+}
+
+type LocalConfig struct {
+	SaveDir		string
+	StartTime	time.Time
 }
 
 func (d *duration) UnmarshalText(text []byte) error {
