@@ -1,6 +1,6 @@
 # hauser
 
-`hauser` is a service to download FullStory data export files and load them into a data warehouse. (Redshift and BigQuery are the only warehouses supported currently. Others are easy to add -- pull requests welcome.)
+`hauser` is a service to download FullStory data export files and load them into a data warehouse. (Redshift and BigQuery are the only warehouses supported currently. Others are easy to add -- pull requests welcome.) There's also an option to save exported files locally.
 
 ## Quick Start
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.8 or higher.
@@ -37,7 +37,13 @@ Loading data into BigQuery may be skipped by setting `GCS.GCSOnly` in the config
 
 If `hauser` detects that a load failure occurred, to ensure data consistency it will roll back all sync points for the most recent date partition and reload all files for the entire partition.
 
+## Local Storage Notes
+
+To only store downloaded export files locally, set the `Warehouse` option to `local`. This will save each export as a json file to the folder specified by `SaveDir` parameter, starting at time specified by `StartTime`
+
+
 ## Table Schema Changes
+
 As FullStory adds more features we expose additional fields in our data export. `hauser` automatically deals with the addition of new fields by appending nullable columns to the warehouse export table.
 
 On startup, `hauser` will ensure that the export table listed in the config contains columns for all export fields. If `hauser` detects columns for fields don't exist, it will append columns for those fields to the export table. It uses this schema information, which it acquires once on startup, to intelligently build CSV files and deal with schema alterations to the export table. If schema changes are made, `hauser` will have to be restarted so it is aware of the updated export table schema.
