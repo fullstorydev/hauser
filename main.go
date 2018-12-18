@@ -305,7 +305,6 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string,
 }
 
 func SaveToLocalFile(conf *config.Config) {
-	log.Printf("Saving data to local filesystem")
 	t := beginningOfTime
 	if t.Before(conf.Local.StartTime) {
 		t = conf.Local.StartTime
@@ -313,7 +312,6 @@ func SaveToLocalFile(conf *config.Config) {
 
 	fs := fullstory.NewClient(conf.FsApiToken)
 	if conf.ExportURL != "" {
-		log.Printf("Setting base url")
 		fs.Config.BaseURL = conf.ExportURL
 	}
 	exports, err := fs.ExportList(t)
@@ -322,7 +320,7 @@ func SaveToLocalFile(conf *config.Config) {
 		return
 	}
 
-	log.Printf("List contains %d exports", len(exports))
+	log.Printf("Retrieving %d exports", len(exports))
 
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
@@ -340,15 +338,14 @@ func SaveToLocalFile(conf *config.Config) {
 		}
 		defer stream.Close()
 
-		//gzstream, err := gzip.NewReader(stream)
-		//if err != nil {
-		//	log.Printf("Failed gzip reader: %s", err)
-		//	continue
-		//}
-		//defer gzstream.Close()
-		//
-		//written, err := io.Copy(outfile, gzstream)
-		written, err := io.Copy(outfile, stream)
+		gzstream, err := gzip.NewReader(stream)
+		if err != nil {
+			log.Printf("Failed gzip reader: %s", err)
+			continue
+		}
+		defer gzstream.Close()
+
+		written, err := io.Copy(outfile, gzstream)
 		if err != nil {
 			log.Printf("Failed to copy input stream to file: %s", err)
 			return
@@ -356,8 +353,6 @@ func SaveToLocalFile(conf *config.Config) {
 
 		log.Printf("Copied %d bytes to file", written)
 	}
-
-	log.Printf("Finished downloading exports")
 
 }
 
