@@ -14,11 +14,6 @@
   "current-version-git-hash": "0e8c61841163762f870f6976775800ded4a789b0",
   "content-hash": "816c901894c9d80779bcc2c1d6b1ff05ae0a35f0"
  },
- "github.com/fullstorydev/gorepoman": {
-  "git-remote": "https://github.com/fullstorydev/gorepoman",
-  "current-version-git-hash": "638ce770f4f5aed867c09a1e910976b967749719",
-  "content-hash": "f963542ba8de9784e2705e850c5202794e6724a4"
- },
  "github.com/golang/protobuf": {
   "git-remote": "https://github.com/golang/protobuf",
   "current-version-git-hash": "ddf22928ea3c56eb4292a0adbbf5001b1e8e7d0d",
