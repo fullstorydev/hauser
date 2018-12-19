@@ -29,7 +29,7 @@ type Config struct {
 	BigQuery BigQueryConfig
 
 	// local filesystem: Local
-	Local    LocalConfig
+	Local LocalConfig
 }
 
 type S3Config struct {
@@ -68,8 +68,8 @@ type duration struct {
 }
 
 type LocalConfig struct {
-	SaveDir		string
-	StartTime	time.Time
+	SaveDir   string
+	StartTime time.Time
 }
 
 func (d *duration) UnmarshalText(text []byte) error {

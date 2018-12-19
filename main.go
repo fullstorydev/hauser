@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"io"
 
 	"github.com/nishanths/fullstory"
 
@@ -25,7 +25,7 @@ var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
 	bundleFieldsMap    = warehouse.BundleFields()
-	beginningOfTime = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
+	beginningOfTime    = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
 )
 
 const (
@@ -187,7 +187,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullst
 	return len(processedBundles), nil
 }
 
-func LoadBundles (wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
+func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
 	var objPath string
 	var err error
 	if objPath, err = wh.UploadFile(filename); err != nil {
@@ -353,7 +353,6 @@ func SaveToLocalFile(conf *config.Config) {
 
 		log.Printf("Copied %d bytes to file", written)
 	}
-
 }
 
 func BackoffOnError(err error) bool {

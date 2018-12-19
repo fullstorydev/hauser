@@ -1,6 +1,6 @@
 # hauser
 
-`hauser` is a service to download FullStory data export files and load them into a data warehouse. (Redshift and BigQuery are the only warehouses supported currently. Others are easy to add -- pull requests welcome.) There's also an option to save exported files locally.
+`hauser` is a service to download FullStory data export files and load them into a data warehouse. Alternatively, data export files can be saved to local disk. Redshift and BigQuery are the only warehouses supported currently. (Others are easy to add -- pull requests welcome.)
 
 ## Quick Start
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.7 or higher.
