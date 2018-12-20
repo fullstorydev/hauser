@@ -96,6 +96,9 @@ func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 
 // NOTE: this is a good point of entry for schema config validation
 func (rs *Redshift) MakeRedshiftConnection() (*sql.DB, error) {
+	if err := rs.validateSchemaConfig(); err != nil {
+		log.Fatal(err)
+	}
 	url := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v",
 		rs.conf.Redshift.User,
 		rs.conf.Redshift.Password,

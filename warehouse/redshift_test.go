@@ -8,13 +8,19 @@ import (
 
 var _ Warehouse = &Redshift{}
 
+func makeConf(tableSchema string) *config.Config {
+	conf := &config.Config {
+		Redshift: config.RedshiftConfig {
+			TableSchema: tableSchema,
+			VarCharMax: 20,
+		},
+	}
+	return conf
+}
+
 func TestRedshiftValueToString(t *testing.T) {
 	wh := &Redshift{
-		conf: &config.Config{
-			Redshift: config.RedshiftConfig{
-				VarCharMax: 20,
-			},
-		},
+		conf: makeConf("some_schema"),
 	}
 
 	var testCases = []struct {
@@ -117,15 +123,6 @@ func TestGetBucketAndKey(t *testing.T) {
 
 func TestValidateTableSchemaConfig(t *testing.T) {	
 
-	makeConf := func(tableSchema string) *config.Config {
-		conf := &config.Config {
-			Redshift: config.RedshiftConfig {
-				TableSchema: tableSchema,
-			},
-		}
-		return conf
-	}
-
 	testCases := []struct {
 		conf *config.Config
 		hasError bool
@@ -137,7 +134,7 @@ func TestValidateTableSchemaConfig(t *testing.T) {
 			errMessage: "TableSchema definition missing from Redshift configuration. More information: https://www.hauserdocs.io",
 		},
 		{
-			conf: makeConf("some_schema"),
+			conf: makeConf("test"),
 			hasError: false,
 			errMessage: "",
 		},
