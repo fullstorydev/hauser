@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -46,6 +47,23 @@ func NewRedshift(c *config.Config) *Redshift {
 	}
 }
 
+func (rs *Redshift) getExportTableName() string {
+	// TODO: implement
+	return ""
+}
+
+func (rs *Redshift) getSyncTableName() string {
+	// TODO: implement
+	return ""
+}
+
+func (rs *Redshift) validateSchemaConfig() error {
+	if (rs.conf.Redshift.TableSchema == "") {
+		return errors.New("TableSchema definition missing from Redshift configuration. More information: https://www.hauserdocs.io")
+	}
+	return nil
+}
+
 // GetExportTableColumns returns all the columns of the export table.
 // It opens a connection and calls getTableColumns
 func (rs *Redshift) GetExportTableColumns() []string {
@@ -76,6 +94,7 @@ func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	return s
 }
 
+// NOTE: this is a good point of entry for schema config validation
 func (rs *Redshift) MakeRedshiftConnection() (*sql.DB, error) {
 	url := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v",
 		rs.conf.Redshift.User,
@@ -329,6 +348,8 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 
 	return nil
 }
+
+// TODO: create a single point of entry for generating queries and enforce the schema config there
 
 // DoesTableExist checks if a table with a given name exists in the public schema
 func (rs *Redshift) DoesTableExist(name string) bool {

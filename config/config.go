@@ -44,6 +44,7 @@ type RedshiftConfig struct {
 	Password    string
 	ExportTable string
 	SyncTable   string
+	TableSchema string
 	Credentials string
 	VarCharMax  int
 }

@@ -114,3 +114,51 @@ func TestGetBucketAndKey(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateTableSchemaConfig(t *testing.T) {	
+
+	makeConf := func(tableSchema string) *config.Config {
+		conf := &config.Config {
+			Redshift: config.RedshiftConfig {
+				TableSchema: tableSchema,
+			},
+		}
+		return conf
+	}
+
+	testCases := []struct {
+		conf *config.Config
+		hasError bool
+		errMessage string
+	}{
+		{
+			conf: makeConf(""),
+			hasError: true,
+			errMessage: "TableSchema definition missing from Redshift configuration. More information: https://www.hauserdocs.io",
+		},
+		{
+			conf: makeConf("some_schema"),
+			hasError: false,
+			errMessage: "",
+		},
+		{
+			conf: makeConf("search_path"),
+			hasError: false,
+			errMessage: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		err := wh.validateSchemaConfig()
+		if (tc.hasError && err == nil) {
+			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.TableSchema is empty")
+		}
+		if (tc.hasError && err.Error() != tc.errMessage) {
+			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.TableSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
+		}
+		if (!tc.hasError && err != nil) {
+			t.Errorf("unexpected error thrown for TableSchema %s: %s", tc.conf.Redshift.TableSchema, err)
+		}
+	}
+}
