@@ -207,3 +207,26 @@ func TestSyncableName(t *testing.T) {
 		}
 	}
 }
+
+func TestSchemaNameFetch(t *testing.T) {
+	testCases := []struct {
+		conf *config.Config
+		expected string
+	} {
+		{
+			conf: makeConf("search_path"),
+			expected: "current_schema()",
+		},
+		{
+			conf: makeConf("mySchema"),
+			expected: "mySchema",
+		},		
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		if got := wh.getSchemaName(); got != tc.expected {
+			t.Errorf("Expected value %q, got %q", tc.expected, got)
+		}
+	}
+}
