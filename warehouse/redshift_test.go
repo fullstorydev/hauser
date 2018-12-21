@@ -13,6 +13,8 @@ func makeConf(tableSchema string) *config.Config {
 		Redshift: config.RedshiftConfig {
 			TableSchema: tableSchema,
 			VarCharMax: 20,
+			ExportTable: "exportTable",
+			SyncTable: "syncTable",
 		},
 	}
 	return conf
@@ -156,6 +158,52 @@ func TestValidateTableSchemaConfig(t *testing.T) {
 		}
 		if (!tc.hasError && err != nil) {
 			t.Errorf("unexpected error thrown for TableSchema %s: %s", tc.conf.Redshift.TableSchema, err)
+		}
+	}
+}
+
+func TestExportTableName(t *testing.T) {
+	testCases := []struct {
+		conf *config.Config
+		expected string
+	} {
+		{
+			conf: makeConf("search_path"),
+			expected: "exportTable",
+		},
+		{
+			conf: makeConf("mySchema"),
+			expected: "mySchema.exportTable",
+		},		
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		if got := wh.getExportTableName(); got != tc.expected {
+			t.Errorf("Expected value %q, got %q", tc.expected, got)
+		}
+	}
+}
+
+func TestSyncableName(t *testing.T) {
+	testCases := []struct {
+		conf *config.Config
+		expected string
+	} {
+		{
+			conf: makeConf("search_path"),
+			expected: "syncTable",
+		},
+		{
+			conf: makeConf("mySchema"),
+			expected: "mySchema.syncTable",
+		},		
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		if got := wh.getSyncTableName(); got != tc.expected {
+			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
 }

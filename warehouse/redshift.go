@@ -48,13 +48,17 @@ func NewRedshift(c *config.Config) *Redshift {
 }
 
 func (rs *Redshift) getExportTableName() string {
-	// TODO: implement
-	return ""
+	if rs.conf.Redshift.TableSchema == "search_path" {
+		return rs.conf.Redshift.ExportTable
+	}
+	return fmt.Sprintf("%s.%s", rs.conf.Redshift.TableSchema, rs.conf.Redshift.ExportTable)
 }
 
 func (rs *Redshift) getSyncTableName() string {
-	// TODO: implement
-	return ""
+	if rs.conf.Redshift.TableSchema == "search_path" {
+		return rs.conf.Redshift.SyncTable
+	}
+	return fmt.Sprintf("%s.%s", rs.conf.Redshift.TableSchema, rs.conf.Redshift.SyncTable)
 }
 
 func (rs *Redshift) validateSchemaConfig() error {
@@ -94,7 +98,6 @@ func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	return s
 }
 
-// NOTE: this is a good point of entry for schema config validation
 func (rs *Redshift) MakeRedshiftConnection() (*sql.DB, error) {
 	if err := rs.validateSchemaConfig(); err != nil {
 		log.Fatal(err)
@@ -351,8 +354,6 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 
 	return nil
 }
-
-// TODO: create a single point of entry for generating queries and enforce the schema config there
 
 // DoesTableExist checks if a table with a given name exists in the public schema
 func (rs *Redshift) DoesTableExist(name string) bool {
