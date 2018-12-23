@@ -9,12 +9,12 @@ import (
 var _ Warehouse = &Redshift{}
 
 func makeConf(tableSchema string) *config.Config {
-	conf := &config.Config {
-		Redshift: config.RedshiftConfig {
+	conf := &config.Config{
+		Redshift: config.RedshiftConfig{
 			TableSchema: tableSchema,
-			VarCharMax: 20,
+			VarCharMax:  20,
 			ExportTable: "exportTable",
-			SyncTable: "syncTable",
+			SyncTable:   "syncTable",
 		},
 	}
 	return conf
@@ -123,26 +123,26 @@ func TestGetBucketAndKey(t *testing.T) {
 	}
 }
 
-func TestValidateTableSchemaConfig(t *testing.T) {	
+func TestValidateTableSchemaConfig(t *testing.T) {
 
 	testCases := []struct {
-		conf *config.Config
-		hasError bool
+		conf       *config.Config
+		hasError   bool
 		errMessage string
 	}{
 		{
-			conf: makeConf(""),
-			hasError: true,
+			conf:       makeConf(""),
+			hasError:   true,
 			errMessage: "TableSchema definition missing from Redshift configuration. More information: https://www.hauserdocs.io",
 		},
 		{
-			conf: makeConf("test"),
-			hasError: false,
+			conf:       makeConf("test"),
+			hasError:   false,
 			errMessage: "",
 		},
 		{
-			conf: makeConf("search_path"),
-			hasError: false,
+			conf:       makeConf("search_path"),
+			hasError:   false,
 			errMessage: "",
 		},
 	}
@@ -150,13 +150,13 @@ func TestValidateTableSchemaConfig(t *testing.T) {
 	for _, tc := range testCases {
 		wh := NewRedshift(tc.conf)
 		err := wh.validateSchemaConfig()
-		if (tc.hasError && err == nil) {
+		if tc.hasError && err == nil {
 			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.TableSchema is empty")
 		}
-		if (tc.hasError && err.Error() != tc.errMessage) {
+		if tc.hasError && err.Error() != tc.errMessage {
 			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.TableSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
 		}
-		if (!tc.hasError && err != nil) {
+		if !tc.hasError && err != nil {
 			t.Errorf("unexpected error thrown for TableSchema %s: %s", tc.conf.Redshift.TableSchema, err)
 		}
 	}
@@ -164,29 +164,29 @@ func TestValidateTableSchemaConfig(t *testing.T) {
 
 func TestExportTableName(t *testing.T) {
 	testCases := []struct {
-		conf *config.Config
+		conf               *config.Config
 		fullyQualifiedName bool
-		expected string
-	} {
+		expected           string
+	}{
 		{
-			conf: makeConf("search_path"),
+			conf:               makeConf("search_path"),
 			fullyQualifiedName: true,
-			expected: "exportTable",
+			expected:           "exportTable",
 		},
 		{
-			conf: makeConf("search_path"),
+			conf:               makeConf("search_path"),
 			fullyQualifiedName: false,
-			expected: "exportTable",
+			expected:           "exportTable",
 		},
 		{
-			conf: makeConf("mySchema"),
+			conf:               makeConf("mySchema"),
 			fullyQualifiedName: true,
-			expected: "mySchema.exportTable",
+			expected:           "mySchema.exportTable",
 		},
 		{
-			conf: makeConf("mySchema"),
+			conf:               makeConf("mySchema"),
 			fullyQualifiedName: false,
-			expected: "exportTable",
+			expected:           "exportTable",
 		},
 	}
 
@@ -200,29 +200,29 @@ func TestExportTableName(t *testing.T) {
 
 func TestSyncTableName(t *testing.T) {
 	testCases := []struct {
-		conf *config.Config
+		conf               *config.Config
 		fullyQualifiedName bool
-		expected string
-	} {
+		expected           string
+	}{
 		{
-			conf: makeConf("search_path"),
+			conf:               makeConf("search_path"),
 			fullyQualifiedName: true,
-			expected: "syncTable",
+			expected:           "syncTable",
 		},
 		{
-			conf: makeConf("search_path"),
+			conf:               makeConf("search_path"),
 			fullyQualifiedName: false,
-			expected: "syncTable",
+			expected:           "syncTable",
 		},
 		{
-			conf: makeConf("mySchema"),
+			conf:               makeConf("mySchema"),
 			fullyQualifiedName: true,
-			expected: "mySchema.syncTable",
+			expected:           "mySchema.syncTable",
 		},
 		{
-			conf: makeConf("mySchema"),
+			conf:               makeConf("mySchema"),
 			fullyQualifiedName: false,
-			expected: "syncTable",
+			expected:           "syncTable",
 		},
 	}
 
@@ -236,17 +236,17 @@ func TestSyncTableName(t *testing.T) {
 
 func TestSchemaParameterFetch(t *testing.T) {
 	testCases := []struct {
-		conf *config.Config
+		conf     *config.Config
 		expected string
-	} {
+	}{
 		{
-			conf: makeConf("search_path"),
+			conf:     makeConf("search_path"),
 			expected: "current_schema()",
 		},
 		{
-			conf: makeConf("mySchema"),
+			conf:     makeConf("mySchema"),
 			expected: "'mySchema'",
-		},		
+		},
 	}
 
 	for _, tc := range testCases {

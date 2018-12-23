@@ -3,13 +3,13 @@ package warehouse
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -72,7 +72,7 @@ func (rs *Redshift) getSchemaParameter() string {
 }
 
 func (rs *Redshift) validateSchemaConfig() error {
-	if (rs.conf.Redshift.TableSchema == "") {
+	if rs.conf.Redshift.TableSchema == "" {
 		return errors.New("TableSchema definition missing from Redshift configuration. More information: https://www.hauserdocs.io")
 	}
 	return nil
@@ -366,7 +366,7 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 }
 
 // DoesTableExist checks if a table with a given name exists
-func (rs *Redshift) DoesTableExist(name string) bool {	
+func (rs *Redshift) DoesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
 
 	var exists int
