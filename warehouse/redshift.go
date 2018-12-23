@@ -47,26 +47,28 @@ func NewRedshift(c *config.Config) *Redshift {
 	}
 }
 
-func (rs *Redshift) getExportTableName() string {
-	if rs.conf.Redshift.TableSchema == "search_path" {
+func (rs *Redshift) getExportTableName(fullyQualifiedName bool) string {
+	if rs.conf.Redshift.TableSchema == "search_path" || !fullyQualifiedName {
 		return rs.conf.Redshift.ExportTable
 	}
 	return fmt.Sprintf("%s.%s", rs.conf.Redshift.TableSchema, rs.conf.Redshift.ExportTable)
 }
 
-func (rs *Redshift) getSyncTableName() string {
-	if rs.conf.Redshift.TableSchema == "search_path" {
+func (rs *Redshift) getSyncTableName(fullyQualifiedName bool) string {
+	if rs.conf.Redshift.TableSchema == "search_path" || !fullyQualifiedName {
 		return rs.conf.Redshift.SyncTable
 	}
 	return fmt.Sprintf("%s.%s", rs.conf.Redshift.TableSchema, rs.conf.Redshift.SyncTable)
 }
 
-func (rs *Redshift) getSchemaName() string {
+func (rs *Redshift) getSchemaParameter() string {
+	// the built-in current_schema() function will walk the Postgres search_path to get a schema name
+	// more info: https://www.postgresql.org/docs/9.4/functions-info.html
 	if rs.conf.Redshift.TableSchema == "search_path" {
 		return "current_schema()"
 	}
 
-	return fmt.Sprintf("%s", rs.conf.Redshift.TableSchema)
+	return fmt.Sprintf("'%s'", rs.conf.Redshift.TableSchema)
 }
 
 func (rs *Redshift) validateSchemaConfig() error {
@@ -86,7 +88,7 @@ func (rs *Redshift) GetExportTableColumns() []string {
 	}
 	defer rs.conn.Close()
 
-	return rs.getTableColumns(rs.getExportTableName())
+	return rs.getTableColumns(rs.getExportTableName(false))
 }
 
 func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
@@ -209,9 +211,9 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 	}
 	defer rs.conn.Close()
 
-	if !rs.DoesTableExist(rs.getExportTableName()) {
+	if !rs.DoesTableExist(rs.getExportTableName(false)) {
 		// if the export table does not exist we create one with all the columns we expect!
-		log.Printf("Export table %s does not exist! Creating one!", rs.getExportTableName())
+		log.Printf("Export table %s does not exist! Creating one!", rs.getExportTableName(true))
 		if err = rs.CreateExportTable(); err != nil {
 			return err
 		}
@@ -219,7 +221,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 	}
 
 	// make sure all the columns in the csv export exist in the Export table
-	exportTableColumns := rs.getTableColumns(rs.getExportTableName())
+	exportTableColumns := rs.getTableColumns(rs.getExportTableName(false))
 	missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
 
 	// If some fields are missing from the fsexport table, either we added new fields
@@ -229,7 +231,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 		log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
 		for _, f := range missingFields {
 			// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
-			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.getExportTableName(), f.Name, f.DBType)
+			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.getExportTableName(true), f.Name, f.DBType)
 			if _, err = rs.conn.Exec(alterStmt); err != nil {
 				return err
 			}
@@ -241,25 +243,25 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 // CopyInData copies data from the given s3File to the export table
 func (rs *Redshift) CopyInData(s3file string) error {
 	copyStatement := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
-		rs.getExportTableName(), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
+		rs.getExportTableName(true), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
 	_, err := rs.conn.Exec(copyStatement)
 	return err
 }
 
 // CreateExportTable creates an export table with the hauser export table schema
 func (rs *Redshift) CreateExportTable() error {
-	log.Printf("Creating table %s", rs.getExportTableName())
+	log.Printf("Creating table %s", rs.getExportTableName(true))
 
-	stmt := fmt.Sprintf("create table %s(%s);", rs.getExportTableName(), rs.exportSchema.String())
+	stmt := fmt.Sprintf("create table %s(%s);", rs.getExportTableName(true), rs.exportSchema.String())
 	_, err := rs.conn.Exec(stmt)
 	return err
 }
 
 // CreateSyncTable creates a sync table with the hauser sync table schema
 func (rs *Redshift) CreateSyncTable() error {
-	log.Printf("Creating table %s", rs.getSyncTableName())
+	log.Printf("Creating table %s", rs.getSyncTableName(true))
 
-	stmt := fmt.Sprintf("create table %s(%s);", rs.getSyncTableName(), rs.syncSchema.String())
+	stmt := fmt.Sprintf("create table %s(%s);", rs.getSyncTableName(true), rs.syncSchema.String())
 	_, err := rs.conn.Exec(stmt)
 	return err
 }
@@ -275,7 +277,7 @@ func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 
 	for _, e := range bundles {
 		insert := fmt.Sprintf("insert into %s values (%d, '%s', '%s')",
-			rs.getSyncTableName(), e.ID, time.Now().Format(time.RFC3339), e.Stop.Format(time.RFC3339))
+			rs.getSyncTableName(true), e.ID, time.Now().Format(time.RFC3339), e.Stop.Format(time.RFC3339))
 		if _, err := rs.conn.Exec(insert); err != nil {
 			return err
 		}
@@ -286,10 +288,10 @@ func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 
 func (rs *Redshift) DeleteExportRecordsAfter(end time.Time) error {
 	stmt := fmt.Sprintf("DELETE FROM %s where EventStart > '%s';",
-		rs.getExportTableName(), end.Format(time.RFC3339))
+		rs.getExportTableName(true), end.Format(time.RFC3339))
 	_, err := rs.conn.Exec(stmt)
 	if err != nil {
-		log.Printf("failed to delete from %s: %s", rs.getExportTableName(), err)
+		log.Printf("failed to delete from %s: %s", rs.getExportTableName(true), err)
 		return err
 	}
 
@@ -306,9 +308,9 @@ func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 	}
 	defer rs.conn.Close()
 
-	if rs.DoesTableExist(rs.getSyncTableName()) {
+	if rs.DoesTableExist(rs.getSyncTableName(false)) {
 		var syncTime pq.NullTime
-		q := fmt.Sprintf("SELECT max(BundleEndTime) FROM %s;", rs.getSyncTableName())
+		q := fmt.Sprintf("SELECT max(BundleEndTime) FROM %s;", rs.getSyncTableName(true))
 		if err := rs.conn.QueryRow(q).Scan(&syncTime); err != nil {
 			log.Printf("Couldn't get max(BundleEndTime): %s", err)
 			return t, err
@@ -336,7 +338,7 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 		return nil
 	}
 
-	if !rs.DoesTableExist(rs.getExportTableName()) {
+	if !rs.DoesTableExist(rs.getExportTableName(false)) {
 		if err := rs.CreateExportTable(); err != nil {
 			log.Printf("Couldn't create export table: %s", err)
 			return err
@@ -349,7 +351,7 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 	// was written. Use this as the latest sync time, and don't load
 	// any records before this point to prevent duplication
 	var exportTime pq.NullTime
-	q := fmt.Sprintf("SELECT max(EventStart) FROM %s;", rs.getExportTableName())
+	q := fmt.Sprintf("SELECT max(EventStart) FROM %s;", rs.getExportTableName(true))
 	if err := rs.conn.QueryRow(q).Scan(&exportTime); err != nil {
 		log.Printf("Couldn't get max(EventStart): %s", err)
 		return err
@@ -363,32 +365,25 @@ func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 	return nil
 }
 
-// DoesTableExist checks if a table with a given name exists in the public schema
-// better: https://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema
-// above will use the search path if unqualified table name is provided: https://dba.stackexchange.com/questions/86050/how-can-i-determine-if-a-table-exists-in-the-current-search-path-with-plpgsql
+// DoesTableExist checks if a table with a given name exists
 func (rs *Redshift) DoesTableExist(name string) bool {	
 	log.Printf("Checking if table %s exists", name)
 
-	//ERROR here: the name getting passed in is fully qualified
-	//TODO: fix this to remove the schema from the FQN
-
 	var exists int
-	err := rs.conn.QueryRow("SELECT count(*) FROM pg_tables WHERE schemaname = $1 AND tablename = $2;", rs.getSchemaName(), name).Scan(&exists)
+	query := fmt.Sprintf("SELECT count(*) FROM pg_tables WHERE schemaname = %s AND tablename = '%s';", rs.getSchemaParameter(), name)
+	err := rs.conn.QueryRow(query).Scan(&exists)
 	if err != nil {
 		// something is horribly wrong...just give up
 		log.Fatal(err)
 	}
-	log.Print(exists)
 	return (exists != 0)
 }
 
-// select current_schema()
-// see https://www.postgresql.org/docs/9.4/functions-info.html
 func (rs *Redshift) getTableColumns(name string) []string {
-	ctx := context.Background()
 	log.Printf("Fetching columns for table %s", name)
-	rows, err := rs.conn.QueryContext(ctx,
-		"SELECT \"column\" FROM pg_table_def WHERE schemaname = $1 AND tablename = $2;", rs.getSchemaName(), name)
+	ctx := context.Background()
+	query := fmt.Sprintf("SELECT \"column\" FROM pg_table_def WHERE schemaname = %s AND tablename = '%s';", rs.getSchemaParameter(), name)
+	rows, err := rs.conn.QueryContext(ctx, query)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -165,50 +165,76 @@ func TestValidateTableSchemaConfig(t *testing.T) {
 func TestExportTableName(t *testing.T) {
 	testCases := []struct {
 		conf *config.Config
+		fullyQualifiedName bool
 		expected string
 	} {
 		{
 			conf: makeConf("search_path"),
+			fullyQualifiedName: true,
+			expected: "exportTable",
+		},
+		{
+			conf: makeConf("search_path"),
+			fullyQualifiedName: false,
 			expected: "exportTable",
 		},
 		{
 			conf: makeConf("mySchema"),
+			fullyQualifiedName: true,
 			expected: "mySchema.exportTable",
-		},		
+		},
+		{
+			conf: makeConf("mySchema"),
+			fullyQualifiedName: false,
+			expected: "exportTable",
+		},
 	}
 
 	for _, tc := range testCases {
 		wh := NewRedshift(tc.conf)
-		if got := wh.getExportTableName(); got != tc.expected {
+		if got := wh.getExportTableName(tc.fullyQualifiedName); got != tc.expected {
 			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
 }
 
-func TestSyncableName(t *testing.T) {
+func TestSyncTableName(t *testing.T) {
 	testCases := []struct {
 		conf *config.Config
+		fullyQualifiedName bool
 		expected string
 	} {
 		{
 			conf: makeConf("search_path"),
+			fullyQualifiedName: true,
+			expected: "syncTable",
+		},
+		{
+			conf: makeConf("search_path"),
+			fullyQualifiedName: false,
 			expected: "syncTable",
 		},
 		{
 			conf: makeConf("mySchema"),
+			fullyQualifiedName: true,
 			expected: "mySchema.syncTable",
-		},		
+		},
+		{
+			conf: makeConf("mySchema"),
+			fullyQualifiedName: false,
+			expected: "syncTable",
+		},
 	}
 
 	for _, tc := range testCases {
 		wh := NewRedshift(tc.conf)
-		if got := wh.getSyncTableName(); got != tc.expected {
+		if got := wh.getSyncTableName(tc.fullyQualifiedName); got != tc.expected {
 			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
 }
 
-func TestSchemaNameFetch(t *testing.T) {
+func TestSchemaParameterFetch(t *testing.T) {
 	testCases := []struct {
 		conf *config.Config
 		expected string
@@ -219,13 +245,13 @@ func TestSchemaNameFetch(t *testing.T) {
 		},
 		{
 			conf: makeConf("mySchema"),
-			expected: "mySchema",
+			expected: "'mySchema'",
 		},		
 	}
 
 	for _, tc := range testCases {
 		wh := NewRedshift(tc.conf)
-		if got := wh.getSchemaName(); got != tc.expected {
+		if got := wh.getSchemaParameter(); got != tc.expected {
 			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
