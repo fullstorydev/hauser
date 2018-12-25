@@ -123,7 +123,7 @@ func TestGetBucketAndKey(t *testing.T) {
 	}
 }
 
-func TestValidateTableSchemaConfig(t *testing.T) {
+func TestValidateSchemaConfig(t *testing.T) {
 
 	testCases := []struct {
 		conf       *config.Config
@@ -162,7 +162,7 @@ func TestValidateTableSchemaConfig(t *testing.T) {
 	}
 }
 
-func TestExportTableName(t *testing.T) {
+func TestGetExportTableName(t *testing.T) {
 	testCases := []struct {
 		conf               *config.Config
 		fullyQualifiedName bool
@@ -198,7 +198,7 @@ func TestExportTableName(t *testing.T) {
 	}
 }
 
-func TestSyncTableName(t *testing.T) {
+func TestGetSyncTableName(t *testing.T) {
 	testCases := []struct {
 		conf               *config.Config
 		fullyQualifiedName bool
@@ -234,7 +234,7 @@ func TestSyncTableName(t *testing.T) {
 	}
 }
 
-func TestSchemaParameterFetch(t *testing.T) {
+func TestGetSchemaParameter(t *testing.T) {
 	testCases := []struct {
 		conf     *config.Config
 		expected string
