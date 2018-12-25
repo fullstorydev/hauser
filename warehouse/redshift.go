@@ -73,7 +73,7 @@ func (rs *Redshift) getSchemaParameter() string {
 
 func (rs *Redshift) validateSchemaConfig() error {
 	if rs.conf.Redshift.TableSchema == "" {
-		return errors.New("TableSchema definition missing from Redshift configuration. More information: https://www.hauserdocs.io")
+		return errors.New("TableSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-schema-configuration")
 	}
 	return nil
 }
