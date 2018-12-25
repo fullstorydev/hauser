@@ -15,4 +15,4 @@ The `TableSchema` parameter can accept two different types of values:
 1. A schema that exists in your Redshift cluster (including the "public" schema)
 2. "search_path"
 
-If "search_path" is provided, hauser will use your database's [Search Path](https://docs.aws.amazon.com/redshift/latest/dg/r_search_path.html) configuration to determine which schema to use when accessing and creating tables.
+If "search_path" is provided, hauser will use your database's [search_path](https://docs.aws.amazon.com/redshift/latest/dg/r_search_path.html) configuration to determine which schema to use when accessing and creating tables.
