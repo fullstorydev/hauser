@@ -1,5 +1,5 @@
 # AWS Redshift configuration details
-Please review the `[redshift]` section in [example-config.toml](hauser/example-config.toml) to understand which items should be configured to integrate with your Redshift cluster. Values must be provided for all items.
+Please review the `[redshift]` section in [example-config.toml](https://github.com/fullstorydev/hauser/blob/master/example-config.toml) to understand which items should be configured to integrate with your Redshift cluster. Values must be provided for all items.
 
 Core configuration items are:
 
