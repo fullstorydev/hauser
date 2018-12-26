@@ -29,7 +29,7 @@ SyncTable   = "fssync"
 # IAM role associated with redshift
 Credentials = "aws_iam_role=arn:aws:iam::<...>"
 VarCharMax = 65535
-TableSchema = "public"
+DatabaseSchema = "public"
 
 [gcs]
 Bucket = "<your bucket>"

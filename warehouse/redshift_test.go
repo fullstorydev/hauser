@@ -8,13 +8,13 @@ import (
 
 var _ Warehouse = &Redshift{}
 
-func makeConf(tableSchema string) *config.Config {
+func makeConf(databaseSchema string) *config.Config {
 	conf := &config.Config{
 		Redshift: config.RedshiftConfig{
-			TableSchema: tableSchema,
-			VarCharMax:  20,
-			ExportTable: "exportTable",
-			SyncTable:   "syncTable",
+			DatabaseSchema: databaseSchema,
+			VarCharMax:     20,
+			ExportTable:    "exportTable",
+			SyncTable:      "syncTable",
 		},
 	}
 	return conf
@@ -133,7 +133,7 @@ func TestValidateSchemaConfig(t *testing.T) {
 		{
 			conf:       makeConf(""),
 			hasError:   true,
-			errMessage: "TableSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-schema-configuration",
+			errMessage: "DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-schema-configuration",
 		},
 		{
 			conf:       makeConf("test"),
@@ -151,13 +151,13 @@ func TestValidateSchemaConfig(t *testing.T) {
 		wh := NewRedshift(tc.conf)
 		err := wh.validateSchemaConfig()
 		if tc.hasError && err == nil {
-			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.TableSchema is empty")
+			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.DatabaseSchema is empty")
 		}
 		if tc.hasError && err.Error() != tc.errMessage {
-			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.TableSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
+			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.DatabaseSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
 		}
 		if !tc.hasError && err != nil {
-			t.Errorf("unexpected error thrown for TableSchema %s: %s", tc.conf.Redshift.TableSchema, err)
+			t.Errorf("unexpected error thrown for DatabaseSchema %s: %s", tc.conf.Redshift.DatabaseSchema, err)
 		}
 	}
 }

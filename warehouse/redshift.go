@@ -48,32 +48,32 @@ func NewRedshift(c *config.Config) *Redshift {
 }
 
 func (rs *Redshift) getExportTableName(fullyQualifiedName bool) string {
-	if rs.conf.Redshift.TableSchema == "search_path" || !fullyQualifiedName {
+	if rs.conf.Redshift.DatabaseSchema == "search_path" || !fullyQualifiedName {
 		return rs.conf.Redshift.ExportTable
 	}
-	return fmt.Sprintf("%s.%s", rs.conf.Redshift.TableSchema, rs.conf.Redshift.ExportTable)
+	return fmt.Sprintf("%s.%s", rs.conf.Redshift.DatabaseSchema, rs.conf.Redshift.ExportTable)
 }
 
 func (rs *Redshift) getSyncTableName(fullyQualifiedName bool) string {
-	if rs.conf.Redshift.TableSchema == "search_path" || !fullyQualifiedName {
+	if rs.conf.Redshift.DatabaseSchema == "search_path" || !fullyQualifiedName {
 		return rs.conf.Redshift.SyncTable
 	}
-	return fmt.Sprintf("%s.%s", rs.conf.Redshift.TableSchema, rs.conf.Redshift.SyncTable)
+	return fmt.Sprintf("%s.%s", rs.conf.Redshift.DatabaseSchema, rs.conf.Redshift.SyncTable)
 }
 
 func (rs *Redshift) getSchemaParameter() string {
 	// the built-in current_schema() function will walk the Postgres search_path to get a schema name
 	// more info: https://www.postgresql.org/docs/9.4/functions-info.html
-	if rs.conf.Redshift.TableSchema == "search_path" {
+	if rs.conf.Redshift.DatabaseSchema == "search_path" {
 		return "current_schema()"
 	}
 
-	return fmt.Sprintf("'%s'", rs.conf.Redshift.TableSchema)
+	return fmt.Sprintf("'%s'", rs.conf.Redshift.DatabaseSchema)
 }
 
 func (rs *Redshift) validateSchemaConfig() error {
-	if rs.conf.Redshift.TableSchema == "" {
-		return errors.New("TableSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-schema-configuration")
+	if rs.conf.Redshift.DatabaseSchema == "" {
+		return errors.New("DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-schema-configuration")
 	}
 	return nil
 }
