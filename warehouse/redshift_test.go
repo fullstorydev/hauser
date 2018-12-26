@@ -133,7 +133,7 @@ func TestValidateSchemaConfig(t *testing.T) {
 		{
 			conf:       makeConf(""),
 			hasError:   true,
-			errMessage: "DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-schema-configuration",
+			errMessage: "DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#details-about-database-schema-configuration",
 		},
 		{
 			conf:       makeConf("test"),
