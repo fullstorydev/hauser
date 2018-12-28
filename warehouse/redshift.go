@@ -370,8 +370,8 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
 
 	var exists int
-	query := fmt.Sprintf("SELECT count(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = '%s';", rs.getSchemaParameter(), name)
-	err := rs.conn.QueryRow(query).Scan(&exists)
+	query := fmt.Sprintf("SELECT count(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = $1;", rs.getSchemaParameter())
+	err := rs.conn.QueryRow(query, name).Scan(&exists)
 	if err != nil {
 		// something is horribly wrong...just give up
 		log.Fatal(err)
@@ -382,8 +382,8 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 func (rs *Redshift) getTableColumns(name string) []string {
 	log.Printf("Fetching columns for table %s", name)
 	ctx := context.Background()
-	query := fmt.Sprintf("SELECT column_name FROM information_schema.columns WHERE table_schema = %s AND table_name  = '%s';", rs.getSchemaParameter(), name)
-	rows, err := rs.conn.QueryContext(ctx, query)
+	query := fmt.Sprintf("SELECT column_name FROM information_schema.columns WHERE table_schema = %s AND table_name  = $1;", rs.getSchemaParameter())
+	rows, err := rs.conn.QueryContext(ctx, query, name)
 	if err != nil {
 		log.Fatal(err)
 	}
