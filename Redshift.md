@@ -1,4 +1,4 @@
-# AWS Redshift configuration details
+# AWS Redshift Configuration Details
 Please review the `[redshift]` section in [example-config.toml](https://github.com/fullstorydev/hauser/blob/master/example-config.toml) to understand which items should be configured to integrate with your Redshift cluster. Values must be provided for all items.
 
 Core configuration items are:
@@ -8,7 +8,7 @@ Core configuration items are:
 3. The AWS IAM Role arn that will be used to import files from S3 into Redshift
 4. The database schema used when querying (and creating) the Export and Sync tables
 
-## Details about database schema configuration
+## Database Schema Configuration
 
 The `DatabaseSchema` parameter can accept two different types of values:
 

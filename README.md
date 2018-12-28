@@ -24,6 +24,8 @@ By default, each export file is copied locally to the temp directory before it i
 
 Loading data into Redshift may be skipped by setting `S3.S3Only` in the config file to `true`. In this mode, files are copied to S3, where they remain without being loaded into Redshift.
 
+Details about Redshift configuration can be found in the [Redshift Guide](https://github.com/fullstorydev/hauser/blob/master/Redshift.md).
+
 ### BigQuery Notes
 To use the BigQuery warehouse, set the `Warehouse` config option to `bigquery`.
 
@@ -35,7 +37,7 @@ Loading data into BigQuery may be skipped by setting `GCS.GCSOnly` in the config
 
 If `hauser` detects that a load failure occurred, to ensure data consistency it will roll back all sync points for the most recent date partition and reload all files for the entire partition.
 
-## Schema Changes
+## Table Schema Changes
 As FullStory adds more features we expose additional fields in our data export. `hauser` automatically deals with the addition of new fields by appending nullable columns to the warehouse export table.
 
 On startup, `hauser` will ensure that the export table listed in the config contains columns for all export fields. If `hauser` detects columns for fields don't exist, it will append columns for those fields to the export table. It uses this schema information, which it acquires once on startup, to intelligently build CSV files and deal with schema alterations to the export table. If schema changes are made, `hauser` will have to be restarted so it is aware of the updated export table schema.
