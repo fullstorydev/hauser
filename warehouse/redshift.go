@@ -370,7 +370,7 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 	log.Printf("Checking if table %s exists", name)
 
 	var exists int
-	query := fmt.Sprintf("SELECT count(*) FROM pg_tables WHERE schemaname = %s AND tablename = '%s';", rs.getSchemaParameter(), name)
+	query := fmt.Sprintf("SELECT count(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = '%s';", rs.getSchemaParameter(), name)
 	err := rs.conn.QueryRow(query).Scan(&exists)
 	if err != nil {
 		// something is horribly wrong...just give up
@@ -382,7 +382,7 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 func (rs *Redshift) getTableColumns(name string) []string {
 	log.Printf("Fetching columns for table %s", name)
 	ctx := context.Background()
-	query := fmt.Sprintf("SELECT \"column\" FROM pg_table_def WHERE schemaname = %s AND tablename = '%s';", rs.getSchemaParameter(), name)
+	query := fmt.Sprintf("SELECT column_name FROM information_schema.columns WHERE table_schema = %s AND table_name  = '%s';", rs.getSchemaParameter(), name)
 	rows, err := rs.conn.QueryContext(ctx, query)
 	if err != nil {
 		log.Fatal(err)
