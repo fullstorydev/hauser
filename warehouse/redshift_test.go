@@ -165,7 +165,6 @@ func TestValidateSchemaConfig(t *testing.T) {
 func TestGetExportTableName(t *testing.T) {
 	testCases := []struct {
 		conf               *config.Config
-		fullyQualifiedName bool
 		expected           string
 	}{
 		{
@@ -189,7 +188,6 @@ func TestGetExportTableName(t *testing.T) {
 func TestGetSyncTableName(t *testing.T) {
 	testCases := []struct {
 		conf               *config.Config
-		fullyQualifiedName bool
 		expected           string
 	}{
 		{
