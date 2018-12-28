@@ -169,30 +169,18 @@ func TestGetExportTableName(t *testing.T) {
 		expected           string
 	}{
 		{
-			conf:               makeConf("search_path"),
-			fullyQualifiedName: true,
-			expected:           "exportTable",
+			conf:     makeConf("search_path"),
+			expected: "exportTable",
 		},
 		{
-			conf:               makeConf("search_path"),
-			fullyQualifiedName: false,
-			expected:           "exportTable",
-		},
-		{
-			conf:               makeConf("mySchema"),
-			fullyQualifiedName: true,
-			expected:           "mySchema.exportTable",
-		},
-		{
-			conf:               makeConf("mySchema"),
-			fullyQualifiedName: false,
-			expected:           "exportTable",
+			conf:     makeConf("mySchema"),
+			expected: "mySchema.exportTable",
 		},
 	}
 
 	for _, tc := range testCases {
 		wh := NewRedshift(tc.conf)
-		if got := wh.getExportTableName(tc.fullyQualifiedName); got != tc.expected {
+		if got := wh.qualifiedExportTableName(); got != tc.expected {
 			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
@@ -205,30 +193,18 @@ func TestGetSyncTableName(t *testing.T) {
 		expected           string
 	}{
 		{
-			conf:               makeConf("search_path"),
-			fullyQualifiedName: true,
-			expected:           "syncTable",
+			conf:     makeConf("search_path"),
+			expected: "syncTable",
 		},
 		{
-			conf:               makeConf("search_path"),
-			fullyQualifiedName: false,
-			expected:           "syncTable",
-		},
-		{
-			conf:               makeConf("mySchema"),
-			fullyQualifiedName: true,
-			expected:           "mySchema.syncTable",
-		},
-		{
-			conf:               makeConf("mySchema"),
-			fullyQualifiedName: false,
-			expected:           "syncTable",
+			conf:     makeConf("mySchema"),
+			expected: "mySchema.syncTable",
 		},
 	}
 
 	for _, tc := range testCases {
 		wh := NewRedshift(tc.conf)
-		if got := wh.getSyncTableName(tc.fullyQualifiedName); got != tc.expected {
+		if got := wh.qualifiedSyncTableName(); got != tc.expected {
 			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
