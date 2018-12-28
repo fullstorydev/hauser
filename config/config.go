@@ -37,15 +37,16 @@ type S3Config struct {
 }
 
 type RedshiftConfig struct {
-	Host        string
-	Port        string
-	DB          string
-	User        string
-	Password    string
-	ExportTable string
-	SyncTable   string
-	Credentials string
-	VarCharMax  int
+	Host           string
+	Port           string
+	DB             string
+	User           string
+	Password       string
+	ExportTable    string
+	SyncTable      string
+	DatabaseSchema string
+	Credentials    string
+	VarCharMax     int
 }
 
 type GCSConfig struct {

@@ -8,13 +8,21 @@ import (
 
 var _ Warehouse = &Redshift{}
 
+func makeConf(databaseSchema string) *config.Config {
+	conf := &config.Config{
+		Redshift: config.RedshiftConfig{
+			DatabaseSchema: databaseSchema,
+			VarCharMax:     20,
+			ExportTable:    "exportTable",
+			SyncTable:      "syncTable",
+		},
+	}
+	return conf
+}
+
 func TestRedshiftValueToString(t *testing.T) {
 	wh := &Redshift{
-		conf: &config.Config{
-			Redshift: config.RedshiftConfig{
-				VarCharMax: 20,
-			},
-		},
+		conf: makeConf("some_schema"),
 	}
 
 	var testCases = []struct {
@@ -111,6 +119,114 @@ func TestGetBucketAndKey(t *testing.T) {
 		}
 		if key != tc.expKey {
 			t.Errorf("getBucketAndKey(%s, %s) returned %s for key, expected %s", tc.s3Config, tc.fileName, key, tc.expKey)
+		}
+	}
+}
+
+func TestValidateSchemaConfig(t *testing.T) {
+
+	testCases := []struct {
+		conf       *config.Config
+		hasError   bool
+		errMessage string
+	}{
+		{
+			conf:       makeConf(""),
+			hasError:   true,
+			errMessage: "DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#database-schema-configuration",
+		},
+		{
+			conf:       makeConf("test"),
+			hasError:   false,
+			errMessage: "",
+		},
+		{
+			conf:       makeConf("search_path"),
+			hasError:   false,
+			errMessage: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		err := wh.validateSchemaConfig()
+		if tc.hasError && err == nil {
+			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.DatabaseSchema is empty")
+		}
+		if tc.hasError && err.Error() != tc.errMessage {
+			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.DatabaseSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
+		}
+		if !tc.hasError && err != nil {
+			t.Errorf("unexpected error thrown for DatabaseSchema %s: %s", tc.conf.Redshift.DatabaseSchema, err)
+		}
+	}
+}
+
+func TestGetExportTableName(t *testing.T) {
+	testCases := []struct {
+		conf     *config.Config
+		expected string
+	}{
+		{
+			conf:     makeConf("search_path"),
+			expected: "exportTable",
+		},
+		{
+			conf:     makeConf("mySchema"),
+			expected: "mySchema.exportTable",
+		},
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		if got := wh.qualifiedExportTableName(); got != tc.expected {
+			t.Errorf("Expected value %q, got %q", tc.expected, got)
+		}
+	}
+}
+
+func TestGetSyncTableName(t *testing.T) {
+	testCases := []struct {
+		conf     *config.Config
+		expected string
+	}{
+		{
+			conf:     makeConf("search_path"),
+			expected: "syncTable",
+		},
+		{
+			conf:     makeConf("mySchema"),
+			expected: "mySchema.syncTable",
+		},
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		if got := wh.qualifiedSyncTableName(); got != tc.expected {
+			t.Errorf("Expected value %q, got %q", tc.expected, got)
+		}
+	}
+}
+
+func TestGetSchemaParameter(t *testing.T) {
+	testCases := []struct {
+		conf     *config.Config
+		expected string
+	}{
+		{
+			conf:     makeConf("search_path"),
+			expected: "current_schema()",
+		},
+		{
+			conf:     makeConf("mySchema"),
+			expected: "'mySchema'",
+		},
+	}
+
+	for _, tc := range testCases {
+		wh := NewRedshift(tc.conf)
+		if got := wh.getSchemaParameter(); got != tc.expected {
+			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
 	}
 }
