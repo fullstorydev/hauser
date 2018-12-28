@@ -382,7 +382,7 @@ func (rs *Redshift) DoesTableExist(name string) bool {
 func (rs *Redshift) getTableColumns(name string) []string {
 	log.Printf("Fetching columns for table %s", name)
 	ctx := context.Background()
-	query := fmt.Sprintf("SELECT column_name FROM information_schema.columns WHERE table_schema = %s AND table_name  = $1 order by ordinal_position;", rs.getSchemaParameter())
+	query := fmt.Sprintf("SELECT column_name FROM information_schema.columns WHERE table_schema = %s AND table_name = $1 order by ordinal_position;", rs.getSchemaParameter())
 	rows, err := rs.conn.QueryContext(ctx, query, name)
 	if err != nil {
 		log.Fatal(err)
