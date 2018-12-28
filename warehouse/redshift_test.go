@@ -164,8 +164,8 @@ func TestValidateSchemaConfig(t *testing.T) {
 
 func TestGetExportTableName(t *testing.T) {
 	testCases := []struct {
-		conf               *config.Config
-		expected           string
+		conf     *config.Config
+		expected string
 	}{
 		{
 			conf:     makeConf("search_path"),
@@ -187,8 +187,8 @@ func TestGetExportTableName(t *testing.T) {
 
 func TestGetSyncTableName(t *testing.T) {
 	testCases := []struct {
-		conf               *config.Config
-		expected           string
+		conf     *config.Config
+		expected string
 	}{
 		{
 			conf:     makeConf("search_path"),
