@@ -1,9 +1,9 @@
 package config
 
 import (
+	"errors"
 	"io/ioutil"
 	"time"
-	"errors"
 
 	"github.com/BurntSushi/toml"
 )
@@ -61,7 +61,7 @@ type RedshiftConfig struct {
 
 type RedshiftValidator struct {
 	RedshiftConfigFields
- }
+}
 
 func (v RedshiftValidator) ValidateDatabaseSchema() error {
 	if v.DatabaseSchema == "" {
@@ -107,7 +107,6 @@ func Load(filename string) (*Config, error) {
 	conf.Redshift.Validator = &RedshiftValidator{
 		RedshiftConfigFields: conf.Redshift.RedshiftConfigFields,
 	}
-
 
 	return &conf, nil
 }

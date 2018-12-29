@@ -18,15 +18,15 @@ func (fv *FakeValidator) ValidateDatabaseSchema() error {
 }
 
 func makeConf(databaseSchema string) *config.Config {
-	conf := &config.Config {
-		Redshift: config.RedshiftConfig {
-			RedshiftConfigFields: config.RedshiftConfigFields {
+	conf := &config.Config{
+		Redshift: config.RedshiftConfig{
+			RedshiftConfigFields: config.RedshiftConfigFields{
 				DatabaseSchema: databaseSchema,
 				VarCharMax:     20,
 				ExportTable:    "exportTable",
 				SyncTable:      "syncTable",
 			},
-			Validator: &FakeValidator {},
+			Validator: &FakeValidator{},
 		},
 	}
 	return conf
