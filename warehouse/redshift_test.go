@@ -8,13 +8,35 @@ import (
 
 var _ Warehouse = &Redshift{}
 
+type FakeValidator struct {
+	DidRun bool
+}
+
+func (fv *FakeValidator) ValidateDatabaseSchema() error {
+	fv.DidRun = true
+	return nil
+}
+
 func makeConf(databaseSchema string) *config.Config {
-	conf := &config.Config{
-		Redshift: config.RedshiftConfig{
-			DatabaseSchema: databaseSchema,
-			VarCharMax:     20,
-			ExportTable:    "exportTable",
-			SyncTable:      "syncTable",
+	/*
+	conf := &config.Config{}
+	conf.Redshift.RedshiftConfigFields = config.RedshiftConfigFields {
+		DatabaseSchema: databaseSchema,
+		VarCharMax:     20,
+		ExportTable:    "exportTable",
+		SyncTable:      "syncTable",
+	}
+	conf.Redshift.Validator = &FakeValidator {}
+	*/
+	conf := &config.Config {
+		Redshift: config.RedshiftConfig {
+			RedshiftConfigFields: config.RedshiftConfigFields {
+				DatabaseSchema: databaseSchema,
+				VarCharMax:     20,
+				ExportTable:    "exportTable",
+				SyncTable:      "syncTable",
+			},
+			Validator: &FakeValidator {},
 		},
 	}
 	return conf
@@ -123,45 +145,6 @@ func TestGetBucketAndKey(t *testing.T) {
 	}
 }
 
-func TestValidateSchemaConfig(t *testing.T) {
-
-	testCases := []struct {
-		conf       *config.Config
-		hasError   bool
-		errMessage string
-	}{
-		{
-			conf:       makeConf(""),
-			hasError:   true,
-			errMessage: "DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#database-schema-configuration",
-		},
-		{
-			conf:       makeConf("test"),
-			hasError:   false,
-			errMessage: "",
-		},
-		{
-			conf:       makeConf("search_path"),
-			hasError:   false,
-			errMessage: "",
-		},
-	}
-
-	for _, tc := range testCases {
-		wh := NewRedshift(tc.conf)
-		err := wh.validateSchemaConfig()
-		if tc.hasError && err == nil {
-			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.DatabaseSchema is empty")
-		}
-		if tc.hasError && err.Error() != tc.errMessage {
-			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.DatabaseSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
-		}
-		if !tc.hasError && err != nil {
-			t.Errorf("unexpected error thrown for DatabaseSchema %s: %s", tc.conf.Redshift.DatabaseSchema, err)
-		}
-	}
-}
-
 func TestGetExportTableName(t *testing.T) {
 	testCases := []struct {
 		conf     *config.Config
@@ -228,5 +211,18 @@ func TestGetSchemaParameter(t *testing.T) {
 		if got := wh.getSchemaParameter(); got != tc.expected {
 			t.Errorf("Expected value %q, got %q", tc.expected, got)
 		}
+	}
+}
+
+func TestValidateDatabaseSchema(t *testing.T) {
+	conf := makeConf("test")
+	fv := &FakeValidator{}
+	conf.Redshift.Validator = fv
+
+	wh := NewRedshift(conf)
+	wh.MakeRedshiftConnection()
+
+	if !fv.DidRun {
+		t.Errorf("Expected ValidateDatabaseSchema() to be invoked in MakeRedshiftConnection()")
 	}
 }

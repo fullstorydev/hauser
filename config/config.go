@@ -3,6 +3,7 @@ package config
 import (
 	"io/ioutil"
 	"time"
+	"errors"
 
 	"github.com/BurntSushi/toml"
 )
@@ -36,7 +37,11 @@ type S3Config struct {
 	S3Only  bool
 }
 
-type RedshiftConfig struct {
+type IRedshiftValidator interface {
+	ValidateDatabaseSchema() error
+}
+
+type RedshiftConfigFields struct {
 	Host           string
 	Port           string
 	DB             string
@@ -47,6 +52,22 @@ type RedshiftConfig struct {
 	DatabaseSchema string
 	Credentials    string
 	VarCharMax     int
+}
+
+type RedshiftConfig struct {
+	RedshiftConfigFields
+	Validator IRedshiftValidator
+}
+
+type RedshiftValidator struct {
+	RedshiftConfigFields
+ }
+
+func (v RedshiftValidator) ValidateDatabaseSchema() error {
+	if v.DatabaseSchema == "" {
+		return errors.New("DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#database-schema-configuration")
+	}
+	return nil
 }
 
 type GCSConfig struct {
@@ -82,6 +103,11 @@ func Load(filename string) (*Config, error) {
 	if _, err := toml.Decode(string(tomlData), &conf); err != nil {
 		return nil, err
 	}
+
+	conf.Redshift.Validator = &RedshiftValidator{
+		RedshiftConfigFields: conf.Redshift.RedshiftConfigFields,
+	}
+
 
 	return &conf, nil
 }
