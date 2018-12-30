@@ -9,11 +9,11 @@ import (
 var _ Warehouse = &Redshift{}
 
 type FakeValidator struct {
-	DidRun bool
+	wasInvoked bool
 }
 
 func (fv *FakeValidator) ValidateDatabaseSchema() error {
-	fv.DidRun = true
+	fv.wasInvoked = true
 	return nil
 }
 
@@ -212,7 +212,7 @@ func TestValidateDatabaseSchema(t *testing.T) {
 	wh := NewRedshift(conf)
 	wh.MakeRedshiftConnection()
 
-	if !fv.DidRun {
+	if !fv.wasInvoked {
 		t.Errorf("Expected ValidateDatabaseSchema() to be invoked in MakeRedshiftConnection()")
 	}
 }
