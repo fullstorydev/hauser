@@ -56,7 +56,7 @@ type RedshiftConfigFields struct {
 
 type RedshiftConfig struct {
 	RedshiftConfigFields
-	Validator IRedshiftValidator
+	IRedshiftValidator
 }
 
 type RedshiftValidator struct {
@@ -104,7 +104,7 @@ func Load(filename string) (*Config, error) {
 		return nil, err
 	}
 
-	conf.Redshift.Validator = &RedshiftValidator{
+	conf.Redshift.IRedshiftValidator = &RedshiftValidator{
 		RedshiftConfigFields: conf.Redshift.RedshiftConfigFields,
 	}
 
