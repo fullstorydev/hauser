@@ -20,13 +20,13 @@ func (fv *FakeValidator) ValidateDatabaseSchema() error {
 func makeConf(databaseSchema string) *config.Config {
 	conf := &config.Config{
 		Redshift: config.RedshiftConfig{
-			config.RedshiftConfigFields{
+			RedshiftConfigFields: config.RedshiftConfigFields{
 				DatabaseSchema: databaseSchema,
 				VarCharMax:     20,
 				ExportTable:    "exportTable",
 				SyncTable:      "syncTable",
 			},
-			&FakeValidator{},
+			IRedshiftValidator: &FakeValidator{},
 		},
 	}
 	return conf
