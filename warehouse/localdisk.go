@@ -75,8 +75,7 @@ func (w *LocalDisk) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	}
 	filename := filepath.Join(w.conf.Local.SaveDir, timestampFile)
 	timedata := []byte(t)
-	err := ioutil.WriteFile(filename, timedata, 0644)
-	return err
+	return ioutil.WriteFile(filename, timedata, 0644)
 }
 
 func (w *LocalDisk) LoadToWarehouse(objName string, bundles ...fullstory.ExportMeta) error {
