@@ -253,17 +253,7 @@ func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
 }
 
 func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
-	s := fmt.Sprintf("%v", val)
-	if isTime {
-		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.Format(time.RFC3339)
-	}
-
-	s = strings.Replace(s, "\n", " ", -1)
-	s = strings.Replace(s, "\r", " ", -1)
-	s = strings.Replace(s, "\x00", "", -1)
-
-	return s
+	return ValueToString(val, isTime)
 }
 
 func (bq *BigQuery) connectToBQ() error {

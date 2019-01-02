@@ -69,8 +69,10 @@ type duration struct {
 }
 
 type LocalConfig struct {
-	SaveDir   string
-	StartTime time.Time
+	SaveDir      string
+	StartTime    time.Time
+	UseStartTime bool
+	SaveAsJson   bool
 }
 
 func (d *duration) UnmarshalText(text []byte) error {

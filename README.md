@@ -39,7 +39,7 @@ If `hauser` detects that a load failure occurred, to ensure data consistency it 
 
 ## Local Storage Notes
 
-To only store downloaded export files locally, set the `Warehouse` option to `local`. This will save each export as a json file to the folder specified by `SaveDir` parameter, starting at time specified by `StartTime`
+To only store downloaded export files locally, set the `Warehouse` option to `local`. This will save exports to a local folder specified by `SaveDir`. If `UseStartTime` is set to `true`, only exports since `StartTime` will be downloaded (as opposed to all available exports). Exports can be saved in JSON format (by setting `SaveAsJson` to `true`) or in CSV format. `GroupFilesByDay` option is also supported (for CSV format only).
 
 
 ## Table Schema Changes
