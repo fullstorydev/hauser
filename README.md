@@ -37,7 +37,7 @@ Loading data into BigQuery may be skipped by setting `GCS.GCSOnly` in the config
 
 If `hauser` detects that a load failure occurred, to ensure data consistency it will roll back all sync points for the most recent date partition and reload all files for the entire partition.
 
-## Local Storage Notes
+### Local Storage Notes
 
 To only store downloaded export files locally, set the `Warehouse` option to `local`. This will save exports to a local folder specified by `SaveDir`. If `UseStartTime` is set to `true`, only exports since `StartTime` will be downloaded (as opposed to all available exports). Exports can be saved in JSON format (by setting `SaveAsJson` to `true`) or in CSV format. `GroupFilesByDay` option is also supported (for CSV format only).
 
