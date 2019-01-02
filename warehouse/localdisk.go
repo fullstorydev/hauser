@@ -14,7 +14,6 @@ import (
 
 type LocalDisk struct {
 	conf *config.Config
-	ctx  context.Context
 }
 
 const (
@@ -115,9 +114,7 @@ func (w *LocalDisk) UploadFile(filename string) (string, error) {
 }
 
 // This method should do nothing for local disk
-func (w *LocalDisk) DeleteFile(objName string) {
-	return
-}
+func (w *LocalDisk) DeleteFile(objName string) {}
 
 func (w *LocalDisk) GetUploadFailedMsg(filename string, err error) string {
 	return fmt.Sprintf("Failed to copy file %s to local dir %s: %s", filename, w.conf.Local.SaveDir, err)
