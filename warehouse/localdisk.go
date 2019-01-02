@@ -40,7 +40,7 @@ func NewLocalDisk(c *config.Config) *LocalDisk {
 func (w *LocalDisk) GetExportTableColumns() []string {
 	allFields := BundleFields()
 	fieldNames := make([]string, 0, len(allFields))
-	for name, _ := range allFields {
+	for name := range allFields {
 		fieldNames = append(fieldNames, name)
 	}
 	return fieldNames
