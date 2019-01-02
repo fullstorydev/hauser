@@ -1,7 +1,6 @@
 package warehouse
 
 import (
-	"context"
 	"fmt"
 	"github.com/fullstorydev/hauser/config"
 	"github.com/nishanths/fullstory"
