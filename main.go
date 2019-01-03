@@ -158,7 +158,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullst
 		return 0, nil
 	}
 	if conf.Local.SaveAsJson {
-		panic("The option to process files by day is only supported for CSV format.")
+		log.Fatalf("The option to process files by day is only supported for CSV format.")
 	}
 
 	log.Printf("Creating group file starting with bundle %d (start: %s)", exports[0].ID, exports[0].Start.UTC())

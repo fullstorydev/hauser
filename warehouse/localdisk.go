@@ -6,6 +6,7 @@ import (
 	"github.com/nishanths/fullstory"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -22,6 +23,14 @@ const (
 var _ Warehouse = (*LocalDisk)(nil)
 
 func NewLocalDisk(c *config.Config) *LocalDisk {
+	if _, err := os.Stat(c.Local.SaveDir); os.IsNotExist(err) {
+		errorMessage := fmt.Sprintf("Cannot find folder %s, make sure it exists", c.Local.SaveDir)
+		log.Fatalf(errorMessage)
+	}
+	if c.Local.UseStartTime && c.Local.StartTime.IsZero() {
+		log.Fatalf("Asked to use Start Time, but it is not specified")
+	}
+
 	if c.Local.UseStartTime {
 		filename := filepath.Join(c.Local.SaveDir, timestampFile)
 		if _, err := os.Stat(filename); !os.IsNotExist(err) {
@@ -34,7 +43,7 @@ func NewLocalDisk(c *config.Config) *LocalDisk {
 	}
 }
 
-// Currently returns the names of all the fields exported by BundleFields
+// GetExportTableColumns currently returns the names of all the fields exported by BundleFields
 func (w *LocalDisk) GetExportTableColumns() []string {
 	allFields := BundleFields()
 	fieldNames := make([]string, 0, len(allFields))
@@ -44,14 +53,11 @@ func (w *LocalDisk) GetExportTableColumns() []string {
 	return fieldNames
 }
 
-// Reads the last sync date from file
+// LastSyncPoint reads the last sync date from file
 func (w *LocalDisk) LastSyncPoint() (time.Time, error) {
 	t := beginningOfTime
 	if w.conf.Local.UseStartTime {
 		t = w.conf.Local.StartTime
-	}
-	if _, err := os.Stat(w.conf.Local.SaveDir); os.IsNotExist(err) {
-		panic(err)
 	}
 	filename := filepath.Join(w.conf.Local.SaveDir, timestampFile)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
@@ -61,13 +67,15 @@ func (w *LocalDisk) LastSyncPoint() (time.Time, error) {
 	if err != nil {
 		return t, err
 	}
-	synctime, err := time.Parse(time.RFC3339, string(timebytes))
-	return synctime, err
+	return time.Parse(time.RFC3339, string(timebytes))
 }
 
-// Writes the current time to timestamp file
+// SaveSyncPoints writes the current time to timestamp file
 func (w *LocalDisk) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
-	t := time.Now().UTC().Format(time.RFC3339)
+	if len(bundles) == 0 {
+		panic("Zero-length bundle list passed to SaveSyncPoints")
+	}
+	t := bundles[len(bundles)-1].Stop.UTC().Format(time.RFC3339)
 	if _, err := os.Stat(w.conf.Local.SaveDir); os.IsNotExist(err) {
 		panic(err)
 	}
@@ -87,7 +95,7 @@ func (w *LocalDisk) EnsureCompatibleExportTable() error {
 	return nil
 }
 
-// Defers to common implementation
+// ValueToString defers to common implementation
 func (w *LocalDisk) ValueToString(val interface{}, isTime bool) string {
 	return ValueToString(val, isTime)
 }
@@ -105,14 +113,13 @@ func (w *LocalDisk) UploadFile(filename string) (string, error) {
 		return "", err
 	}
 	defer dstFile.Close()
-	_, err = io.Copy(dstFile, srcFile)
-	if err != nil {
+	if _, err = io.Copy(dstFile, srcFile); err != nil {
 		return "", err
 	}
 	return copiedFileName, nil
 }
 
-// This method should do nothing for local disk
+// DeleteFile should do nothing for local disk
 func (w *LocalDisk) DeleteFile(objName string) {}
 
 func (w *LocalDisk) GetUploadFailedMsg(filename string, err error) string {
