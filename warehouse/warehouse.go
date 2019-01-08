@@ -21,8 +21,8 @@ type Warehouse interface {
 	IsUploadOnly() bool
 }
 
-// Common implementation that subclasses can call
-func ValueToString(val interface{}, isTime bool) string {
+// valueToString is a common interface method that implementations use to perform value to string conversion
+func valueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
 	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)

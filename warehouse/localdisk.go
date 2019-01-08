@@ -17,7 +17,7 @@ type LocalDisk struct {
 }
 
 const (
-	timestampFile string = ".sync.hs"
+	timestampFile string = ".sync.hauser"
 )
 
 var _ Warehouse = (*LocalDisk)(nil)
@@ -77,7 +77,7 @@ func (w *LocalDisk) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	}
 	t := bundles[len(bundles)-1].Stop.UTC().Format(time.RFC3339)
 	if _, err := os.Stat(w.conf.Local.SaveDir); os.IsNotExist(err) {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 	filename := filepath.Join(w.conf.Local.SaveDir, timestampFile)
 	timedata := []byte(t)
