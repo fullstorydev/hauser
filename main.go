@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -107,28 +108,41 @@ func ProcessExportsSince(wh warehouse.Warehouse, tableColumns []string, since ti
 func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
-		filename := filepath.Join(conf.TmpDir, fmt.Sprintf("%d.csv", e.ID))
 		mark := time.Now()
-		outfile, err := os.Create(filename)
-		if err != nil {
-			log.Printf("Failed to create tmp file: %s", err)
-			return 0, err
-		}
-		defer os.Remove(filename)
-		defer outfile.Close()
-		csvOut := csv.NewWriter(outfile)
+		var filename string
+		var statusMessage string
+		if conf.Local.SaveAsJson {
+			filename = filepath.Join(conf.TmpDir, fmt.Sprintf("%d.json", e.ID))
+			defer os.Remove(filename)
+			writtenCount, err := WriteBundleToJson(fs, e.ID, filename)
+			if err != nil {
+				log.Printf("Failed to create tmp json file: %s", err)
+				return 0, err
+			}
+			statusMessage = fmt.Sprintf("Processing of bundle %d (%d bytes)", e.ID, writtenCount)
+		} else {
+			filename = filepath.Join(conf.TmpDir, fmt.Sprintf("%d.csv", e.ID))
+			outfile, err := os.Create(filename)
+			if err != nil {
+				log.Printf("Failed to create tmp csv file: %s", err)
+				return 0, err
+			}
+			defer os.Remove(filename)
+			defer outfile.Close()
+			csvOut := csv.NewWriter(outfile)
 
-		recordCount, err := WriteBundleToCSV(fs, e.ID, tableColumns, csvOut, wh)
-		if err != nil {
-			return 0, err
+			recordCount, err := WriteBundleToCSV(fs, e.ID, tableColumns, csvOut, wh)
+			if err != nil {
+				return 0, err
+			}
+			statusMessage = fmt.Sprintf("Processing of bundle %d (%d records)", e.ID, recordCount)
 		}
 
 		if err := LoadBundles(wh, filename, e); err != nil {
 			return 0, err
 		}
 
-		log.Printf("Processing of bundle %d (%d records) took %s", e.ID, recordCount,
-			time.Since(mark))
+		log.Printf("%s took %s", statusMessage, time.Since(mark))
 	}
 
 	// return how many files were processed
@@ -142,6 +156,9 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs 
 func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
 	if len(exports) == 0 {
 		return 0, nil
+	}
+	if conf.Local.SaveAsJson {
+		log.Fatalf("The option to process files by day is only supported for CSV format.")
 	}
 
 	log.Printf("Creating group file starting with bundle %d (start: %s)", exports[0].ID, exports[0].Start.UTC())
@@ -302,6 +319,38 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string,
 	return recordCount, nil
 }
 
+// WriteBundleToJson writes the bundle corresponding to the given bundleID to a Json file
+func WriteBundleToJson(fs *fullstory.Client, bundleID int, filename string) (bytesWritten int64, err error) {
+	stream, err := getExportData(fs, bundleID)
+	if err != nil {
+		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)
+		return 0, err
+	}
+	defer stream.Close()
+
+	outfile, err := os.Create(filename)
+	if err != nil {
+		log.Printf("Failed to create json file: %s", err)
+		return 0, err
+	}
+	defer outfile.Close()
+
+	gzstream, err := gzip.NewReader(stream)
+	if err != nil {
+		log.Printf("Failed gzip reader: %s", err)
+		return 0, err
+	}
+	defer gzstream.Close()
+
+	written, err := io.Copy(outfile, gzstream)
+	if err != nil {
+		log.Printf("Failed to copy input stream to file: %s", err)
+		return 0, err
+	}
+
+	return written, nil
+}
+
 func BackoffOnError(err error) bool {
 	if err != nil {
 		if currentBackoffStep == uint(conf.BackoffStepsMax) {
@@ -333,6 +382,8 @@ func main() {
 
 	var wh warehouse.Warehouse
 	switch conf.Warehouse {
+	case "local":
+		wh = warehouse.NewLocalDisk(conf)
 	case "redshift":
 		wh = warehouse.NewRedshift(conf)
 	case "bigquery":
