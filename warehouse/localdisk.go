@@ -97,7 +97,7 @@ func (w *LocalDisk) EnsureCompatibleExportTable() error {
 
 // ValueToString defers to common implementation
 func (w *LocalDisk) ValueToString(val interface{}, isTime bool) string {
-	return ValueToString(val, isTime)
+	return valueToString(val, isTime)
 }
 
 func (w *LocalDisk) UploadFile(filename string) (string, error) {

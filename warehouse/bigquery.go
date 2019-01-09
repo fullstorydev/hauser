@@ -253,7 +253,7 @@ func makeSchemaMap(schema bigquery.Schema) map[string]struct{} {
 }
 
 func (bq *BigQuery) ValueToString(val interface{}, isTime bool) string {
-	return ValueToString(val, isTime)
+	return valueToString(val, isTime)
 }
 
 func (bq *BigQuery) connectToBQ() error {
