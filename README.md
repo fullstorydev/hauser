@@ -1,6 +1,10 @@
 # hauser
-
 `hauser` is a service to download FullStory data export files and load them into a data warehouse. Alternatively, data export files can be saved to local disk. Redshift and BigQuery are the only warehouses supported currently. (Others are easy to add -- pull requests welcome.)
+
+<p align="center">
+  <img width="600" src="hauser.png" alt="screenshot from &quot;Total Recall&quot" title="Howdy, stranger. This is Hauser. Things have gone wrong, I'm talking to myself, and you've got a wet towel wrapped around your head."/><br>
+  <small><em>Douglas Quaid (right) consults his alter ego Hauser (left, in screen), from &quot;Total Recall&quot;, 1990</em></small>
+</p>
 
 ## Quick Start
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.8 or higher.
