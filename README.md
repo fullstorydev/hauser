@@ -5,7 +5,7 @@
   <img width="414" src=".images/hauser1.png" alt="screenshot from &quot;Total Recall&quot" title="Howdy, stranger. This is Hauser. Things have gone wrong, I'm talking to myself, and you've got a wet towel wrapped around your head."/>
   <img width="410" src=".images/hauser2.png" alt="screenshot from &quot;Total Recall&quot" title="Don't worry. It's self-guiding."/>
   <br>
-  <small><em>Hauser assists his alter ego, Quaid, in extracting all of his FullStory data (from &quot;Total Recall&quot;, 1990)</e></small>
+  <small><em>Hauser assists his alter ego, Quaid, in extracting all of his FullStory data (from &quot;Total Recall&quot;, 1990)</em></small>
 </p>
 
 ## Quick Start
