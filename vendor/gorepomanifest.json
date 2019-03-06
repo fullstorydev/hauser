@@ -31,6 +31,7 @@
  },
  "github.com/nishanths/fullstory": {
   "git-remote": "https://github.com/nishanths/fullstory",
+  "git-remote-branch": "master",
   "current-version-git-hash": "5c231e3c1db842ac29ef823e1eb75ecb04808614",
   "content-hash": "90e212ed048fb0cdc0e362c874147a7365fed7cf"
  },
