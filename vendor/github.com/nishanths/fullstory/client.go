@@ -10,7 +10,7 @@ import (
 )
 
 // BaseURL is the base URL for the fullstory.com API.
-const BaseURL = "https://fullstory.com/api/v1"
+const BaseURL = "https://export.fullstory.com/api/v1"
 
 var _ error = StatusError{}
 
@@ -24,7 +24,7 @@ type StatusError struct {
 }
 
 func (e StatusError) Error() string {
-	return fmt.Sprintf("fullstory: response error: Status:%s, StatusCode:%d, RetryAfter:%d", e.Status, e.StatusCode, e.RetryAfter)
+	return fmt.Sprintf("fullstory: response error: Status:%s, StatusCode:%d, RetryAfter:%v", e.Status, e.StatusCode, e.RetryAfter)
 }
 
 // Client represents a HTTP client for making requests to the FullStory API.
@@ -56,7 +56,7 @@ func NewClient(apiToken string) *Client {
 //
 // If the error is nil, the caller is responsible for closing the returned data.
 func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
-	req.Header.Set("Authorization", "Basic "+c.APIToken)
+	req.Header.Set("Authorization", "Basic " + c.APIToken)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

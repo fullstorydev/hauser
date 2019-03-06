@@ -125,13 +125,17 @@ type ExportData io.ReadCloser
 //
 // The caller is responsible for closing the returned ExportData if the returned
 // error is nil.
-func (c *Client) ExportData(id int) (ExportData, error) {
+func (c *Client) ExportData(id int, modifyReq ...func(r *http.Request)) (ExportData, error) {
 	v := make(url.Values)
 	v.Add("id", strconv.Itoa(id))
 
 	req, err := http.NewRequest("GET", c.BaseURL+"/export/get"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, mr := range modifyReq {
+		mr(req)
 	}
 
 	return c.doReq(req)
