@@ -1,4 +1,4 @@
-module github.com/butanian/hauser
+module github.com/fullstorydev/hauser
 
 require (
 	cloud.google.com/go v0.36.0
