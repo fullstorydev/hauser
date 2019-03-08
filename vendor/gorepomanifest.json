@@ -1,0 +1,82 @@
+{
+ "cloud.google.com/go": {
+  "git-remote": "https://code.googlesource.com/gocloud",
+  "current-version-git-hash": "1d9633a229077f680bf8fe431a93d5f489835506",
+  "content-hash": "b9918e851e0a1a2c2e5f28f13b7b3c5f33f1cc8e"
+ },
+ "github.com/BurntSushi/toml": {
+  "git-remote": "https://github.com/BurntSushi/toml",
+  "current-version-git-hash": "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005",
+  "content-hash": "ed84a63bc80d3fabbf263219f5517c3822badbaa"
+ },
+ "github.com/aws/aws-sdk-go": {
+  "git-remote": "https://github.com/aws/aws-sdk-go",
+  "current-version-git-hash": "0e8c61841163762f870f6976775800ded4a789b0",
+  "content-hash": "816c901894c9d80779bcc2c1d6b1ff05ae0a35f0"
+ },
+ "github.com/golang/protobuf": {
+  "git-remote": "https://github.com/golang/protobuf",
+  "current-version-git-hash": "ddf22928ea3c56eb4292a0adbbf5001b1e8e7d0d",
+  "content-hash": "43f274ec499f2f092a83c9fac2ff448f243d1c02"
+ },
+ "github.com/googleapis/gax-go": {
+  "git-remote": "https://github.com/googleapis/gax-go",
+  "current-version-git-hash": "1ef592c90f479e3ab30c6c2312e20e13881b7ea6",
+  "content-hash": "4df4dc5d65a986147d73794544fd88a76e115354"
+ },
+ "github.com/lib/pq": {
+  "git-remote": "https://github.com/lib/pq",
+  "current-version-git-hash": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
+  "content-hash": "00527e2f8fd2ae0b3a3c9caba04902c060d51749"
+ },
+ "github.com/nishanths/fullstory": {
+  "git-remote": "https://github.com/nishanths/fullstory",
+  "current-version-git-hash": "272735d360883d9fb41d542b464bc6cdc4f517ee",
+  "content-hash": "1db6e7c20d9a28d373c6d117c6aa1b750bacfc47"
+ },
+ "github.com/pkg/errors": {
+  "git-remote": "https://github.com/pkg/errors",
+  "current-version-git-hash": "2233dee583dcf88f3c8b22cb7a33f05a499800d8",
+  "content-hash": "6e27ce7b7c8670da05631a3bf746672566f87928"
+ },
+ "go.opencensus.io": {
+  "git-remote": "https://github.com/census-instrumentation/opencensus-go",
+  "current-version-git-hash": "aab39bd6a98b853ab66c8a564f5d6cfcad59ce8a",
+  "content-hash": "bb8a01578c860d87203f6aa7cb0b4fb3d45f8942"
+ },
+ "golang.org/x/net": {
+  "git-remote": "https://go.googlesource.com/net",
+  "current-version-git-hash": "04a2e542c03f1d053ab3e4d6e5abcd4b66e2be8e",
+  "content-hash": "8a93ca4acf99ee2cef614caa3224765dcdcbf5a6"
+ },
+ "golang.org/x/oauth2": {
+  "git-remote": "https://go.googlesource.com/oauth2",
+  "current-version-git-hash": "9dcd33a902f40452422c2367fefcb95b54f9f8f8",
+  "content-hash": "cd678221502616a2d1722a646d8979b28c06d2b1"
+ },
+ "golang.org/x/sys": {
+  "git-remote": "https://go.googlesource.com/sys",
+  "current-version-git-hash": "7da8ea5c81829e397bdf930c5d8ba4b703616f33",
+  "content-hash": "ea086224ed95c6ab26dcd90edcc1f226138691fa"
+ },
+ "golang.org/x/text": {
+  "git-remote": "https://go.googlesource.com/text",
+  "current-version-git-hash": "4d1c5fb19474adfe9562c9847ba425e7da817e81",
+  "content-hash": "91ce1f45d692aa17908f832416228c250c3b9b9e"
+ },
+ "google.golang.org/api": {
+  "git-remote": "https://code.googlesource.com/google-api-go-client",
+  "current-version-git-hash": "1ee037c9707128cf915508b3051e3167243b7b7e",
+  "content-hash": "2eff140c71682a25ac552b93c8c1a260b4fa1e68"
+ },
+ "google.golang.org/genproto": {
+  "git-remote": "https://github.com/google/go-genproto",
+  "current-version-git-hash": "94acd270e44e65579b9ee3cdab25034d33fed608",
+  "content-hash": "8845bd645215324561d4952d83d6a7204f7f3770"
+ },
+ "google.golang.org/grpc": {
+  "git-remote": "https://github.com/grpc/grpc-go",
+  "current-version-git-hash": "13b2b26aae70b3b5fd750e5046e65670473ee0a3",
+  "content-hash": "d7fd6a167ee767a85201ab6e1a8006be2318543f"
+ }
+}
