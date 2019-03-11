@@ -241,7 +241,6 @@ func withAcceptEncoding() func(r *http.Request) {
 func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, error) {
 	log.Printf("Getting Export Data for bundle %d\n", bundleID)
 	var fsErr error
-
 	for r := 1; r <= maxAttempts; r++ {
 		stream, err := fs.ExportData(bundleID, withAcceptEncoding())
 		if err == nil {
