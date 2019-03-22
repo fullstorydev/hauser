@@ -12,7 +12,15 @@ all_to_check=$(files_to_check) $(dirs_to_check)
 # they are just too noisy to be a requirement for a CI -- we don't even *want*
 # to fix some of the things they consider to be violations.
 .PHONY: ci
-ci: install checkgofmt vet staticcheck ineffassign predeclared test
+ci: deps checkgofmt vet staticcheck ineffassign predeclared test
+
+.PHONY: deps
+deps:
+	go get -d -v -t ./...
+
+.PHONY: updatedeps
+updatedeps:
+	go get -d -v -t -u -f ./...
 
 .PHONY: install
 install:
