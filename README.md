@@ -11,7 +11,7 @@
 SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://github.com/fullstorydev/hauser/wiki).
 
 ## Quick Start
-* Make sure you have [installed](https://golang.org/doc/install) Go 1.8 or higher.
+* Make sure you have [installed](https://golang.org/doc/install) Go 1.9 or higher.
 * Build it (for EC2, for example): ``GOOS=linux GOARCH=amd64 go get github.com/fullstorydev/hauser``
 * Copy the included `example-config.toml` file and customize it for your environment, including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
 * Run it: `./hauser -c <your updated config file>`

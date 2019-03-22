@@ -3,16 +3,19 @@ sudo: false
 
 matrix:
   include:
-    - go: "1.8"
-# TODO: stop supporting versions older than 1.9?
     - go: "1.9"
     - go: "1.10"
-      env: VET=1
     - go: "1.11"
+      env:
+      - GO111MODULE=off
+      - VET=1
+    - go: "1.11"
+      env: GO111MODULE=on
+    - go: "1.12"
       env: GO111MODULE=off
-    - go: "1.11"
+    - go: "1.12"
       env: GO111MODULE=on
     - go: tip
 
 script:
-  - if [[ "$VET" = 1 ]]; then make ci; else make test; fi
+  - if [[ "$VET" = 1 ]]; then make; else make deps test; fi

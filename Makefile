@@ -2,7 +2,7 @@ dev_build_version=$(shell git describe --tags --always --dirty)
 # to_check is all code in this repo that we want to run checks on
 # (it is all Go code in here, but intentionally excludes the
 # vendor folder contents)
-dirs_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type d | grep -v .git | grep -v vendor)
+dirs_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type d | grep -v .git | grep -v vendor | grep -v .images)
 files_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type f -name '*.go')
 all_to_check=$(files_to_check) $(dirs_to_check)
 
@@ -12,7 +12,7 @@ all_to_check=$(files_to_check) $(dirs_to_check)
 # they are just too noisy to be a requirement for a CI -- we don't even *want*
 # to fix some of the things they consider to be violations.
 .PHONY: ci
-ci: install checkgofmt vet staticcheck unused ineffassign predeclared test
+ci: install checkgofmt vet staticcheck ineffassign predeclared test
 
 .PHONY: install
 install:
@@ -33,11 +33,6 @@ vet:
 staticcheck:
 	@go get honnef.co/go/tools/cmd/staticcheck
 	staticcheck ./...
-
-.PHONY: unused
-unused:
-	@go get honnef.co/go/tools/cmd/unused
-	unused ./...
 
 .PHONY: ineffassign
 ineffassign:
