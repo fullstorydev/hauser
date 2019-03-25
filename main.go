@@ -21,9 +21,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// purposeful, temporary compilation error so I can test posts to Slack
-"Nope"
-
 var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
