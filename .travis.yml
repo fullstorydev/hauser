@@ -19,3 +19,11 @@ matrix:
 
 script:
   - if [[ "$VET" = 1 ]]; then make ci; else make deps test; fi
+
+notifications:
+  slack:
+    rooms:
+      - secure: v1kHl7sp7k+fhKL80kjyeJo/8AKcUOmQMn0m4pNpCjfIe++pS+qTyQwqWln5QoOCwLO2hiFK0rw7RVwYEyzlT/hbPcxT7XqXNE7+2bKGAgeFa/1ZK2BqCnPGPSwbUyr63aXmgeZ0rOMeH6mbQRyihyUX7qO0lKQ1E5XUd17IVKILTpOaglvKiisj+NCG76AM+BI8L0gH8YSZILlcT6+zTyruTda+gS3DqvNAWccpAqoXef8Zu6A3Xy1rPzpp+zalMEiL1/K3hZCSEijV7b6A7anJQN6Na725Br6jVhOF+w/4w58lDyUngUK27PGOUKAXNRYIIiw0uW7EIqweRQtDDGLrgfxkrAzrynxiRI6MIBxLOu1tq/ti3OTkN5CyyZEo8Vts4EPlQm39WXOCnbIA50+rlRWczVp/OwSnyn5R0HunWP0W9N/Yhgl+wBVu1Py09ug5xLMypFFS45xhgnEc8I88j9QXUlEqDbJvQeidubXIrUa+sAAY6hNfR2BhN4h7eo9uHzz3WvCdFlAh9+yx3wnY3/ve5mFQ8/WYmaW4qoNGA85SjV+7Jreia4X28Rffg2Mb+gX7dkUoNZqeskBb6qSMsCn6ZYe1vlc98M5u9QDYmKp6jPBNVk8ih1d6Pk/pgapyp0TQpf8NDQo9G05fPkvRo74pwJaPLxtJanUiU+c=
+    on_success: change
+    on_failure: always
+    on_pull_requests: true
