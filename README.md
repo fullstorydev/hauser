@@ -12,10 +12,23 @@ SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://g
 
 ## Quick Start
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.9 or higher.
-* Build it (for EC2, for example): ``GOOS=linux GOARCH=amd64 go get github.com/fullstorydev/hauser``
+* **OPTIONAL**: Set a custom [GOPATH](https://github.com/golang/go/wiki/SettingGOPATH).
+* Build it... 
+    * To compile for use on your local machine: ``go get github.com/fullstorydev/hauser``
+    * To cross-compile for deployment on a VM: ``GOOS=<linux> GOARCH=<amd64> go get github.com/fullstorydev/hauser``
+        - Type `go version` in the VM's command line to find its `GOOS` and `GOARCH` values.
+        - Example (Amazon EC2 Linux): `go1.11.5 linux/amd64` is `GOOS=linux GOARCH=amd64`
+        - The list of valid `GOOS` and `GOARCH` values can be found [here](https://golang.org/doc/install/source#environment).
 * Copy the included `example-config.toml` file and customize it for your environment, including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
-* Run it: `./hauser -c <your updated config file>`
-
+* Run it...
+    * **NOTE**: `go get` downloads and installs the hauser package in your `GOPATH`, not the local directory in which you call the command.
+    * If you did _NOT_ set a custom `GOPATH`...
+        - Linux & Mac: `$HOME/go/bin/hauser -c <your updated config file>`
+        - Windows: `%USERPROFILE%\go\bin\hauser -c <your updated config file>`
+    * If you _DID_ set a custom `GOPATH`...
+        - Linux & Mac: `$GOPATH/bin/hauser -c <your updated config file>`
+        - Windows: `$GOPATH\bin\hauser -c <your updated config file>`
+    
 ## How It Works
 When first run, `hauser` will query FullStory's [data export API](http://help.fullstory.com/develop-rest) to find the earliest export file available. `hauser` will then download all available export files, performing some light transformation for [custom user vars](http://help.fullstory.com/develop-js/setuservars?from_search=17717406) before loading it into the warehouse.
 
