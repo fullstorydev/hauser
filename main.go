@@ -111,7 +111,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs 
 		mark := time.Now()
 		var filename string
 		var statusMessage string
-		if conf.Local.SaveAsJson {
+		if conf.SaveAsJson {
 			filename = filepath.Join(conf.TmpDir, fmt.Sprintf("%d.json", e.ID))
 			defer os.Remove(filename)
 			writtenCount, err := WriteBundleToJson(fs, e.ID, filename)
@@ -157,7 +157,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullst
 	if len(exports) == 0 {
 		return 0, nil
 	}
-	if conf.Local.SaveAsJson {
+	if conf.SaveAsJson {
 		log.Fatalf("The option to process files by day is only supported for CSV format.")
 	}
 
