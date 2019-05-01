@@ -16,7 +16,7 @@ type Config struct {
 	TmpDir          string
 	ListExportLimit int
 	GroupFilesByDay bool
-	SaveAsJson   	bool
+	SaveAsJson      bool
 
 	// for debug only; can point to localhost
 	ExportURL string
