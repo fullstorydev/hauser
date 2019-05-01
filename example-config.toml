@@ -34,7 +34,7 @@ DatabaseSchema = "public"
 
 [gcs]
 Bucket = "<your bucket>"
-# upload data file only (i.e. skip load to Redshift)
+# upload data file only (i.e. skip load to BigQuery)
 GCSOnly = true
 
 [bigquery]
