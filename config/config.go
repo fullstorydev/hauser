@@ -16,6 +16,7 @@ type Config struct {
 	TmpDir          string
 	ListExportLimit int
 	GroupFilesByDay bool
+	SaveAsJson      bool
 
 	// for debug only; can point to localhost
 	ExportURL string
@@ -72,7 +73,6 @@ type LocalConfig struct {
 	SaveDir      string
 	StartTime    time.Time
 	UseStartTime bool
-	SaveAsJson   bool
 }
 
 func (d *duration) UnmarshalText(text []byte) error {

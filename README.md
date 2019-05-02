@@ -52,7 +52,7 @@ To use the BigQuery warehouse, set the `Warehouse` config option to `bigquery`.
 
 By default, each export file is copied locally to the temp directory before it is moved to GCS. The GCS copy is then loaded into BigQuery through the gRPC client API equivalent of the `bq load` command.
 
-The BigQuery `ExportTable` is expected to be a date partitioned table. As with the `SyncTable`, if the `ExportTable` does not exist, it will be created on the fly, without an expiration time for the partitions. Finally, the GCS copy of the file is removed.
+The BigQuery `ExportTable` is expected to be a date partitioned table. The default values `ExportTable = "fs_export"` and `SyncTable = "fs_sync"` will work, but feel free to customize the `fs_sync` and `fs_export` names.  If the `SyncTable` and `ExportTable` do not already exist in BigQuery, they will be created on the fly, without an expiration time for the partitions. Once a file is loaded into BigQuery, the GCS copy of the file is removed.
 
 Loading data into BigQuery may be skipped by setting `GCS.GCSOnly` in the config file to `true`. In this mode, files are copied to GCS, where they remain without being loaded into BigQuery.
 

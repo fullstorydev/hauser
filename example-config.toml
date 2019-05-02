@@ -3,8 +3,9 @@ Backoff = "30s"
 BackoffStepsMax = 8
 CheckInterval = "30m"
 TmpDir = "/tmp"
-Warehouse="redshift"
+Warehouse="local"
 GroupFilesByDay = false
+SaveAsJson = false
 
 [s3]
 # bucket that will be used to stage files into Redshift
@@ -13,7 +14,7 @@ Bucket = ""
 Region = "us-east-2"
 # timeout for copying export files from the local machine to S3
 Timeout = "5m"
-# upload data file only (i.e. skip load to Redshift)?
+# upload data file only (i.e. skip load to Redshift)
 S3Only = true
 
 [redshift]
@@ -33,16 +34,17 @@ DatabaseSchema = "public"
 
 [gcs]
 Bucket = "<your bucket>"
-GCSOnly = false
+# upload data file only (i.e. skip load to BigQuery)
+GCSOnly = true
 
 [bigquery]
 Project = "<your project>"
 Dataset = "<your dataset>"
-ExportTable = "<your export table>"
-SyncTable = "<your sync table>"
+ExportTable = "fs_export"
+SyncTable = "fs_sync"
 
 [local]
 SaveDir = "<Path to your local folder to save files to>"
 StartTime = <Start time for data exports in the following format: 2018-12-27T18:30:00Z>
 UseStartTime = true
-SaveAsJson = true
+
