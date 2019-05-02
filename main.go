@@ -394,6 +394,9 @@ func main() {
 		wh = warehouse.NewRedshift(conf)
 	case "bigquery":
 		wh = warehouse.NewBigQuery(conf)
+		if conf.SaveAsJson {
+			log.Fatalf("BigQuery doesn't support JSON format.  Ensure SaveAsJson = false in .toml file.")
+		}
 	default:
 		if len(conf.Warehouse) == 0 {
 			log.Fatal("Warehouse type must be specified in configuration")
