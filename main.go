@@ -394,14 +394,14 @@ func main() {
 		wh = warehouse.NewRedshift(conf)
 		if conf.SaveAsJson {
 			if !conf.S3.S3Only {
-				log.Fatalf("Redshift doesn't support JSON format.  Ensure SaveAsJson = false in .toml file.")
+				log.Fatalf("Hauser doesn't currently support loading JSON into Redshift.  Ensure SaveAsJson = false in .toml file.")
 			}
 		}
 	case "bigquery":
 		wh = warehouse.NewBigQuery(conf)
 		if conf.SaveAsJson {
 			if !conf.GCS.GCSOnly {
-				log.Fatalf("BigQuery doesn't support JSON format.  Ensure SaveAsJson = false in .toml file.")
+				log.Fatalf("Hauser doesn't currently support loading JSON into BigQuery.  Ensure SaveAsJson = false in .toml file.")
 			}
 		}
 	default:
