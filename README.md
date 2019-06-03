@@ -80,3 +80,9 @@ SELECT COUNT(*)
 FROM myexport
 WHERE JSON_EXTRACT_PATH_TEXT(CustomVars, 'acct_adminDisabled_bool') = 'false';
 ```
+
+## Developing
+Easily format your commits by adding git pre-commit hook:
+```bash
+ln -s ../../pre-commit.sh .git/hooks/pre-commit
+```
