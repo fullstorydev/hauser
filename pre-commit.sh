@@ -58,6 +58,7 @@ echo "${NC}"
 if [ ! -z "${files}" ]; then
     comma_files=$(echo "$files" | paste -s -d "," -)
     gofmt -s -w "$comma_files"
+    goimports -w "$comma_files"
     git add $(echo "$files" | paste -s -d " " -)
 fi
 
