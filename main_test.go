@@ -160,7 +160,7 @@ func (sw *StubWarehouse) ValueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
 	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.Format(warehouse.RFC3339Milli)
+		return t.Format(warehouse.RFC3339Micro)
 	}
 	return s
 }
