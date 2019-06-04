@@ -21,12 +21,16 @@ type Warehouse interface {
 	IsUploadOnly() bool
 }
 
+const (
+	RFC3339Milli = "2006-01-02T15:04:05.999999Z07:00"
+)
+
 // valueToString is a common interface method that implementations use to perform value to string conversion
 func valueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
 	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.Format("2006-01-02T15:04:05.999999Z07:00")
+		return t.Format(RFC3339Milli)
 	}
 
 	s = strings.Replace(s, "\n", " ", -1)
