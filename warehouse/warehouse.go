@@ -26,7 +26,7 @@ func valueToString(val interface{}, isTime bool) string {
 	s := fmt.Sprintf("%v", val)
 	if isTime {
 		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.Format(time.RFC3339)
+		return t.Format("2006-01-02T15:04:05.999999Z07:00")
 	}
 
 	s = strings.Replace(s, "\n", " ", -1)
