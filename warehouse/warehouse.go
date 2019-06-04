@@ -21,9 +21,7 @@ type Warehouse interface {
 	IsUploadOnly() bool
 }
 
-const (
-	RFC3339Micro = "2006-01-02T15:04:05.999999Z07:00"
-)
+const RFC3339Micro = "2006-01-02T15:04:05.999999Z07:00"
 
 // valueToString is a common interface method that implementations use to perform value to string conversion
 func valueToString(val interface{}, isTime bool) string {
