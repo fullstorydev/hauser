@@ -51,15 +51,16 @@ set -e
 CYAN='\033[0;36m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
 files=$((git diff --cached --name-only --diff-filter=ACM | grep -Ei "\.go$") || true)
-echo "${CYAN}Fomatting the following files:${NC}"
-printf "${RED}%s\n" "${files[@]}"
-echo "${NC}"
 if [ ! -z "${files}" ]; then
-    comma_files=$(echo "$files" | paste -s -d "," -)
-    gofmt -s -w "$comma_files"
-    goimports -w "$comma_files"
-    git add $(echo "$files" | paste -s -d " " -)
+  echo "${CYAN}Fomatting the following files:${NC}"
+  printf "${RED}%s\n" "${files[@]}"
+  echo "${NC}"
+
+  echo $files | xargs gofmt -s -w
+  echo $files | xargs goimports -w
+  git add $(echo "$files" | paste -s -d " " -)
 fi
 
 # If there are whitespace errors, print the offending file names and fail.
