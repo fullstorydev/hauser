@@ -17,6 +17,8 @@ type Config struct {
 	ListExportLimit int
 	GroupFilesByDay bool
 	SaveAsJson      bool
+	PrettyJSON      bool
+	StartTime       time.Time
 
 	// for debug only; can point to localhost
 	ExportURL string
