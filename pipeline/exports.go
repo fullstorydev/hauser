@@ -34,6 +34,11 @@ type ExportData struct {
 	src  io.Reader
 }
 
+type SavedExport struct {
+	Meta     []fullstory.ExportMeta
+	Filename string
+}
+
 func (r *Record) GetValueStrings(keys []string) []string {
 	values := make([]string, 0, len(keys))
 	for _, key := range keys {

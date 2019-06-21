@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,31 +16,33 @@ import (
 
 // A Pipeline downloads data exports from fullstory.com and saves them to local disk
 type Pipeline struct {
-	metaTime time.Time
-	metaCh   chan fullstory.ExportMeta
-	expCh    chan ExportData
-	saveCh   chan string
-	recsCh   chan RecordGroup
-	quitCh   chan interface{}
-	conf     *config.Config
+	transformRecord func(map[string]interface{}) ([]string, error)
+	metaTime        time.Time
+	metaCh          chan fullstory.ExportMeta
+	expCh           chan ExportData
+	saveCh          chan SavedExport
+	recsCh          chan RecordGroup
+	quitCh          chan interface{}
+	conf            *config.Config
 }
 
 // NewPipeline returns a new Pipeline base on the configuration provided
-func NewPipeline(conf *config.Config) *Pipeline {
+func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{}) ([]string, error)) *Pipeline {
 	return &Pipeline{
-		conf:     conf,
-		metaTime: conf.StartTime,
-		metaCh:   make(chan fullstory.ExportMeta),
-		expCh:    make(chan ExportData),
-		recsCh:   make(chan RecordGroup),
-		saveCh:   make(chan string),
-		quitCh:   make(chan interface{}),
+		conf:            conf,
+		metaTime:        conf.StartTime,
+		transformRecord: transformRecord,
+		metaCh:          make(chan fullstory.ExportMeta),
+		expCh:           make(chan ExportData),
+		recsCh:          make(chan RecordGroup),
+		saveCh:          make(chan SavedExport),
+		quitCh:          make(chan interface{}),
 	}
 }
 
 // Start begins pipeline downloading and processing. This function returns a channel that will contain the
 // filenames to which the data was saved. These must be retrieved from the channel to continue processing.
-func (p *Pipeline) Start() chan string {
+func (p *Pipeline) Start() chan SavedExport {
 	go p.metaFetcher()
 	go p.exportFetcher()
 	go p.recordGrouper()
@@ -51,7 +54,7 @@ func (p *Pipeline) Start() chan string {
 func (p *Pipeline) Stop() {
 	close(p.expCh)
 	close(p.metaCh)
-	close(p.saveCh)
+	close(p.recsCh)
 	close(p.saveCh)
 }
 
@@ -144,7 +147,13 @@ func (p *Pipeline) recordsSaver() {
 		select {
 		case rg := <-p.recsCh:
 
-			fn := fmt.Sprintf("./export_%v.json", rg.bundles[0].Start.Format(time.RFC3339))
+			// CSV is the default format
+			ext := "csv"
+			if p.conf.SaveAsJson {
+				ext = "json"
+			}
+
+			fn := fmt.Sprintf("./export_%v.%s", rg.bundles[0].Start.Format(time.RFC3339), ext)
 
 			out, err := os.Create(fn)
 			if err != nil {
@@ -166,12 +175,23 @@ func (p *Pipeline) recordsSaver() {
 					continue
 				}
 				dataSrc = bytes.NewReader(jsonRecs)
+				io.Copy(out, dataSrc)
 			} else {
-				log.Fatal("JSON is only supported format")
+				csvOut := csv.NewWriter(out)
+				for _, rec := range rg.records {
+					line, err := p.transformRecord(rec)
+					if err != nil {
+						log.Printf("error transforming recodes: %s", err)
+						continue
+					}
+					csvOut.Write(line)
+				}
+				if p.transformRecord != nil {
+
+				}
 			}
-			io.Copy(out, dataSrc)
 			out.Close()
-			p.saveCh <- fn
+			p.saveCh <- SavedExport{Filename: fn, Meta: rg.bundles}
 		case <-p.quitCh:
 			return
 		}
