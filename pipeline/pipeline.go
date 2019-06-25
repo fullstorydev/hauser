@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -25,7 +24,6 @@ type Pipeline struct {
 	saveCh          chan SavedExport
 	recsCh          chan RecordGroup
 	errCh           chan error
-	quitCh          chan interface{}
 	conf            *config.Config
 }
 
@@ -39,7 +37,6 @@ func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{
 		recsCh:          make(chan RecordGroup),
 		saveCh:          make(chan SavedExport),
 		errCh:           make(chan error),
-		quitCh:          make(chan interface{}),
 	}
 }
 
@@ -69,16 +66,12 @@ func (p *Pipeline) metaFetcher() {
 		fs := getFSClient(p.conf)
 		exportList, err := fs.ExportList(p.metaTime)
 		if err != nil {
-			p.errCh <- errors.New(fmt.Sprintf("Could not fetch export list: %s", err))
+			p.errCh <- fmt.Errorf("could not fetch export list: %s", err)
 			continue
 		}
 		for _, meta := range exportList {
-			select {
-			case p.metaCh <- meta:
-				p.metaTime = meta.Stop
-			case <-p.quitCh:
-				return
-			}
+			p.metaCh <- meta
+			p.metaTime = meta.Stop
 		}
 		if len(exportList) == 0 {
 			log.Printf("No exports pending; sleeping %s", p.conf.CheckInterval.Duration)
@@ -88,24 +81,14 @@ func (p *Pipeline) metaFetcher() {
 }
 
 func (p *Pipeline) exportFetcher() {
-	for {
-		select {
-		case meta := <-p.metaCh:
-			fs := getFSClient(p.conf)
-			data, err := getDataWithRetry(fs, meta)
-			if err != nil {
-				p.errCh <- errors.New(fmt.Sprintf("Error fetching data export: %s", err))
-				continue
-			}
-			select {
-			case p.expCh <- data:
-				continue
-			case <-p.quitCh:
-				return
-			}
-		case <-p.quitCh:
-			return
+	for meta := range p.metaCh {
+		fs := getFSClient(p.conf)
+		data, err := getDataWithRetry(fs, meta)
+		if err != nil {
+			p.errCh <- fmt.Errorf("error fetching data export: %s", err)
+			continue
 		}
+		p.expCh <- data
 	}
 }
 
@@ -113,97 +96,91 @@ func (p *Pipeline) recordGrouper() {
 	var recs []Record
 	var metas []fullstory.ExportMeta
 	var groupDay time.Time
-	for {
-		select {
-		case data := <-p.expCh:
-			newRecs, err := data.GetRecords()
-			if err != nil {
-				p.errCh <- errors.New(fmt.Sprintf("Could not decode records: %s", err))
-			}
-			if p.conf.GroupFilesByDay {
-				dataDay := data.meta.Start.UTC().Truncate(24 * time.Hour)
-				if groupDay.Before(dataDay) {
-					if len(recs) > 0 {
-						p.recsCh <- RecordGroup{
-							records: recs,
-							bundles: metas,
-						}
-						recs = recs[:0]
-						metas = metas[:0]
+
+	for data := range p.expCh {
+		newRecs, err := data.GetRecords()
+		if err != nil {
+			p.errCh <- fmt.Errorf("could not decode records: %s", err)
+		}
+
+		if p.conf.GroupFilesByDay {
+			dataDay := data.meta.Start.UTC().Truncate(24 * time.Hour)
+			if groupDay.Before(dataDay) {
+				if len(recs) > 0 {
+					p.recsCh <- RecordGroup{
+						records: recs,
+						bundles: metas,
 					}
-					groupDay = dataDay
+					recs = recs[:0]
+					metas = metas[:0]
 				}
-				recs = append(recs, newRecs...)
-				metas = append(metas, data.meta)
-			} else {
-				if len(newRecs) == 0 {
-					continue
-				}
-				p.recsCh <- RecordGroup{
-					records: newRecs,
-					bundles: []fullstory.ExportMeta{data.meta},
-				}
+				groupDay = dataDay
+			}
+			recs = append(recs, newRecs...)
+			metas = append(metas, data.meta)
+		} else {
+			if len(newRecs) == 0 {
+				continue
+			}
+			p.recsCh <- RecordGroup{
+				records: newRecs,
+				bundles: []fullstory.ExportMeta{data.meta},
 			}
 		}
 	}
 }
 
 func (p *Pipeline) recordsSaver() {
-	for {
-		select {
-		case rg := <-p.recsCh:
+	for rg := range p.recsCh {
 
-			// CSV is the default format
-			ext := "csv"
-			if p.conf.SaveAsJson {
-				ext = "json"
+		// CSV is the default format
+		ext := "csv"
+		if p.conf.SaveAsJson {
+			ext = "json"
+		}
+
+		fn := fmt.Sprintf("export_%v.%s", rg.bundles[0].ID, ext)
+		fn = filepath.Join(p.conf.TmpDir, fn)
+
+		out, err := os.Create(fn)
+		if err != nil {
+			p.errCh <- fmt.Errorf("error creating temp file: %s", err)
+			continue
+		}
+
+		var dataSrc io.Reader
+		if p.conf.SaveAsJson {
+			var err error
+			var jsonRecs []byte
+			if p.conf.PrettyJSON {
+				jsonRecs, err = json.MarshalIndent(rg.records, "", " ")
+			} else {
+				jsonRecs, err = json.Marshal(rg.records)
 			}
-
-			fn := fmt.Sprintf("export_%v.%s", rg.bundles[0].ID, ext)
-			fn = filepath.Join(p.conf.TmpDir, fn)
-
-			out, err := os.Create(fn)
 			if err != nil {
-				p.errCh <- errors.New(fmt.Sprintf("Error creating temp file: %s", err))
+				p.errCh <- fmt.Errorf("error marshaling records: %s", err)
 				continue
 			}
-
-			var dataSrc io.Reader
-			if p.conf.SaveAsJson {
-				var err error
-				var jsonRecs []byte
-				if p.conf.PrettyJSON {
-					jsonRecs, err = json.MarshalIndent(rg.records, "", " ")
-				} else {
-					jsonRecs, err = json.Marshal(rg.records)
-				}
+			dataSrc = bytes.NewReader(jsonRecs)
+			io.Copy(out, dataSrc)
+		} else {
+			csvOut := csv.NewWriter(out)
+			for _, rec := range rg.records {
+				line, err := p.transformRecord(rec)
 				if err != nil {
-					p.errCh <- errors.New(fmt.Sprintf("Error marshaling records: %s", err))
+					p.errCh <- fmt.Errorf("error transforming recodes: %s", err)
 					continue
 				}
-				dataSrc = bytes.NewReader(jsonRecs)
-				io.Copy(out, dataSrc)
-			} else {
-				csvOut := csv.NewWriter(out)
-				for _, rec := range rg.records {
-					line, err := p.transformRecord(rec)
-					if err != nil {
-						p.errCh <- errors.New(fmt.Sprintf("error transforming recodes: %s", err))
-						continue
-					}
-					err = csvOut.Write(line)
-					if err != nil {
-						p.errCh <- errors.New(fmt.Sprintf("error writing CSV: %s", err))
-					}
+				err = csvOut.Write(line)
+				if err != nil {
+					p.errCh <- fmt.Errorf("error writing CSV: %s", err)
 				}
 			}
-			err = out.Close()
-			if err != nil {
-				p.errCh <- errors.New(fmt.Sprintf("error closing file: %s", err))
-			}
-			p.saveCh <- SavedExport{Filename: fn, Meta: rg.bundles}
-		case <-p.quitCh:
-			return
 		}
+		err = out.Close()
+		if err != nil {
+			p.errCh <- fmt.Errorf("error closing file: %s", err)
+		}
+		p.saveCh <- SavedExport{Filename: fn, Meta: rg.bundles}
 	}
 }
