@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -19,11 +18,6 @@ var (
 	conf               *config.Config
 	currentBackoffStep = uint(0)
 	bundleFieldsMap    = warehouse.BundleFields()
-)
-
-const (
-	// Default duration Hauser will wait before retrying a 429 or 5xx response. If Retry-After is specified, uses that instead. Default arbitrarily set to 10s.
-	defaultRetryAfterDuration = time.Duration(10) * time.Second
 )
 
 // Record represents a single export row in the export file
@@ -106,21 +100,6 @@ func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.E
 	return nil
 }
 
-func getRetryInfo(err error) (bool, time.Duration) {
-	if statusError, ok := err.(fullstory.StatusError); ok {
-		// If the status code is NOT 429 and the code is below 500 we will not attempt to retry
-		if statusError.StatusCode != http.StatusTooManyRequests && statusError.StatusCode < 500 {
-			return false, defaultRetryAfterDuration
-		}
-
-		if statusError.RetryAfter > 0 {
-			return true, statusError.RetryAfter
-		}
-	}
-
-	return true, defaultRetryAfterDuration
-}
-
 func BackoffOnError(err error) bool {
 	if err != nil {
 		if currentBackoffStep == uint(conf.BackoffStepsMax) {
@@ -183,37 +162,46 @@ func main() {
 		return TransformExportJSONRecord(rec, tableColumns, wh.ValueToString)
 	}
 
-	startTime, err := wh.LastSyncPoint()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Looking for bundles since %s", startTime.Format(time.RFC3339))
-
-	p := pipeline.NewPipeline(conf, recordTransform)
-	savedExports, errs := p.Start(startTime)
-	defer p.Stop()
-
+	// Outer loop handles restarting after issues in the pipeline. Some of these may be recoverable, so we want to just
+	// try to restart the pipeline from the last checkpoint.
 	for {
-		select {
-		case savedExport := <-savedExports:
-			log.Printf("Bundle saved to: %s", savedExport.Filename)
+		// Get the last saved checkpoint
+		startTime, err := wh.LastSyncPoint()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-			for {
-				err := LoadBundles(wh, savedExport.Filename, savedExport.Meta...)
+		log.Printf("Looking for bundles since %s", startTime.Format(time.RFC3339))
+
+		p := pipeline.NewPipeline(conf, recordTransform)
+		savedExports, errs := p.Start(startTime)
+
+		for {
+			select {
+			case savedExport := <-savedExports:
+				log.Printf("Bundle saved to: %s", savedExport.Filename)
+
+				// Retry to upload the bundle to the warehouse with back off (and fail if not recoverable)
+				for {
+					err := LoadBundles(wh, savedExport.Filename, savedExport.Meta...)
+					if BackoffOnError(err) {
+						continue
+					}
+					break
+				}
+
+				err = os.Remove(savedExport.Filename)
+				if err != nil {
+					log.Printf("Error removing temporary file: %s", err)
+				}
+			case err := <-errs:
+				// If an error happens in the pipeline, let's stop it and just try to restart
+				log.Printf("Error in bundle pipeline: %s", err)
+				p.Stop()
 				if BackoffOnError(err) {
+					log.Printf("Restarting pipeline")
 					continue
 				}
-				break
-			}
-
-			err = os.Remove(savedExport.Filename)
-			if err != nil {
-				log.Printf("Error removing temporary file: %s", err)
-			}
-		case err := <-errs:
-			if BackoffOnError(err) {
-				continue
 			}
 		}
 	}
