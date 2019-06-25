@@ -3,6 +3,7 @@ package pipeline
 import (
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -57,8 +58,7 @@ func (d *ExportData) GetRecords() ([]Record, error) {
 
 	// skip array open delimiter
 	if _, err := decoder.Token(); err != nil {
-		log.Printf("Failed json decode of array open token: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("failed json decode of array open token: %s", err)
 	}
 
 	for decoder.More() {
@@ -68,7 +68,7 @@ func (d *ExportData) GetRecords() ([]Record, error) {
 	}
 
 	if _, err := decoder.Token(); err != nil {
-		log.Fatalf("Failed json decode of array close token: %s", err)
+		return nil, fmt.Errorf("failed json decode of array close token: %s", err)
 	}
 
 	return recs, nil

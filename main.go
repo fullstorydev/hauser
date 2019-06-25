@@ -192,6 +192,7 @@ func main() {
 
 				err = os.Remove(savedExport.Filename)
 				if err != nil {
+					// If this errors it isn't necessarily a reason to stop, so lets just log it and keep going
 					log.Printf("Error removing temporary file: %s", err)
 				}
 			case err := <-errs:
