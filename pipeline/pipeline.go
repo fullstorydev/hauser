@@ -41,8 +41,8 @@ func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{
 }
 
 // Start begins pipeline downloading and processing bundles after the provided time. This function returns a channel
-// that will contain the filenames to which the data was saved. These must be retrieved from the channel to continue
-// processing.
+// that will contain the filenames to which the data was saved and a channel that contains any errors that occur in the
+// pipeline. These must be retrieved from the channel to continue processing.
 func (p *Pipeline) Start(startTime time.Time) (chan SavedExport, chan error) {
 	p.metaTime = startTime
 	go p.metaFetcher()
@@ -67,7 +67,7 @@ func (p *Pipeline) metaFetcher() {
 		exportList, err := fs.ExportList(p.metaTime)
 		if err != nil {
 			p.errCh <- fmt.Errorf("could not fetch export list: %s", err)
-			continue
+			return
 		}
 		for _, meta := range exportList {
 			p.metaCh <- meta
@@ -86,7 +86,7 @@ func (p *Pipeline) exportFetcher() {
 		data, err := getDataWithRetry(fs, meta)
 		if err != nil {
 			p.errCh <- fmt.Errorf("error fetching data export: %s", err)
-			continue
+			return
 		}
 		p.expCh <- data
 	}
@@ -101,6 +101,7 @@ func (p *Pipeline) recordGrouper() {
 		newRecs, err := data.GetRecords()
 		if err != nil {
 			p.errCh <- fmt.Errorf("could not decode records: %s", err)
+			return
 		}
 
 		if p.conf.GroupFilesByDay {
@@ -145,7 +146,7 @@ func (p *Pipeline) recordsSaver() {
 		out, err := os.Create(fn)
 		if err != nil {
 			p.errCh <- fmt.Errorf("error creating temp file: %s", err)
-			continue
+			return
 		}
 
 		var dataSrc io.Reader
@@ -159,7 +160,7 @@ func (p *Pipeline) recordsSaver() {
 			}
 			if err != nil {
 				p.errCh <- fmt.Errorf("error marshaling records: %s", err)
-				continue
+				return
 			}
 			dataSrc = bytes.NewReader(jsonRecs)
 			io.Copy(out, dataSrc)
@@ -169,7 +170,7 @@ func (p *Pipeline) recordsSaver() {
 				line, err := p.transformRecord(rec)
 				if err != nil {
 					p.errCh <- fmt.Errorf("error transforming recodes: %s", err)
-					continue
+					return
 				}
 				err = csvOut.Write(line)
 				if err != nil {
@@ -180,6 +181,7 @@ func (p *Pipeline) recordsSaver() {
 		err = out.Close()
 		if err != nil {
 			p.errCh <- fmt.Errorf("error closing file: %s", err)
+			return
 		}
 		p.saveCh <- SavedExport{Filename: fn, Meta: rg.bundles}
 	}
