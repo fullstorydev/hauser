@@ -181,7 +181,7 @@ func main() {
 			case savedExport := <-savedExports:
 				log.Printf("Bundle saved to: %s", savedExport.Filename)
 
-				// Retry to upload the bundle to the warehouse with back off (and fail if not recoverable)
+				// Try to upload the bundle to the warehouse and retry with back off if it fails
 				for {
 					err := LoadBundles(wh, savedExport.Filename, savedExport.Meta...)
 					if BackoffOnError(err) {
