@@ -16,9 +16,11 @@ type Config struct {
 	TmpDir          string
 	ListExportLimit int
 	GroupFilesByDay bool
-	SaveAsJson      bool
-	PrettyJSON      bool
-	StartTime       time.Time
+
+	// SaveAsJSON can only be true if the final destination is not Redshift or BigQuery
+	SaveAsJson bool
+	// This will write the JSON data into a more human readable format with indentation
+	PrettyJSON bool
 
 	// for debug only; can point to localhost
 	ExportURL string

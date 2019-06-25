@@ -2,7 +2,7 @@ dev_build_version=$(shell git describe --tags --always --dirty)
 # to_check is all code in this repo that we want to run checks on
 # (it is all Go code in here, but intentionally excludes the
 # vendor folder contents)
-dirs_to_check=./ ./warehouse ./pipeline ./config
+dirs_to_check=./warehouse ./pipeline ./config
 files_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type f -name '*.go')
 all_to_check=$(files_to_check) $(dirs_to_check)
 

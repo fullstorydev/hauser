@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -185,18 +186,38 @@ func main() {
 		return TransformExportJSONRecord(rec, tableColumns, wh.ValueToString)
 	}
 
-	conf.StartTime, err = wh.LastSyncPoint()
+	startTime, err := wh.LastSyncPoint()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Looking for bundles since %s", startTime.Format(time.RFC3339))
 
 	p := pipeline.NewPipeline(conf, recordTransform)
-	savedExports := p.Start()
+	savedExports, errs := p.Start(startTime)
 	defer p.Stop()
 
-	for savedExport := range savedExports {
-		log.Printf("Bundle saved to: %s", savedExport.Filename)
+	for {
+		select {
+		case savedExport := <-savedExports:
+			log.Printf("Bundle saved to: %s", savedExport.Filename)
 
-		err := LoadBundles(wh, savedExport.Filename, savedExport.Meta...)
-		if BackoffOnError(err) {
-			continue
+			for {
+				err := LoadBundles(wh, savedExport.Filename, savedExport.Meta...)
+				if BackoffOnError(err) {
+					continue
+				}
+				break
+			}
+
+			err = os.Remove(savedExport.Filename)
+			if err != nil {
+				log.Printf("Error removing temporary file: %s", err)
+			}
+		case err := <-errs:
+			if BackoffOnError(err) {
+				continue
+			}
 		}
 	}
 }

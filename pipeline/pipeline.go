@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/fullstorydev/hauser/config"
@@ -22,6 +24,7 @@ type Pipeline struct {
 	expCh           chan ExportData
 	saveCh          chan SavedExport
 	recsCh          chan RecordGroup
+	errCh           chan error
 	quitCh          chan interface{}
 	conf            *config.Config
 }
@@ -30,24 +33,26 @@ type Pipeline struct {
 func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{}) ([]string, error)) *Pipeline {
 	return &Pipeline{
 		conf:            conf,
-		metaTime:        conf.StartTime,
 		transformRecord: transformRecord,
 		metaCh:          make(chan fullstory.ExportMeta),
 		expCh:           make(chan ExportData),
 		recsCh:          make(chan RecordGroup),
 		saveCh:          make(chan SavedExport),
+		errCh:           make(chan error),
 		quitCh:          make(chan interface{}),
 	}
 }
 
-// Start begins pipeline downloading and processing. This function returns a channel that will contain the
-// filenames to which the data was saved. These must be retrieved from the channel to continue processing.
-func (p *Pipeline) Start() chan SavedExport {
+// Start begins pipeline downloading and processing bundles after the provided time. This function returns a channel
+// that will contain the filenames to which the data was saved. These must be retrieved from the channel to continue
+// processing.
+func (p *Pipeline) Start(startTime time.Time) (chan SavedExport, chan error) {
+	p.metaTime = startTime
 	go p.metaFetcher()
 	go p.exportFetcher()
 	go p.recordGrouper()
 	go p.recordsSaver()
-	return p.saveCh
+	return p.saveCh, p.errCh
 }
 
 // Stop is used to stop the pipeline from processing any more exports
@@ -56,6 +61,7 @@ func (p *Pipeline) Stop() {
 	close(p.metaCh)
 	close(p.recsCh)
 	close(p.saveCh)
+	close(p.errCh)
 }
 
 func (p *Pipeline) metaFetcher() {
@@ -63,7 +69,7 @@ func (p *Pipeline) metaFetcher() {
 		fs := getFSClient(p.conf)
 		exportList, err := fs.ExportList(p.metaTime)
 		if err != nil {
-			log.Printf("Could not fetch export list: %s", err)
+			p.errCh <- errors.New(fmt.Sprintf("Could not fetch export list: %s", err))
 			continue
 		}
 		for _, meta := range exportList {
@@ -88,7 +94,7 @@ func (p *Pipeline) exportFetcher() {
 			fs := getFSClient(p.conf)
 			data, err := getDataWithRetry(fs, meta)
 			if err != nil {
-				log.Printf("Error fetching data export: %s", err)
+				p.errCh <- errors.New(fmt.Sprintf("Error fetching data export: %s", err))
 				continue
 			}
 			select {
@@ -112,7 +118,7 @@ func (p *Pipeline) recordGrouper() {
 		case data := <-p.expCh:
 			newRecs, err := data.GetRecords()
 			if err != nil {
-				log.Printf("Could not decode records: %s", err)
+				p.errCh <- errors.New(fmt.Sprintf("Could not decode records: %s", err))
 			}
 			if p.conf.GroupFilesByDay {
 				dataDay := data.meta.Start.UTC().Truncate(24 * time.Hour)
@@ -153,11 +159,12 @@ func (p *Pipeline) recordsSaver() {
 				ext = "json"
 			}
 
-			fn := fmt.Sprintf("./export_%v.%s", rg.bundles[0].Start.Format(time.RFC3339), ext)
+			fn := fmt.Sprintf("export_%v.%s", rg.bundles[0].ID, ext)
+			fn = filepath.Join(p.conf.TmpDir, fn)
 
 			out, err := os.Create(fn)
 			if err != nil {
-				log.Printf("Error creating temp file: %s", err)
+				p.errCh <- errors.New(fmt.Sprintf("Error creating temp file: %s", err))
 				continue
 			}
 
@@ -171,7 +178,7 @@ func (p *Pipeline) recordsSaver() {
 					jsonRecs, err = json.Marshal(rg.records)
 				}
 				if err != nil {
-					log.Printf("Error marshaling records: %s", err)
+					p.errCh <- errors.New(fmt.Sprintf("Error marshaling records: %s", err))
 					continue
 				}
 				dataSrc = bytes.NewReader(jsonRecs)
@@ -181,16 +188,19 @@ func (p *Pipeline) recordsSaver() {
 				for _, rec := range rg.records {
 					line, err := p.transformRecord(rec)
 					if err != nil {
-						log.Printf("error transforming recodes: %s", err)
+						p.errCh <- errors.New(fmt.Sprintf("error transforming recodes: %s", err))
 						continue
 					}
-					csvOut.Write(line)
-				}
-				if p.transformRecord != nil {
-
+					err = csvOut.Write(line)
+					if err != nil {
+						p.errCh <- errors.New(fmt.Sprintf("error writing CSV: %s", err))
+					}
 				}
 			}
-			out.Close()
+			err = out.Close()
+			if err != nil {
+				p.errCh <- errors.New(fmt.Sprintf("error closing file: %s", err))
+			}
 			p.saveCh <- SavedExport{Filename: fn, Meta: rg.bundles}
 		case <-p.quitCh:
 			return
