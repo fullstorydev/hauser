@@ -56,7 +56,7 @@ func TestTransformExportJSONRecord(t *testing.T) {
 
 	for i, tc := range testCases {
 		wh := StubWarehouse{}
-		result, err := TransformExportJSONRecord(tc.rec, tc.tableColumns, wh.ValueToString)
+		result, err := TransformExportJSONRecord(&wh, tc.tableColumns, tc.rec)
 		if err != nil {
 			t.Errorf("Unexpected err %s on test case %d", err, i)
 			continue

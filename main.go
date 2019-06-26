@@ -20,13 +20,10 @@ var (
 	bundleFieldsMap    = warehouse.BundleFields()
 )
 
-// Record represents a single export row in the export file
-type Record map[string]interface{}
-
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
 // For existing export table fields that do not exist in the json record, an empty string is populated.
-func TransformExportJSONRecord(rec Record, tableColumns []string, convert func(val interface{}, isTime bool) string) ([]string, error) {
+func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, rec pipeline.Record) ([]string, error) {
 	var line []string
 	lowerRec := make(map[string]interface{})
 	customVarsMap := make(map[string]interface{})
@@ -61,7 +58,7 @@ func TransformExportJSONRecord(rec Record, tableColumns []string, convert func(v
 			line = append(line, string(customVars))
 		} else {
 			if val, valExists := lowerRec[col]; valExists {
-				line = append(line, convert(val, field.IsTime))
+				line = append(line, wh.ValueToString(val, field.IsTime))
 			} else {
 				line = append(line, "")
 			}
@@ -158,8 +155,8 @@ func main() {
 	// The EnsureCompatibleExportTable function potentially alters the schema of the export table in the client warehouse.
 	tableColumns := wh.GetExportTableColumns()
 
-	recordTransform := func(rec map[string]interface{}) ([]string, error) {
-		return TransformExportJSONRecord(rec, tableColumns, wh.ValueToString)
+	transformRecord := func(rec map[string]interface{}) ([]string, error) {
+		return TransformExportJSONRecord(wh, tableColumns, rec)
 	}
 
 	// Outer loop handles restarting after issues in the pipeline. Some of these may be recoverable, so we want to just
@@ -173,7 +170,7 @@ func main() {
 
 		log.Printf("Looking for bundles since %s", startTime.Format(time.RFC3339))
 
-		p := pipeline.NewPipeline(conf, recordTransform)
+		p := pipeline.NewPipeline(conf, transformRecord)
 		savedExports, errs := p.Start(startTime)
 
 		for {

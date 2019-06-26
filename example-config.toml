@@ -6,8 +6,6 @@ TmpDir = "/tmp"
 Warehouse="local"
 GroupFilesByDay = false
 SaveAsJson = false
-# This will write the JSON data into a more human readable format with indentation
-PrettyJSON = false
 
 [s3]
 # bucket that will be used to stage files into Redshift

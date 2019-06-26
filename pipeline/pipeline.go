@@ -151,13 +151,7 @@ func (p *Pipeline) recordsSaver() {
 
 		var dataSrc io.Reader
 		if p.conf.SaveAsJson {
-			var err error
-			var jsonRecs []byte
-			if p.conf.PrettyJSON {
-				jsonRecs, err = json.MarshalIndent(rg.records, "", " ")
-			} else {
-				jsonRecs, err = json.Marshal(rg.records)
-			}
+			jsonRecs, err := json.Marshal(rg.records)
 			if err != nil {
 				p.errCh <- fmt.Errorf("error marshaling records: %s", err)
 				return
