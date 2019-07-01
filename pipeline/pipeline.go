@@ -24,6 +24,7 @@ type Pipeline struct {
 	saveCh          chan *SavedExport
 	recsCh          chan *RecordGroup
 	errCh           chan error
+	quitCh          chan struct{}
 	conf            *config.Config
 }
 
@@ -37,6 +38,7 @@ func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{
 		recsCh:          make(chan *RecordGroup),
 		saveCh:          make(chan *SavedExport),
 		errCh:           make(chan error),
+		quitCh:          make(chan struct{}),
 	}
 }
 
@@ -54,6 +56,7 @@ func (p *Pipeline) Start(startTime time.Time) (chan *SavedExport, chan error) {
 
 // Stop is used to stop the pipeline from processing any more exports
 func (p *Pipeline) Stop() {
+	close(p.quitCh)
 	close(p.expCh)
 	close(p.metaCh)
 	close(p.recsCh)
@@ -70,7 +73,11 @@ func (p *Pipeline) metaFetcher() {
 			return
 		}
 		for _, meta := range exportList {
-			p.metaCh <- &meta
+			select {
+			case p.metaCh <- &meta:
+			case <-p.quitCh:
+				return
+			}
 			p.metaTime = meta.Stop
 		}
 		if len(exportList) == 0 {
