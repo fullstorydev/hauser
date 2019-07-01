@@ -25,12 +25,6 @@ const (
 // Record represents a single event in the downloaded event export
 type Record map[string]interface{}
 
-// RecordGroup represents a group of downloaded exports that may contain one or more "bundles" downloaded from FullStory.
-type RecordGroup struct {
-	bundles []fullstory.ExportMeta
-	records []Record
-}
-
 // ExportData contains metadata about a certain export as well as a reader for the raw data.
 type ExportData struct {
 	meta fullstory.ExportMeta
