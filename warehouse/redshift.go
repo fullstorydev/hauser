@@ -14,10 +14,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/fullstorydev/hauser/config"
 	"github.com/lib/pq"
 	"github.com/nishanths/fullstory"
-
-	"github.com/fullstorydev/hauser/config"
 )
 
 type Redshift struct {
@@ -35,6 +34,8 @@ var (
 	}
 	beginningOfTime = time.Date(2015, 01, 01, 0, 0, 0, 0, time.UTC)
 )
+
+var _ Warehouse = &Redshift{}
 
 func NewRedshift(c *config.Config) *Redshift {
 	if c.S3.S3Only {

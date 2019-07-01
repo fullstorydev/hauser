@@ -43,36 +43,18 @@ type SavedExport struct {
 	Filename string
 }
 
-// GetRecords translates a raw data export download into an array of Records. This includes unzipping and decoding the
-// raw JSON.
-func (d *ExportData) GetRecords() ([]Record, error) {
-	stream, err := gzip.NewReader(d.src)
-	if err != nil {
-		log.Print(err)
+func (d *ExportData) GetRawReader() (io.Reader, error) {
+	return gzip.NewReader(d.src)
+}
+
+func (d *ExportData) GetJSONDecoder() (*json.Decoder, error) {
+	if stream, err := d.GetRawReader(); err != nil {
 		return nil, err
+	} else {
+		decoder := json.NewDecoder(stream)
+		decoder.UseNumber()
+		return decoder, nil
 	}
-
-	var recs []Record
-
-	decoder := json.NewDecoder(stream)
-	decoder.UseNumber()
-
-	// skip array open delimiter
-	if _, err := decoder.Token(); err != nil {
-		return nil, fmt.Errorf("failed json decode of array open token: %s", err)
-	}
-
-	for decoder.More() {
-		var r Record
-		decoder.Decode(&r)
-		recs = append(recs, r)
-	}
-
-	if _, err := decoder.Token(); err != nil {
-		return nil, fmt.Errorf("failed json decode of array close token: %s", err)
-	}
-
-	return recs, nil
 }
 
 func getFSClient(conf *config.Config) *fullstory.Client {
