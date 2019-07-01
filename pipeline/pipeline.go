@@ -19,10 +19,10 @@ import (
 type Pipeline struct {
 	transformRecord func(map[string]interface{}) ([]string, error)
 	metaTime        time.Time
-	metaCh          chan fullstory.ExportMeta
-	expCh           chan ExportData
-	saveCh          chan SavedExport
-	recsCh          chan RecordGroup
+	metaCh          chan *fullstory.ExportMeta
+	expCh           chan *ExportData
+	saveCh          chan *SavedExport
+	recsCh          chan *RecordGroup
 	errCh           chan error
 	conf            *config.Config
 }
@@ -32,10 +32,10 @@ func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{
 	return &Pipeline{
 		conf:            conf,
 		transformRecord: transformRecord,
-		metaCh:          make(chan fullstory.ExportMeta),
-		expCh:           make(chan ExportData),
-		recsCh:          make(chan RecordGroup),
-		saveCh:          make(chan SavedExport),
+		metaCh:          make(chan *fullstory.ExportMeta),
+		expCh:           make(chan *ExportData),
+		recsCh:          make(chan *RecordGroup),
+		saveCh:          make(chan *SavedExport),
 		errCh:           make(chan error),
 	}
 }
@@ -43,7 +43,7 @@ func NewPipeline(conf *config.Config, transformRecord func(map[string]interface{
 // Start begins pipeline downloading and processing bundles after the provided time. This function returns a channel
 // that will contain the filenames to which the data was saved and a channel that contains any errors that occur in the
 // pipeline. These must be retrieved from the channel to continue processing.
-func (p *Pipeline) Start(startTime time.Time) (chan SavedExport, chan error) {
+func (p *Pipeline) Start(startTime time.Time) (chan *SavedExport, chan error) {
 	p.metaTime = startTime
 	go p.metaFetcher()
 	go p.exportFetcher()
@@ -62,15 +62,15 @@ func (p *Pipeline) Stop() {
 }
 
 func (p *Pipeline) metaFetcher() {
+	fs := getFSClient(p.conf)
 	for {
-		fs := getFSClient(p.conf)
 		exportList, err := fs.ExportList(p.metaTime)
 		if err != nil {
 			p.errCh <- fmt.Errorf("could not fetch export list: %s", err)
 			return
 		}
 		for _, meta := range exportList {
-			p.metaCh <- meta
+			p.metaCh <- &meta
 			p.metaTime = meta.Stop
 		}
 		if len(exportList) == 0 {
@@ -81,9 +81,9 @@ func (p *Pipeline) metaFetcher() {
 }
 
 func (p *Pipeline) exportFetcher() {
+	fs := getFSClient(p.conf)
 	for meta := range p.metaCh {
-		fs := getFSClient(p.conf)
-		data, err := getDataWithRetry(fs, meta)
+		data, err := getExportData(fs, *meta)
 		if err != nil {
 			p.errCh <- fmt.Errorf("error fetching data export: %s", err)
 			return
@@ -108,7 +108,7 @@ func (p *Pipeline) recordGrouper() {
 			dataDay := data.meta.Start.UTC().Truncate(24 * time.Hour)
 			if groupDay.Before(dataDay) {
 				if len(recs) > 0 {
-					p.recsCh <- RecordGroup{
+					p.recsCh <- &RecordGroup{
 						records: recs,
 						bundles: metas,
 					}
@@ -123,7 +123,7 @@ func (p *Pipeline) recordGrouper() {
 			if len(newRecs) == 0 {
 				continue
 			}
-			p.recsCh <- RecordGroup{
+			p.recsCh <- &RecordGroup{
 				records: newRecs,
 				bundles: []fullstory.ExportMeta{data.meta},
 			}
@@ -177,6 +177,6 @@ func (p *Pipeline) recordsSaver() {
 			p.errCh <- fmt.Errorf("error closing file: %s", err)
 			return
 		}
-		p.saveCh <- SavedExport{Filename: fn, Meta: rg.bundles}
+		p.saveCh <- &SavedExport{Filename: fn, Meta: rg.bundles}
 	}
 }

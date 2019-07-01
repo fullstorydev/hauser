@@ -11,6 +11,7 @@ import (
 
 	"github.com/fullstorydev/hauser/config"
 	"github.com/nishanths/fullstory"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -82,28 +83,26 @@ func getFSClient(conf *config.Config) *fullstory.Client {
 	return fs
 }
 
-func getDataWithRetry(fs *fullstory.Client, meta fullstory.ExportMeta) (ExportData, error) {
+func getExportData(fs *fullstory.Client, meta fullstory.ExportMeta) (*ExportData, error) {
 	log.Printf("Getting Export Data for bundle %d\n", meta.ID)
 	var fsErr error
 	for r := 1; r <= maxAttempts; r++ {
 		stream, err := fs.ExportData(meta.ID, withAcceptEncoding())
-		if err != nil {
-			log.Printf("Failed to fetch export data for Bundle %d: %s", meta.ID, err)
+		if err == nil {
+			return &ExportData{src: stream, meta: meta}, nil
+		}
+		log.Printf("Failed to fetch export data for Bundle %d: %s", meta.ID, err)
 
-			fsErr = err
-			doRetry, retryAfterDuration := getRetryInfo(err)
-			if !doRetry {
-				return ExportData{}, err
-			}
-
-			log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
-			time.Sleep(retryAfterDuration)
-			continue
+		fsErr = err
+		doRetry, retryAfterDuration := getRetryInfo(err)
+		if !doRetry {
+			return nil, err
 		}
 
-		return ExportData{src: stream, meta: meta}, nil
+		log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
+		time.Sleep(retryAfterDuration)
 	}
-	return ExportData{}, fsErr
+	return nil, errors.Wrap(fsErr, fmt.Sprintf("Unable to fetch export data. Tried %d times.", maxAttempts))
 }
 
 func withAcceptEncoding() func(r *http.Request) {
