@@ -4,11 +4,11 @@
 SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://github.com/fullstorydev/hauser/wiki).
 <p>
   <br>
-  </p>
+</p>
 
 <p align="center">
   <img width="414" src="fullstory_logo_color.png" alt="fullstory logo"/>
-  </p>
+</p>
 
 ## Quick Start
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.9 or higher.
