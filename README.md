@@ -1,5 +1,5 @@
 # hauser
-`hauser` is a service to download FullStory Data Export files and load them into a data warehouse. Alternatively, Data Export files can be saved to local disk. Redshift and BigQuery are the only warehouses supported currently. (Others are easy to add -- pull requests welcome.)
+`hauser` is a service to download FullStory Data Export files and load them into storage. Currently, Data Export files can be saved to local disk, S3, Redshift, GCS, and BigQuery. (Others are easy to add -- pull requests welcome.)
 
 SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://github.com/fullstorydev/hauser/wiki).
 <p>
