@@ -277,7 +277,7 @@ func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 
 	for _, e := range bundles {
 		insert := fmt.Sprintf("insert into %s values (%d, '%s', '%s')",
-			rs.qualifiedSyncTableName(), e.ID, time.Now().Format(time.RFC3339), e.Stop.Format(time.RFC3339))
+			rs.qualifiedSyncTableName(), e.ID, time.Now().Format(time.RFC3339), e.Stop.UTC().Format(time.RFC3339))
 		if _, err := rs.conn.Exec(insert); err != nil {
 			return err
 		}
