@@ -10,11 +10,15 @@ matrix:
       - GO111MODULE=off
       - VET=1
     - go: "1.11"
-      env: GO111MODULE=on
+      env:
+      - GO111MODULE=on
+      - GOFLAGS=-mod=vendor
     - go: "1.12"
       env: GO111MODULE=off
     - go: "1.12"
-      env: GO111MODULE=on
+      env:
+      - GO111MODULE=on
+      - GOFLAGS=-mod=vendor
     - go: tip
 
 script:
