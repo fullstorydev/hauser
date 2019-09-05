@@ -18,7 +18,7 @@ INSTALLTOOL = GO111MODULE=off go get
 
 .PHONY: deps
 deps:
-	go get -d -v -t ./...
+	$(INSTALLTOOL) -d -v -t ./...
 
 .PHONY: updatedeps
 updatedeps:

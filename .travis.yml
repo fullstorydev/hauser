@@ -12,19 +12,15 @@ matrix:
     - go: "1.11"
       env:
       - GO111MODULE=on
-      - GOFLAGS=-mod=vendor
-      - VET=2
     - go: "1.12"
       env: GO111MODULE=off
     - go: "1.12"
       env:
       - GO111MODULE=on
-      - GOFLAGS=-mod=vendor
-      - VET=2
     - go: tip
 
 script:
-  - if [[ "$VET" = 1 ]]; then make ci; elif [[ "$VET" = 2 ]]; then make test; else make deps test; fi
+  - if [[ "$VET" = 1 ]]; then make ci; else make deps test; fi
 
 notifications:
   slack:
