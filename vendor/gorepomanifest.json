@@ -1,6 +1,7 @@
 {
  "cloud.google.com/go": {
   "git-remote": "https://code.googlesource.com/gocloud",
+  "git-remote-branch": "master",
   "current-version-git-hash": "1d9633a229077f680bf8fe431a93d5f489835506",
   "content-hash": "b9918e851e0a1a2c2e5f28f13b7b3c5f33f1cc8e"
  },
