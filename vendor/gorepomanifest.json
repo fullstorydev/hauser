@@ -42,8 +42,8 @@
  },
  "go.opencensus.io": {
   "git-remote": "https://github.com/census-instrumentation/opencensus-go",
-  "current-version-git-hash": "aab39bd6a98b853ab66c8a564f5d6cfcad59ce8a",
-  "content-hash": "bb8a01578c860d87203f6aa7cb0b4fb3d45f8942"
+  "current-version-git-hash": "59d1ce35d30f3c25ba762169da2a37eab6ffa041",
+  "content-hash": "22aca4aac3c2cb80e0bb5bb9c5d6cffeaa568a4c"
  },
  "golang.org/x/net": {
   "git-remote": "https://go.googlesource.com/net",
