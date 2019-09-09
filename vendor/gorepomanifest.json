@@ -61,8 +61,8 @@
  },
  "golang.org/x/text": {
   "git-remote": "https://go.googlesource.com/text",
-  "current-version-git-hash": "4d1c5fb19474adfe9562c9847ba425e7da817e81",
-  "content-hash": "91ce1f45d692aa17908f832416228c250c3b9b9e"
+  "current-version-git-hash": "3d0f7978add91030e5e8976ff65ccdd828286cba",
+  "content-hash": "c6d387f68890fa8a0cbafa127da2f3a4feefaa04"
  },
  "google.golang.org/api": {
   "git-remote": "https://code.googlesource.com/google-api-go-client",
@@ -76,7 +76,7 @@
  },
  "google.golang.org/grpc": {
   "git-remote": "https://github.com/grpc/grpc-go",
-  "current-version-git-hash": "13b2b26aae70b3b5fd750e5046e65670473ee0a3",
-  "content-hash": "d7fd6a167ee767a85201ab6e1a8006be2318543f"
+  "current-version-git-hash": "74f33a446dd3c95a64a1e8fe7916f73ec70b0a6c",
+  "content-hash": "0ccf9b010f846f4b35b72ec882292a152a8431bd"
  }
 }

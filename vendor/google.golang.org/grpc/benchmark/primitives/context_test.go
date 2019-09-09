@@ -19,10 +19,9 @@
 package primitives_test
 
 import (
+	"context"
 	"testing"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 func BenchmarkCancelContextErrNoErr(b *testing.B) {
@@ -116,5 +115,36 @@ func BenchmarkTimerContextChannelGotErr(b *testing.B) {
 		default:
 			b.Fatal("error: !ctx.Done()")
 		}
+	}
+}
+
+type ctxKey struct{}
+
+func newContextWithLocalKey(parent context.Context) context.Context {
+	return context.WithValue(parent, ctxKey{}, nil)
+}
+
+var ck = ctxKey{}
+
+func newContextWithGlobalKey(parent context.Context) context.Context {
+	return context.WithValue(parent, ck, nil)
+}
+
+func BenchmarkContextWithValue(b *testing.B) {
+	benches := []struct {
+		name string
+		f    func(context.Context) context.Context
+	}{
+		{"newContextWithLocalKey", newContextWithLocalKey},
+		{"newContextWithGlobalKey", newContextWithGlobalKey},
+	}
+
+	pCtx := context.Background()
+	for _, bench := range benches {
+		b.Run(bench.name, func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				bench.f(pCtx)
+			}
+		})
 	}
 }
