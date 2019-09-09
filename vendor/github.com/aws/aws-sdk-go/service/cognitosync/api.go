@@ -1199,8 +1199,7 @@ func (c *CognitoSync) SetCognitoEventsRequest(input *SetCognitoEventsInput) (req
 
 	output = &SetCognitoEventsOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1395,6 +1394,7 @@ func (c *CognitoSync) SubscribeToDatasetRequest(input *SubscribeToDatasetInput) 
 
 	output = &SubscribeToDatasetOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1492,6 +1492,7 @@ func (c *CognitoSync) UnsubscribeFromDatasetRequest(input *UnsubscribeFromDatase
 
 	output = &UnsubscribeFromDatasetOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1750,8 +1751,8 @@ type CognitoStreams struct {
 	// the developers account and in the same region as the identity pool.
 	StreamName *string `min:"1" type:"string"`
 
-	// Status of the Cognito streams. Valid values are: ENABLED - Streaming of updates
-	// to identity pool is enabled.
+	// Status of the Cognito streams. Valid values are:
+	// ENABLED - Streaming of updates to identity pool is enabled.
 	//
 	// DISABLED - Streaming of updates to identity pool is disabled. Bulk publish
 	// will also fail if StreamingStatus is DISABLED.
@@ -2307,8 +2308,8 @@ type GetBulkPublishDetailsOutput struct {
 	// The date/time at which the last bulk publish was initiated.
 	BulkPublishStartTime *time.Time `type:"timestamp"`
 
-	// Status of the last bulk publish operation, valid values are: NOT_STARTED
-	// - No bulk publish has been requested for this identity pool
+	// Status of the last bulk publish operation, valid values are:
+	// NOT_STARTED - No bulk publish has been requested for this identity pool
 	//
 	// IN_PROGRESS - Data is being published to the configured stream
 	//
@@ -3368,6 +3369,7 @@ func (s *RegisterDeviceOutput) SetDeviceId(v string) *RegisterDeviceOutput {
 }
 
 // A request to configure Cognito Events"
+// "
 type SetCognitoEventsInput struct {
 	_ struct{} `type:"structure"`
 

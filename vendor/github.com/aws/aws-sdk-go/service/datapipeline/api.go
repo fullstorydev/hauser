@@ -52,6 +52,7 @@ func (c *DataPipeline) ActivatePipelineRequest(input *ActivatePipelineInput) (re
 
 	output = &ActivatePipelineOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -150,6 +151,7 @@ func (c *DataPipeline) AddTagsRequest(input *AddTagsInput) (req *request.Request
 
 	output = &AddTagsOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -326,6 +328,7 @@ func (c *DataPipeline) DeactivatePipelineRequest(input *DeactivatePipelineInput)
 
 	output = &DeactivatePipelineOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -422,8 +425,7 @@ func (c *DataPipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 
 	output = &DeletePipelineOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -590,7 +592,7 @@ func (c *DataPipeline) DescribeObjectsWithContext(ctx aws.Context, input *Descri
 //    // Example iterating over at most 3 pages of a DescribeObjects operation.
 //    pageNum := 0
 //    err := client.DescribeObjectsPages(params,
-//        func(page *DescribeObjectsOutput, lastPage bool) bool {
+//        func(page *datapipeline.DescribeObjectsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -1018,7 +1020,7 @@ func (c *DataPipeline) ListPipelinesWithContext(ctx aws.Context, input *ListPipe
 //    // Example iterating over at most 3 pages of a ListPipelines operation.
 //    pageNum := 0
 //    err := client.ListPipelinesPages(params,
-//        func(page *ListPipelinesOutput, lastPage bool) bool {
+//        func(page *datapipeline.ListPipelinesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -1207,12 +1209,9 @@ func (c *DataPipeline) PutPipelineDefinitionRequest(input *PutPipelineDefinition
 // PutPipelineDefinition also validates the configuration as it adds it to the
 // pipeline. Changes to the pipeline are saved unless one of the following three
 // validation errors exists in the pipeline.
-//
-// An object is missing a name or identifier field.
-// A string or reference field is empty.
-// The number of objects in the pipeline exceeds the maximum allowed objects.
-//
-// The pipeline is in a FINISHED state.
+//   An object is missing a name or identifier field. A string or reference
+//   field is empty. The number of objects in the pipeline exceeds the maximum
+//   allowed objects. The pipeline is in a FINISHED state.
 // Pipeline object definitions are passed to the PutPipelineDefinition action
 // and returned by the GetPipelineDefinition action.
 //
@@ -1370,7 +1369,7 @@ func (c *DataPipeline) QueryObjectsWithContext(ctx aws.Context, input *QueryObje
 //    // Example iterating over at most 3 pages of a QueryObjects operation.
 //    pageNum := 0
 //    err := client.QueryObjectsPages(params,
-//        func(page *QueryObjectsOutput, lastPage bool) bool {
+//        func(page *datapipeline.QueryObjectsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -1448,6 +1447,7 @@ func (c *DataPipeline) RemoveTagsRequest(input *RemoveTagsInput) (req *request.R
 
 	output = &RemoveTagsOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1732,8 +1732,7 @@ func (c *DataPipeline) SetStatusRequest(input *SetStatusInput) (req *request.Req
 
 	output = &SetStatusOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1829,6 +1828,7 @@ func (c *DataPipeline) SetTaskStatusRequest(input *SetTaskStatusInput) (req *req
 
 	output = &SetTaskStatusOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2980,21 +2980,35 @@ type Operator struct {
 	// The comparison operators EQ and REF_EQ act on the following fields:
 	//
 	//    * name
+	//
 	//    * @sphere
+	//
 	//    * parent
+	//
 	//    * @componentParent
+	//
 	//    * @instanceParent
+	//
 	//    * @status
+	//
 	//    * @scheduledStartTime
+	//
 	//    * @scheduledEndTime
+	//
 	//    * @actualStartTime
+	//
 	//    * @actualEndTime
+	//
 	// The comparison operators GE, LE, and BETWEEN act on the following fields:
 	//
 	//    * @scheduledStartTime
+	//
 	//    * @scheduledEndTime
+	//
 	//    * @actualStartTime
+	//
 	//    * @actualEndTime
+	//
 	// Note that fields beginning with the at sign (@) are read-only and set by
 	// the web service. When you name fields, you should choose names containing
 	// only alpha-numeric values, as symbols may be reserved by AWS Data Pipeline.

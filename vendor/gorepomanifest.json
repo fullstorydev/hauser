@@ -11,8 +11,8 @@
  },
  "github.com/aws/aws-sdk-go": {
   "git-remote": "https://github.com/aws/aws-sdk-go",
-  "current-version-git-hash": "0e8c61841163762f870f6976775800ded4a789b0",
-  "content-hash": "816c901894c9d80779bcc2c1d6b1ff05ae0a35f0"
+  "current-version-git-hash": "f290be64ff46311abbed8a2e588814cd74623628",
+  "content-hash": "ec0dbfe52e0dc24644bc3adcebf333ebc29d54e8"
  },
  "github.com/golang/protobuf": {
   "git-remote": "https://github.com/golang/protobuf",

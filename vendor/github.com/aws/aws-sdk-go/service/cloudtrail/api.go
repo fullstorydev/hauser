@@ -9,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/private/protocol"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 const opAddTags = "AddTags"
@@ -50,6 +52,7 @@ func (c *CloudTrail) AddTagsRequest(input *AddTagsInput) (req *request.Request, 
 
 	output = &AddTagsOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -112,6 +115,12 @@ func (c *CloudTrail) AddTagsRequest(input *AddTagsInput) (req *request.Request, 
 //
 //   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
 //   This exception is thrown when the requested operation is not permitted.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/AddTags
 func (c *CloudTrail) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
@@ -271,6 +280,35 @@ func (c *CloudTrail) CreateTrailRequest(input *CreateTrailInput) (req *request.R
 //   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
 //   This exception is thrown when the requested operation is not permitted.
 //
+//   * ErrCodeAccessNotEnabledException "CloudTrailAccessNotEnabledException"
+//   This exception is thrown when trusted access has not been enabled between
+//   AWS CloudTrail and AWS Organizations. For more information, see Enabling
+//   Trusted Access with Other AWS Services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
+//   and Prepare For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeInsufficientDependencyServiceAccessPermissionException "InsufficientDependencyServiceAccessPermissionException"
+//   This exception is thrown when the IAM user or role that is used to create
+//   the organization trail is lacking one or more required permissions for creating
+//   an organization trail in a required service. For more information, see Prepare
+//   For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeOrganizationsNotInUseException "OrganizationsNotInUseException"
+//   This exception is thrown when the request is made from an AWS account that
+//   is not a member of an organization. To make this request, sign in using the
+//   credentials of an account that belongs to an organization.
+//
+//   * ErrCodeOrganizationNotInAllFeaturesModeException "OrganizationNotInAllFeaturesModeException"
+//   This exception is thrown when AWS Organizations is not configured to support
+//   all features. All features must be enabled in AWS Organization to support
+//   creating an organization trail. For more information, see Prepare For Creating
+//   a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/CreateTrail
 func (c *CloudTrail) CreateTrail(input *CreateTrailInput) (*CreateTrailOutput, error) {
 	req, out := c.CreateTrailRequest(input)
@@ -332,6 +370,7 @@ func (c *CloudTrail) DeleteTrailRequest(input *DeleteTrailInput) (req *request.R
 
 	output = &DeleteTrailOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -371,6 +410,24 @@ func (c *CloudTrail) DeleteTrailRequest(input *DeleteTrailInput) (req *request.R
 //   * ErrCodeInvalidHomeRegionException "InvalidHomeRegionException"
 //   This exception is thrown when an operation is called on a trail from a region
 //   other than the region in which the trail was created.
+//
+//   * ErrCodeUnsupportedOperationException "UnsupportedOperationException"
+//   This exception is thrown when the requested operation is not supported.
+//
+//   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
+//   This exception is thrown when the requested operation is not permitted.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeInsufficientDependencyServiceAccessPermissionException "InsufficientDependencyServiceAccessPermissionException"
+//   This exception is thrown when the IAM user or role that is used to create
+//   the organization trail is lacking one or more required permissions for creating
+//   an organization trail in a required service. For more information, see Prepare
+//   For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/DeleteTrail
 func (c *CloudTrail) DeleteTrail(input *DeleteTrailInput) (*DeleteTrailOutput, error) {
@@ -532,8 +589,7 @@ func (c *CloudTrail) GetEventSelectorsRequest(input *GetEventSelectorsInput) (re
 //    * If your event selector includes data events, the Amazon S3 objects or
 //    AWS Lambda functions that you are logging for data events.
 //
-// For more information, see Logging Data and Management Events for Trails
-// (http://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-and-data-events-with-cloudtrail.html)
+// For more information, see Logging Data and Management Events for Trails (http://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-and-data-events-with-cloudtrail.html)
 // in the AWS CloudTrail User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1035,7 +1091,7 @@ func (c *CloudTrail) LookupEventsWithContext(ctx aws.Context, input *LookupEvent
 //    // Example iterating over at most 3 pages of a LookupEvents operation.
 //    pageNum := 0
 //    err := client.LookupEventsPages(params,
-//        func(page *LookupEventsOutput, lastPage bool) bool {
+//        func(page *cloudtrail.LookupEventsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -1147,7 +1203,7 @@ func (c *CloudTrail) PutEventSelectorsRequest(input *PutEventSelectorsInput) (re
 // trail was created; otherwise, an InvalidHomeRegionException is thrown.
 //
 // You can configure up to five event selectors for each trail. For more information,
-// see Logging Data and Management Events for Trails  (http://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-and-data-events-with-cloudtrail.html)
+// see Logging Data and Management Events for Trails (http://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-and-data-events-with-cloudtrail.html)
 // and Limits in AWS CloudTrail (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/WhatIsCloudTrail-Limits.html)
 // in the AWS CloudTrail User Guide.
 //
@@ -1208,6 +1264,18 @@ func (c *CloudTrail) PutEventSelectorsRequest(input *PutEventSelectorsInput) (re
 //
 //   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
 //   This exception is thrown when the requested operation is not permitted.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeInsufficientDependencyServiceAccessPermissionException "InsufficientDependencyServiceAccessPermissionException"
+//   This exception is thrown when the IAM user or role that is used to create
+//   the organization trail is lacking one or more required permissions for creating
+//   an organization trail in a required service. For more information, see Prepare
+//   For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/PutEventSelectors
 func (c *CloudTrail) PutEventSelectors(input *PutEventSelectorsInput) (*PutEventSelectorsOutput, error) {
@@ -1270,6 +1338,7 @@ func (c *CloudTrail) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Req
 
 	output = &RemoveTagsOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1323,6 +1392,12 @@ func (c *CloudTrail) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Req
 //
 //   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
 //   This exception is thrown when the requested operation is not permitted.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/RemoveTags
 func (c *CloudTrail) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
@@ -1385,6 +1460,7 @@ func (c *CloudTrail) StartLoggingRequest(input *StartLoggingInput) (req *request
 
 	output = &StartLoggingOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1426,6 +1502,24 @@ func (c *CloudTrail) StartLoggingRequest(input *StartLoggingInput) (req *request
 //   * ErrCodeInvalidHomeRegionException "InvalidHomeRegionException"
 //   This exception is thrown when an operation is called on a trail from a region
 //   other than the region in which the trail was created.
+//
+//   * ErrCodeUnsupportedOperationException "UnsupportedOperationException"
+//   This exception is thrown when the requested operation is not supported.
+//
+//   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
+//   This exception is thrown when the requested operation is not permitted.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeInsufficientDependencyServiceAccessPermissionException "InsufficientDependencyServiceAccessPermissionException"
+//   This exception is thrown when the IAM user or role that is used to create
+//   the organization trail is lacking one or more required permissions for creating
+//   an organization trail in a required service. For more information, see Prepare
+//   For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/StartLogging
 func (c *CloudTrail) StartLogging(input *StartLoggingInput) (*StartLoggingOutput, error) {
@@ -1488,6 +1582,7 @@ func (c *CloudTrail) StopLoggingRequest(input *StopLoggingInput) (req *request.R
 
 	output = &StopLoggingOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1531,6 +1626,24 @@ func (c *CloudTrail) StopLoggingRequest(input *StopLoggingInput) (req *request.R
 //   * ErrCodeInvalidHomeRegionException "InvalidHomeRegionException"
 //   This exception is thrown when an operation is called on a trail from a region
 //   other than the region in which the trail was created.
+//
+//   * ErrCodeUnsupportedOperationException "UnsupportedOperationException"
+//   This exception is thrown when the requested operation is not supported.
+//
+//   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
+//   This exception is thrown when the requested operation is not permitted.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeInsufficientDependencyServiceAccessPermissionException "InsufficientDependencyServiceAccessPermissionException"
+//   This exception is thrown when the IAM user or role that is used to create
+//   the organization trail is lacking one or more required permissions for creating
+//   an organization trail in a required service. For more information, see Prepare
+//   For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/StopLogging
 func (c *CloudTrail) StopLogging(input *StopLoggingInput) (*StopLoggingOutput, error) {
@@ -1694,6 +1807,35 @@ func (c *CloudTrail) UpdateTrailRequest(input *UpdateTrailInput) (req *request.R
 //   * ErrCodeOperationNotPermittedException "OperationNotPermittedException"
 //   This exception is thrown when the requested operation is not permitted.
 //
+//   * ErrCodeAccessNotEnabledException "CloudTrailAccessNotEnabledException"
+//   This exception is thrown when trusted access has not been enabled between
+//   AWS CloudTrail and AWS Organizations. For more information, see Enabling
+//   Trusted Access with Other AWS Services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
+//   and Prepare For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeInsufficientDependencyServiceAccessPermissionException "InsufficientDependencyServiceAccessPermissionException"
+//   This exception is thrown when the IAM user or role that is used to create
+//   the organization trail is lacking one or more required permissions for creating
+//   an organization trail in a required service. For more information, see Prepare
+//   For Creating a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeOrganizationsNotInUseException "OrganizationsNotInUseException"
+//   This exception is thrown when the request is made from an AWS account that
+//   is not a member of an organization. To make this request, sign in using the
+//   credentials of an account that belongs to an organization.
+//
+//   * ErrCodeNotOrganizationMasterAccountException "NotOrganizationMasterAccountException"
+//   This exception is thrown when the AWS account making the request to create
+//   or update an organization trail is not the master account for an organization
+//   in AWS Organizations. For more information, see Prepare For Creating a Trail
+//   For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
+//   * ErrCodeOrganizationNotInAllFeaturesModeException "OrganizationNotInAllFeaturesModeException"
+//   This exception is thrown when AWS Organizations is not configured to support
+//   all features. All features must be enabled in AWS Organization to support
+//   creating an organization trail. For more information, see Prepare For Creating
+//   a Trail For Your Organization (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-an-organizational-trail-prepare.html).
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/UpdateTrail
 func (c *CloudTrail) UpdateTrail(input *UpdateTrailInput) (*UpdateTrailOutput, error) {
 	req, out := c.UpdateTrailRequest(input)
@@ -1827,6 +1969,12 @@ type CreateTrailInput struct {
 	// The default is false.
 	IsMultiRegionTrail *bool `type:"boolean"`
 
+	// Specifies whether the trail is created for all accounts in an organization
+	// in AWS Organizations, or only for the current AWS account. The default is
+	// false, and cannot be true unless the call is made on behalf of an AWS account
+	// that is the master account for an organization in AWS Organizations.
+	IsOrganizationTrail *bool `type:"boolean"`
+
 	// Specifies the KMS key ID to use to encrypt the logs delivered by CloudTrail.
 	// The value can be an alias name prefixed by "alias/", a fully specified ARN
 	// to an alias, a fully specified ARN to a key, or a globally unique identifier.
@@ -1932,6 +2080,12 @@ func (s *CreateTrailInput) SetIsMultiRegionTrail(v bool) *CreateTrailInput {
 	return s
 }
 
+// SetIsOrganizationTrail sets the IsOrganizationTrail field's value.
+func (s *CreateTrailInput) SetIsOrganizationTrail(v bool) *CreateTrailInput {
+	s.IsOrganizationTrail = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *CreateTrailInput) SetKmsKeyId(v string) *CreateTrailInput {
 	s.KmsKeyId = &v
@@ -1981,6 +2135,9 @@ type CreateTrailOutput struct {
 
 	// Specifies whether the trail exists in one region or in all regions.
 	IsMultiRegionTrail *bool `type:"boolean"`
+
+	// Specifies whether the trail is an organization trail.
+	IsOrganizationTrail *bool `type:"boolean"`
 
 	// Specifies the KMS key ID that encrypts the logs delivered by CloudTrail.
 	// The value is a fully specified ARN to a KMS key in the format:
@@ -2052,6 +2209,12 @@ func (s *CreateTrailOutput) SetIncludeGlobalServiceEvents(v bool) *CreateTrailOu
 // SetIsMultiRegionTrail sets the IsMultiRegionTrail field's value.
 func (s *CreateTrailOutput) SetIsMultiRegionTrail(v bool) *CreateTrailOutput {
 	s.IsMultiRegionTrail = &v
+	return s
+}
+
+// SetIsOrganizationTrail sets the IsOrganizationTrail field's value.
+func (s *CreateTrailOutput) SetIsOrganizationTrail(v bool) *CreateTrailOutput {
+	s.IsOrganizationTrail = &v
 	return s
 }
 
@@ -2128,7 +2291,8 @@ func (s *CreateTrailOutput) SetTrailARN(v string) *CreateTrailOutput {
 // A user uploads an object to an Amazon S3 bucket named arn:aws:s3:::bucket-2.
 //
 // The PutObject API operation occurred for an object in an S3 bucket that the
-// CloudTrail user didn't specify for the trail. The trail doesn’t log the event.
+// CloudTrail user didn't specify for the trail. The trail doesn’t log the
+// event.
 //
 // The following example demonstrates how logging works when you configure logging
 // of AWS Lambda data events for a Lambda function named MyLambdaFunction, but
@@ -2157,11 +2321,10 @@ type DataResource struct {
 	// the specified objects.
 	//
 	//    * To log data events for all objects in all S3 buckets in your AWS account,
-	//    specify the prefix as arn:aws:s3:::.
-	//
-	// This will also enable logging of data event activity performed by any user
-	//    or role in your AWS account, even if that activity is performed on a bucket
-	//    that belongs to another AWS account.
+	//    specify the prefix as arn:aws:s3:::. This will also enable logging of
+	//    data event activity performed by any user or role in your AWS account,
+	//    even if that activity is performed on a bucket that belongs to another
+	//    AWS account.
 	//
 	//    * To log data events for all objects in all S3 buckets that include my-bucket
 	//    in their names, specify the prefix as aws:s3:::my-bucket. The trail logs
@@ -2177,17 +2340,13 @@ type DataResource struct {
 	//    events for objects in this S3 bucket that match the prefix.
 	//
 	//    * To log data events for all functions in your AWS account, specify the
-	//    prefix as arn:aws:lambda.
-	//
-	// This will also enable logging of Invoke activity performed by any user or
-	//    role in your AWS account, even if that activity is performed on a function
-	//    that belongs to another AWS account.
+	//    prefix as arn:aws:lambda. This will also enable logging of Invoke activity
+	//    performed by any user or role in your AWS account, even if that activity
+	//    is performed on a function that belongs to another AWS account.
 	//
 	//    * To log data eents for a specific Lambda function, specify the function
-	//    ARN.
-	//
-	// Lambda function ARNs are exact. Unlike S3, you cannot use matching. For example,
-	//    if you specify a function ARN arn:aws:lambda:us-west-2:111111111111:function:helloworld,
+	//    ARN. Lambda function ARNs are exact. Unlike S3, you cannot use matching.
+	//    For example, if you specify a function ARN arn:aws:lambda:us-west-2:111111111111:function:helloworld,
 	//    data events will only be logged for arn:aws:lambda:us-west-2:111111111111:function:helloworld.
 	//    They will not be logged for arn:aws:lambda:us-west-2:111111111111:function:helloworld2.
 	Values []*string `type:"list"`
@@ -2277,7 +2436,10 @@ type DescribeTrailsInput struct {
 
 	// Specifies whether to include shadow trails in the response. A shadow trail
 	// is the replication in a region of a trail that was created in a different
-	// region. The default is true.
+	// region, or in the case of an organization trail, the replication of an organization
+	// trail in member accounts. If you do not include shadow trails, organization
+	// trails in a member account and region replication trails will not be returned.
+	// The default is true.
 	IncludeShadowTrails *bool `locationName:"includeShadowTrails" type:"boolean"`
 
 	// Specifies a list of trail names, trail ARNs, or both, of the trails to describe.
@@ -3692,6 +3854,9 @@ type Trail struct {
 	// Specifies whether the trail belongs only to one region or exists in all regions.
 	IsMultiRegionTrail *bool `type:"boolean"`
 
+	// Specifies whether the trail is an organization trail.
+	IsOrganizationTrail *bool `type:"boolean"`
+
 	// Specifies the KMS key ID that encrypts the logs delivered by CloudTrail.
 	// The value is a fully specified ARN to a KMS key in the format:
 	//
@@ -3774,6 +3939,12 @@ func (s *Trail) SetIncludeGlobalServiceEvents(v bool) *Trail {
 // SetIsMultiRegionTrail sets the IsMultiRegionTrail field's value.
 func (s *Trail) SetIsMultiRegionTrail(v bool) *Trail {
 	s.IsMultiRegionTrail = &v
+	return s
+}
+
+// SetIsOrganizationTrail sets the IsOrganizationTrail field's value.
+func (s *Trail) SetIsOrganizationTrail(v bool) *Trail {
+	s.IsOrganizationTrail = &v
 	return s
 }
 
@@ -3861,6 +4032,17 @@ type UpdateTrailInput struct {
 	// and this value is set to false, the trail will remain in the region where
 	// it was created, and its shadow trails in other regions will be deleted.
 	IsMultiRegionTrail *bool `type:"boolean"`
+
+	// Specifies whether the trail is applied to all accounts in an organization
+	// in AWS Organizations, or only for the current AWS account. The default is
+	// false, and cannot be true unless the call is made on behalf of an AWS account
+	// that is the master account for an organization in AWS Organizations. If the
+	// trail is not an organization trail and this is set to true, the trail will
+	// be created in all AWS accounts that belong to the organization. If the trail
+	// is an organization trail and this is set to false, the trail will remain
+	// in the current AWS account but be deleted from all member accounts in the
+	// organization.
+	IsOrganizationTrail *bool `type:"boolean"`
 
 	// Specifies the KMS key ID to use to encrypt the logs delivered by CloudTrail.
 	// The value can be an alias name prefixed by "alias/", a fully specified ARN
@@ -3967,6 +4149,12 @@ func (s *UpdateTrailInput) SetIsMultiRegionTrail(v bool) *UpdateTrailInput {
 	return s
 }
 
+// SetIsOrganizationTrail sets the IsOrganizationTrail field's value.
+func (s *UpdateTrailInput) SetIsOrganizationTrail(v bool) *UpdateTrailInput {
+	s.IsOrganizationTrail = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *UpdateTrailInput) SetKmsKeyId(v string) *UpdateTrailInput {
 	s.KmsKeyId = &v
@@ -4016,6 +4204,9 @@ type UpdateTrailOutput struct {
 
 	// Specifies whether the trail exists in one region or in all regions.
 	IsMultiRegionTrail *bool `type:"boolean"`
+
+	// Specifies whether the trail is an organization trail.
+	IsOrganizationTrail *bool `type:"boolean"`
 
 	// Specifies the KMS key ID that encrypts the logs delivered by CloudTrail.
 	// The value is a fully specified ARN to a KMS key in the format:
@@ -4087,6 +4278,12 @@ func (s *UpdateTrailOutput) SetIncludeGlobalServiceEvents(v bool) *UpdateTrailOu
 // SetIsMultiRegionTrail sets the IsMultiRegionTrail field's value.
 func (s *UpdateTrailOutput) SetIsMultiRegionTrail(v bool) *UpdateTrailOutput {
 	s.IsMultiRegionTrail = &v
+	return s
+}
+
+// SetIsOrganizationTrail sets the IsOrganizationTrail field's value.
+func (s *UpdateTrailOutput) SetIsOrganizationTrail(v bool) *UpdateTrailOutput {
+	s.IsOrganizationTrail = &v
 	return s
 }
 

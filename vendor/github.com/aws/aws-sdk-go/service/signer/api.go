@@ -51,8 +51,7 @@ func (c *Signer) CancelSigningProfileRequest(input *CancelSigningProfileInput) (
 
 	output = &CancelSigningProfileOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -474,7 +473,7 @@ func (c *Signer) ListSigningJobsWithContext(ctx aws.Context, input *ListSigningJ
 //    // Example iterating over at most 3 pages of a ListSigningJobs operation.
 //    pageNum := 0
 //    err := client.ListSigningJobsPages(params,
-//        func(page *ListSigningJobsOutput, lastPage bool) bool {
+//        func(page *signer.ListSigningJobsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -623,7 +622,7 @@ func (c *Signer) ListSigningPlatformsWithContext(ctx aws.Context, input *ListSig
 //    // Example iterating over at most 3 pages of a ListSigningPlatforms operation.
 //    pageNum := 0
 //    err := client.ListSigningPlatformsPages(params,
-//        func(page *ListSigningPlatformsOutput, lastPage bool) bool {
+//        func(page *signer.ListSigningPlatformsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -770,7 +769,7 @@ func (c *Signer) ListSigningProfilesWithContext(ctx aws.Context, input *ListSign
 //    // Example iterating over at most 3 pages of a ListSigningProfiles operation.
 //    pageNum := 0
 //    err := client.ListSigningProfilesPages(params,
-//        func(page *ListSigningProfilesOutput, lastPage bool) bool {
+//        func(page *signer.ListSigningProfilesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -951,7 +950,7 @@ func (c *Signer) StartSigningJobRequest(input *StartSigningJobInput) (req *reque
 // are viewable by the ListSigningJobs operation for two years after they are
 // performed. Note the following requirements:
 //
-//    *  You must create an Amazon S3 source bucket. For more information, see
+//    * You must create an Amazon S3 source bucket. For more information, see
 //    Create a Bucket (http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html)
 //    in the Amazon S3 Getting Started Guide.
 //
@@ -1096,6 +1095,9 @@ func (s *DescribeSigningJobInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DescribeSigningJobInput"}
 	if s.JobId == nil {
 		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -1329,6 +1331,9 @@ func (s *GetSigningPlatformInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetSigningPlatformInput"}
 	if s.PlatformId == nil {
 		invalidParams.Add(request.NewErrParamRequired("PlatformId"))
+	}
+	if s.PlatformId != nil && len(*s.PlatformId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PlatformId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -2605,9 +2610,7 @@ type StartSigningJobInput struct {
 
 	// String that identifies the signing request. All calls after the first that
 	// use this token return the same response as the first call.
-	//
-	// ClientRequestToken is a required field
-	ClientRequestToken *string `locationName:"clientRequestToken" type:"string" required:"true" idempotencyToken:"true"`
+	ClientRequestToken *string `locationName:"clientRequestToken" type:"string" idempotencyToken:"true"`
 
 	// The S3 bucket in which to save your signed object. The destination contains
 	// the name of your bucket and an optional prefix.
@@ -2638,9 +2641,6 @@ func (s StartSigningJobInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *StartSigningJobInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "StartSigningJobInput"}
-	if s.ClientRequestToken == nil {
-		invalidParams.Add(request.NewErrParamRequired("ClientRequestToken"))
-	}
 	if s.Destination == nil {
 		invalidParams.Add(request.NewErrParamRequired("Destination"))
 	}

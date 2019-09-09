@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/private/protocol"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 const opAssociateNode = "AssociateNode"
@@ -52,7 +54,7 @@ func (c *OpsWorksCM) AssociateNodeRequest(input *AssociateNodeInput) (req *reque
 	return
 }
 
-// AssociateNode API operation for AWS OpsWorks for Chef Automate.
+// AssociateNode API operation for AWS OpsWorks CM.
 //
 // Associates a new node with the server. For more information about how to
 // disassociate a node, see DisassociateNode.
@@ -80,7 +82,7 @@ func (c *OpsWorksCM) AssociateNodeRequest(input *AssociateNodeInput) (req *reque
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation AssociateNode for usage and error information.
 //
 // Returned Error Codes:
@@ -158,7 +160,7 @@ func (c *OpsWorksCM) CreateBackupRequest(input *CreateBackupInput) (req *request
 	return
 }
 
-// CreateBackup API operation for AWS OpsWorks for Chef Automate.
+// CreateBackup API operation for AWS OpsWorks CM.
 //
 // Creates an application-level backup of a server. While the server is in the
 // BACKING_UP state, the server cannot be changed, and no additional backup
@@ -179,7 +181,7 @@ func (c *OpsWorksCM) CreateBackupRequest(input *CreateBackupInput) (req *request
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation CreateBackup for usage and error information.
 //
 // Returned Error Codes:
@@ -260,7 +262,7 @@ func (c *OpsWorksCM) CreateServerRequest(input *CreateServerInput) (req *request
 	return
 }
 
-// CreateServer API operation for AWS OpsWorks for Chef Automate.
+// CreateServer API operation for AWS OpsWorks CM.
 //
 // Creates and immedately starts a new server. The server is ready to use when
 // it is in the HEALTHY state. By default, you can create a maximum of 10 servers.
@@ -294,7 +296,7 @@ func (c *OpsWorksCM) CreateServerRequest(input *CreateServerInput) (req *request
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation CreateServer for usage and error information.
 //
 // Returned Error Codes:
@@ -371,10 +373,11 @@ func (c *OpsWorksCM) DeleteBackupRequest(input *DeleteBackupInput) (req *request
 
 	output = &DeleteBackupOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
-// DeleteBackup API operation for AWS OpsWorks for Chef Automate.
+// DeleteBackup API operation for AWS OpsWorks CM.
 //
 // Deletes a backup. You can delete both manual and automated backups. This
 // operation is asynchronous.
@@ -387,7 +390,7 @@ func (c *OpsWorksCM) DeleteBackupRequest(input *DeleteBackupInput) (req *request
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DeleteBackup for usage and error information.
 //
 // Returned Error Codes:
@@ -462,10 +465,11 @@ func (c *OpsWorksCM) DeleteServerRequest(input *DeleteServerInput) (req *request
 
 	output = &DeleteServerOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
-// DeleteServer API operation for AWS OpsWorks for Chef Automate.
+// DeleteServer API operation for AWS OpsWorks CM.
 //
 // Deletes the server and the underlying AWS CloudFormation stacks (including
 // the server's EC2 instance). When you run this command, the server state is
@@ -483,7 +487,7 @@ func (c *OpsWorksCM) DeleteServerRequest(input *DeleteServerInput) (req *request
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DeleteServer for usage and error information.
 //
 // Returned Error Codes:
@@ -561,10 +565,9 @@ func (c *OpsWorksCM) DescribeAccountAttributesRequest(input *DescribeAccountAttr
 	return
 }
 
-// DescribeAccountAttributes API operation for AWS OpsWorks for Chef Automate.
+// DescribeAccountAttributes API operation for AWS OpsWorks CM.
 //
-// Describes your account attributes, and creates requests to increase limits
-// before they are reached or exceeded.
+// Describes your OpsWorks-CM account attributes.
 //
 // This operation is synchronous.
 //
@@ -572,7 +575,7 @@ func (c *OpsWorksCM) DescribeAccountAttributesRequest(input *DescribeAccountAttr
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DescribeAccountAttributes for usage and error information.
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeAccountAttributes
 func (c *OpsWorksCM) DescribeAccountAttributes(input *DescribeAccountAttributesInput) (*DescribeAccountAttributesOutput, error) {
@@ -638,7 +641,7 @@ func (c *OpsWorksCM) DescribeBackupsRequest(input *DescribeBackupsInput) (req *r
 	return
 }
 
-// DescribeBackups API operation for AWS OpsWorks for Chef Automate.
+// DescribeBackups API operation for AWS OpsWorks CM.
 //
 // Describes backups. The results are ordered by time, with newest backups first.
 // If you do not specify a BackupId or ServerName, the command returns all backups.
@@ -652,7 +655,7 @@ func (c *OpsWorksCM) DescribeBackupsRequest(input *DescribeBackupsInput) (req *r
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DescribeBackups for usage and error information.
 //
 // Returned Error Codes:
@@ -729,7 +732,7 @@ func (c *OpsWorksCM) DescribeEventsRequest(input *DescribeEventsInput) (req *req
 	return
 }
 
-// DescribeEvents API operation for AWS OpsWorks for Chef Automate.
+// DescribeEvents API operation for AWS OpsWorks CM.
 //
 // Describes events for a specified server. Results are ordered by time, with
 // newest events first.
@@ -743,7 +746,7 @@ func (c *OpsWorksCM) DescribeEventsRequest(input *DescribeEventsInput) (req *req
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DescribeEvents for usage and error information.
 //
 // Returned Error Codes:
@@ -820,7 +823,7 @@ func (c *OpsWorksCM) DescribeNodeAssociationStatusRequest(input *DescribeNodeAss
 	return
 }
 
-// DescribeNodeAssociationStatus API operation for AWS OpsWorks for Chef Automate.
+// DescribeNodeAssociationStatus API operation for AWS OpsWorks CM.
 //
 // Returns the current status of an existing association or disassociation request.
 //
@@ -832,7 +835,7 @@ func (c *OpsWorksCM) DescribeNodeAssociationStatusRequest(input *DescribeNodeAss
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DescribeNodeAssociationStatus for usage and error information.
 //
 // Returned Error Codes:
@@ -906,7 +909,7 @@ func (c *OpsWorksCM) DescribeServersRequest(input *DescribeServersInput) (req *r
 	return
 }
 
-// DescribeServers API operation for AWS OpsWorks for Chef Automate.
+// DescribeServers API operation for AWS OpsWorks CM.
 //
 // Lists all configuration management servers that are identified with your
 // account. Only the stored results from Amazon DynamoDB are returned. AWS OpsWorks
@@ -921,7 +924,7 @@ func (c *OpsWorksCM) DescribeServersRequest(input *DescribeServersInput) (req *r
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DescribeServers for usage and error information.
 //
 // Returned Error Codes:
@@ -998,7 +1001,7 @@ func (c *OpsWorksCM) DisassociateNodeRequest(input *DisassociateNodeInput) (req 
 	return
 }
 
-// DisassociateNode API operation for AWS OpsWorks for Chef Automate.
+// DisassociateNode API operation for AWS OpsWorks CM.
 //
 // Disassociates a node from an AWS OpsWorks CM server, and removes the node
 // from the server's managed nodes. After a node is disassociated, the node
@@ -1014,7 +1017,7 @@ func (c *OpsWorksCM) DisassociateNodeRequest(input *DisassociateNodeInput) (req 
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation DisassociateNode for usage and error information.
 //
 // Returned Error Codes:
@@ -1092,7 +1095,7 @@ func (c *OpsWorksCM) ExportServerEngineAttributeRequest(input *ExportServerEngin
 	return
 }
 
-// ExportServerEngineAttribute API operation for AWS OpsWorks for Chef Automate.
+// ExportServerEngineAttribute API operation for AWS OpsWorks CM.
 //
 // Exports a specified server engine attribute as a base64-encoded string. For
 // example, you can export user data that you can use in EC2 to associate nodes
@@ -1109,7 +1112,7 @@ func (c *OpsWorksCM) ExportServerEngineAttributeRequest(input *ExportServerEngin
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation ExportServerEngineAttribute for usage and error information.
 //
 // Returned Error Codes:
@@ -1184,10 +1187,11 @@ func (c *OpsWorksCM) RestoreServerRequest(input *RestoreServerInput) (req *reque
 
 	output = &RestoreServerOutput{}
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
-// RestoreServer API operation for AWS OpsWorks for Chef Automate.
+// RestoreServer API operation for AWS OpsWorks CM.
 //
 // Restores a backup to a server that is in a CONNECTION_LOST, HEALTHY, RUNNING,
 // UNHEALTHY, or TERMINATED state. When you run RestoreServer, the server's
@@ -1205,7 +1209,7 @@ func (c *OpsWorksCM) RestoreServerRequest(input *RestoreServerInput) (req *reque
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation RestoreServer for usage and error information.
 //
 // Returned Error Codes:
@@ -1283,7 +1287,7 @@ func (c *OpsWorksCM) StartMaintenanceRequest(input *StartMaintenanceInput) (req 
 	return
 }
 
-// StartMaintenance API operation for AWS OpsWorks for Chef Automate.
+// StartMaintenance API operation for AWS OpsWorks CM.
 //
 // Manually starts server maintenance. This command can be useful if an earlier
 // maintenance attempt failed, and the underlying cause of maintenance failure
@@ -1299,7 +1303,7 @@ func (c *OpsWorksCM) StartMaintenanceRequest(input *StartMaintenanceInput) (req 
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation StartMaintenance for usage and error information.
 //
 // Returned Error Codes:
@@ -1377,7 +1381,7 @@ func (c *OpsWorksCM) UpdateServerRequest(input *UpdateServerInput) (req *request
 	return
 }
 
-// UpdateServer API operation for AWS OpsWorks for Chef Automate.
+// UpdateServer API operation for AWS OpsWorks CM.
 //
 // Updates settings for a server.
 //
@@ -1387,7 +1391,7 @@ func (c *OpsWorksCM) UpdateServerRequest(input *UpdateServerInput) (req *request
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation UpdateServer for usage and error information.
 //
 // Returned Error Codes:
@@ -1465,13 +1469,12 @@ func (c *OpsWorksCM) UpdateServerEngineAttributesRequest(input *UpdateServerEngi
 	return
 }
 
-// UpdateServerEngineAttributes API operation for AWS OpsWorks for Chef Automate.
+// UpdateServerEngineAttributes API operation for AWS OpsWorks CM.
 //
 // Updates engine-specific attributes on a specified server. The server enters
 // the MODIFYING state when this operation is in progress. Only one update can
-// occur at a time. You can use this command to reset a Chef server's private
-// key (CHEF_PIVOTAL_KEY), a Chef server's admin password (CHEF_DELIVERY_ADMIN_PASSWORD),
-// or a Puppet server's admin password (PUPPET_ADMIN_PASSWORD).
+// occur at a time. You can use this command to reset a Chef server's public
+// key (CHEF_PIVOTAL_KEY) or a Puppet server's admin password (PUPPET_ADMIN_PASSWORD).
 //
 // This operation is asynchronous.
 //
@@ -1484,7 +1487,7 @@ func (c *OpsWorksCM) UpdateServerEngineAttributesRequest(input *UpdateServerEngi
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
-// See the AWS API reference guide for AWS OpsWorks for Chef Automate's
+// See the AWS API reference guide for AWS OpsWorks CM's
 // API operation UpdateServerEngineAttributes for usage and error information.
 //
 // Returned Error Codes:
@@ -2013,31 +2016,37 @@ type CreateServerInput struct {
 	// default value is true.
 	DisableAutomatedBackup *bool `type:"boolean"`
 
-	// The configuration management engine to use. Valid values include Chef and
-	// Puppet.
+	// The configuration management engine to use. Valid values include ChefAutomate
+	// and Puppet.
 	Engine *string `type:"string"`
 
 	// Optional engine attributes on a specified server.
 	//
 	// Attributes accepted in a Chef createServer request:
 	//
-	//    * CHEF_PIVOTAL_KEY: A base64-encoded RSA private key that is not stored
-	//    by AWS OpsWorks for Chef Automate. This private key is required to access
-	//    the Chef API. When no CHEF_PIVOTAL_KEY is set, one is generated and returned
-	//    in the response.
+	//    * CHEF_AUTOMATE_PIVOTAL_KEY: A base64-encoded RSA public key. The corresponding
+	//    private key is required to access the Chef API. When no CHEF_AUTOMATE_PIVOTAL_KEY
+	//    is set, a private key is generated and returned in the response.
 	//
-	//    * CHEF_DELIVERY_ADMIN_PASSWORD: The password for the administrative user
-	//    in the Chef Automate GUI. The password length is a minimum of eight characters,
-	//    and a maximum of 32. The password can contain letters, numbers, and special
-	//    characters (!/@#$%^&+=_). The password must contain at least one lower
-	//    case letter, one upper case letter, one number, and one special character.
-	//    When no CHEF_DELIVERY_ADMIN_PASSWORD is set, one is generated and returned
-	//    in the response.
+	//    * CHEF_AUTOMATE_ADMIN_PASSWORD: The password for the administrative user
+	//    in the Chef Automate web-based dashboard. The password length is a minimum
+	//    of eight characters, and a maximum of 32. The password can contain letters,
+	//    numbers, and special characters (!/@#$%^&+=_). The password must contain
+	//    at least one lower case letter, one upper case letter, one number, and
+	//    one special character. When no CHEF_AUTOMATE_ADMIN_PASSWORD is set, one
+	//    is generated and returned in the response.
 	//
 	// Attributes accepted in a Puppet createServer request:
 	//
 	//    * PUPPET_ADMIN_PASSWORD: To work with the Puppet Enterprise console, a
 	//    password must use ASCII characters.
+	//
+	//    * PUPPET_R10K_REMOTE: The r10k remote is the URL of your control repository
+	//    (for example, ssh://git@your.git-repo.com:user/control-repo.git). Specifying
+	//    an r10k remote opens TCP port 8170.
+	//
+	//    * PUPPET_R10K_PRIVATE_KEY: If you are using a private Git repository,
+	//    add PUPPET_R10K_PRIVATE_KEY to specify a PEM-encoded private SSH key.
 	EngineAttributes []*EngineAttribute `type:"list"`
 
 	// The engine model of the server. Valid values in this release include Monolithic
@@ -2059,8 +2068,7 @@ type CreateServerInput struct {
 	// InstanceProfileArn is a required field
 	InstanceProfileArn *string `type:"string" required:"true"`
 
-	// The Amazon EC2 instance type to use. For example, m4.large. Recommended instance
-	// types include t2.medium and greater, m4.*, or c4.xlarge and greater.
+	// The Amazon EC2 instance type to use. For example, m5.large.
 	//
 	// InstanceType is a required field
 	InstanceType *string `type:"string" required:"true"`
@@ -2081,9 +2089,9 @@ type CreateServerInput struct {
 	// The specified time is in coordinated universal time (UTC). The default value
 	// is a random, daily start time.
 	//
-	// Example:08:00, which represents a daily start time of 08:00 UTC.
+	// Example: 08:00, which represents a daily start time of 08:00 UTC.
 	//
-	// Example:Mon:08:00, which represents a start time of every Monday at 08:00
+	// Example: Mon:08:00, which represents a start time of every Monday at 08:00
 	// UTC. (8:00 a.m.)
 	PreferredBackupWindow *string `type:"string"`
 
@@ -2093,7 +2101,7 @@ type CreateServerInput struct {
 	// time (UTC). The default value is a random one-hour period on Tuesday, Wednesday,
 	// or Friday. See TimeWindowDefinition for more information.
 	//
-	// Example:Mon:08:00, which represents a start time of every Monday at 08:00
+	// Example: Mon:08:00, which represents a start time of every Monday at 08:00
 	// UTC. (8:00 a.m.)
 	PreferredMaintenanceWindow *string `type:"string"`
 
@@ -2133,7 +2141,7 @@ type CreateServerInput struct {
 	// enabled.
 	//
 	// For more information about supported Amazon EC2 platforms, see Supported
-	// Platforms (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html).
+	// Platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html).
 	SubnetIds []*string `type:"list"`
 }
 
@@ -2816,7 +2824,7 @@ type DescribeServersOutput struct {
 
 	// Contains the response to a DescribeServers request.
 	//
-	// For Puppet Server:DescribeServersResponse$Servers$EngineAttributes contains
+	// For Puppet Server: DescribeServersResponse$Servers$EngineAttributes contains
 	// PUPPET_API_CA_CERT. This is the PEM-encoded CA certificate that is used by
 	// the Puppet API over TCP port number 8140. The CA certificate is also used
 	// to sign node certificates.
@@ -2947,7 +2955,7 @@ type EngineAttribute struct {
 	Name *string `type:"string"`
 
 	// The value of the engine attribute.
-	Value *string `type:"string"`
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation
@@ -2975,27 +2983,35 @@ func (s *EngineAttribute) SetValue(v string) *EngineAttribute {
 type ExportServerEngineAttributeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the export attribute. Currently supported export attribute is
-	// "Userdata" which exports a userdata script filled out with parameters provided
-	// in the InputAttributes list.
+	// The name of the export attribute. Currently, the supported export attribute
+	// is Userdata. This exports a user data script that includes parameters and
+	// values provided in the InputAttributes list.
 	//
 	// ExportAttributeName is a required field
 	ExportAttributeName *string `type:"string" required:"true"`
 
-	// The list of engine attributes. The list type is EngineAttribute. EngineAttribute
-	// is a pair of attribute name and value. For ExportAttributeName "Userdata",
-	// currently supported input attribute names are: - "RunList": For Chef, an
-	// ordered list of roles and/or recipes that are run in the exact order. For
-	// Puppet, this parameter is ignored. - "OrganizationName": For Chef, an organization
-	// name. AWS OpsWorks for Chef Server always creates the organization "default".
-	// For Puppet, this parameter is ignored. - "NodeEnvironment": For Chef, a node
-	// environment (eg. development, staging, onebox). For Puppet, this parameter
-	// is ignored. - "NodeClientVersion": For Chef, version of Chef Engine (3 numbers
-	// separated by dots, eg. "13.8.5"). If empty, it uses the latest one. For Puppet,
-	// this parameter is ignored.
+	// The list of engine attributes. The list type is EngineAttribute. An EngineAttribute
+	// list item is a pair that includes an attribute name and its value. For the
+	// Userdata ExportAttributeName, the following are supported engine attribute
+	// names.
+	//
+	//    * RunList In Chef, a list of roles or recipes that are run in the specified
+	//    order. In Puppet, this parameter is ignored.
+	//
+	//    * OrganizationName In Chef, an organization name. AWS OpsWorks for Chef
+	//    Automate always creates the organization default. In Puppet, this parameter
+	//    is ignored.
+	//
+	//    * NodeEnvironment In Chef, a node environment (for example, development,
+	//    staging, or one-box). In Puppet, this parameter is ignored.
+	//
+	//    * NodeClientVersion In Chef, the version of the Chef engine (three numbers
+	//    separated by dots, such as 13.8.5). If this attribute is empty, OpsWorks
+	//    for Chef Automate uses the most current version. In Puppet, this parameter
+	//    is ignored.
 	InputAttributes []*EngineAttribute `type:"list"`
 
-	// The name of the Server to which the attribute is being exported from
+	// The name of the server from which you are exporting the attribute.
 	//
 	// ServerName is a required field
 	ServerName *string `min:"1" type:"string" required:"true"`
@@ -3054,7 +3070,7 @@ type ExportServerEngineAttributeOutput struct {
 	// The requested engine attribute pair with attribute name and value.
 	EngineAttribute *EngineAttribute `type:"structure"`
 
-	// The requested ServerName.
+	// The server name used in the request.
 	ServerName *string `min:"1" type:"string"`
 }
 
@@ -3089,8 +3105,8 @@ type RestoreServerInput struct {
 	BackupId *string `type:"string" required:"true"`
 
 	// The type of the instance to create. Valid values must be specified in the
-	// following format: ^([cm][34]|t2).* For example, m4.large. Valid values are
-	// t2.medium, m4.large, and m4.2xlarge. If you do not specify this parameter,
+	// following format: ^([cm][34]|t2).* For example, m5.large. Valid values are
+	// m5.large, r5.xlarge, and r5.2xlarge. If you do not specify this parameter,
 	// RestoreServer uses the instance type from the specified backup.
 	InstanceType *string `type:"string"`
 
@@ -3194,7 +3210,7 @@ type Server struct {
 	// A DNS name that can be used to access the engine. Example: myserver-asdfghjkl.us-east-1.opsworks.io
 	Endpoint *string `type:"string"`
 
-	// The engine type of the server. Valid values in this release include Chef
+	// The engine type of the server. Valid values in this release include ChefAutomate
 	// and Puppet.
 	Engine *string `type:"string"`
 
@@ -3204,9 +3220,9 @@ type Server struct {
 	//
 	// Attributes returned in a createServer response for Chef
 	//
-	//    * CHEF_PIVOTAL_KEY: A base64-encoded RSA private key that is generated
-	//    by AWS OpsWorks for Chef Automate. This private key is required to access
-	//    the Chef API.
+	//    * CHEF_AUTOMATE_PIVOTAL_KEY: A base64-encoded RSA private key that is
+	//    generated by AWS OpsWorks for Chef Automate. This private key is required
+	//    to access the Chef API.
 	//
 	//    * CHEF_STARTER_KIT: A base64-encoded ZIP file. The ZIP file contains a
 	//    Chef starter kit, which includes a README, a configuration file, and the

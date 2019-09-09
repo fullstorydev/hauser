@@ -407,6 +407,10 @@ func ExampleRDS_CreateDBCluster_shared00() {
 				fmt.Println(rds.ErrCodeDBInstanceNotFoundFault, aerr.Error())
 			case rds.ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs:
 				fmt.Println(rds.ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs, aerr.Error())
+			case rds.ErrCodeGlobalClusterNotFoundFault:
+				fmt.Println(rds.ErrCodeGlobalClusterNotFoundFault, aerr.Error())
+			case rds.ErrCodeInvalidGlobalClusterStateFault:
+				fmt.Println(rds.ErrCodeInvalidGlobalClusterStateFault, aerr.Error())
 			default:
 				fmt.Println(aerr.Error())
 			}
@@ -990,6 +994,8 @@ func ExampleRDS_DeleteDBInstance_shared00() {
 				fmt.Println(rds.ErrCodeSnapshotQuotaExceededFault, aerr.Error())
 			case rds.ErrCodeInvalidDBClusterStateFault:
 				fmt.Println(rds.ErrCodeInvalidDBClusterStateFault, aerr.Error())
+			case rds.ErrCodeDBInstanceAutomatedBackupQuotaExceededFault:
+				fmt.Println(rds.ErrCodeDBInstanceAutomatedBackupQuotaExceededFault, aerr.Error())
 			default:
 				fmt.Println(aerr.Error())
 			}
@@ -1283,7 +1289,7 @@ func ExampleRDS_DescribeDBClusterParameters_shared00() {
 	svc := rds.New(session.New())
 	input := &rds.DescribeDBClusterParametersInput{
 		DBClusterParameterGroupName: aws.String("mydbclusterparametergroup"),
-		Source: aws.String("system"),
+		Source:                      aws.String("system"),
 	}
 
 	result, err := svc.DescribeDBClusterParameters(input)
@@ -2835,7 +2841,7 @@ func ExampleRDS_RestoreDBClusterToPointInTime_shared00() {
 	svc := rds.New(session.New())
 	input := &rds.RestoreDBClusterToPointInTimeInput{
 		DBClusterIdentifier:       aws.String("sample-restored-cluster1"),
-		RestoreToTime:             parseTime("2006-01-02T15:04:05Z", "2016-09-13T18:45:00Z"),
+		RestoreToTime:             parseTime("2006-01-02T15:04:05.999999999Z", "2016-09-13T18:45:00Z"),
 		SourceDBClusterIdentifier: aws.String("sample-cluster1"),
 	}
 
@@ -2966,7 +2972,7 @@ func ExampleRDS_RestoreDBInstanceFromDBSnapshot_shared00() {
 func ExampleRDS_RestoreDBInstanceToPointInTime_shared00() {
 	svc := rds.New(session.New())
 	input := &rds.RestoreDBInstanceToPointInTimeInput{
-		RestoreTime:                parseTime("2006-01-02T15:04:05Z", "2016-09-13T18:45:00Z"),
+		RestoreTime:                parseTime("2006-01-02T15:04:05.999999999Z", "2016-09-13T18:45:00Z"),
 		SourceDBInstanceIdentifier: aws.String("mysql-sample"),
 		TargetDBInstanceIdentifier: aws.String("mysql-sample-restored"),
 	}
@@ -3013,10 +3019,12 @@ func ExampleRDS_RestoreDBInstanceToPointInTime_shared00() {
 				fmt.Println(rds.ErrCodeDBSecurityGroupNotFoundFault, aerr.Error())
 			case rds.ErrCodeDomainNotFoundFault:
 				fmt.Println(rds.ErrCodeDomainNotFoundFault, aerr.Error())
-			case rds.ErrCodeDBParameterGroupNotFoundFault:
-				fmt.Println(rds.ErrCodeDBParameterGroupNotFoundFault, aerr.Error())
 			case rds.ErrCodeBackupPolicyNotFoundFault:
 				fmt.Println(rds.ErrCodeBackupPolicyNotFoundFault, aerr.Error())
+			case rds.ErrCodeDBParameterGroupNotFoundFault:
+				fmt.Println(rds.ErrCodeDBParameterGroupNotFoundFault, aerr.Error())
+			case rds.ErrCodeDBInstanceAutomatedBackupNotFoundFault:
+				fmt.Println(rds.ErrCodeDBInstanceAutomatedBackupNotFoundFault, aerr.Error())
 			default:
 				fmt.Println(aerr.Error())
 			}

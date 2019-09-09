@@ -238,7 +238,7 @@ func ExampleDatabaseMigrationService_CreateReplicationSubnetGroup_shared00() {
 func ExampleDatabaseMigrationService_CreateReplicationTask_shared00() {
 	svc := databasemigrationservice.New(session.New())
 	input := &databasemigrationservice.CreateReplicationTaskInput{
-		CdcStartTime:              parseTime("2006-01-02T15:04:05Z", "2016-12-14T18:25:43Z"),
+		CdcStartTime:              parseTime("2006-01-02T15:04:05.999999999Z", "2016-12-14T18:25:43Z"),
 		MigrationType:             aws.String("full-load"),
 		ReplicationInstanceArn:    aws.String("arn:aws:dms:us-east-1:123456789012:rep:6UTDJGBOUS3VI3SUWA66XFJCJQ"),
 		ReplicationTaskIdentifier: aws.String("task1"),
@@ -319,7 +319,6 @@ func ExampleDatabaseMigrationService_DeleteCertificate_shared00() {
 //
 // Deletes the specified endpoint. All tasks associated with the endpoint must be deleted
 // before you can delete the endpoint.
-//
 func ExampleDatabaseMigrationService_DeleteEndpoint_shared00() {
 	svc := databasemigrationservice.New(session.New())
 	input := &databasemigrationservice.DeleteEndpointInput{
@@ -352,7 +351,6 @@ func ExampleDatabaseMigrationService_DeleteEndpoint_shared00() {
 //
 // Deletes the specified replication instance. You must delete any migration tasks that
 // are associated with the replication instance before you can delete it.
-//
 func ExampleDatabaseMigrationService_DeleteReplicationInstance_shared00() {
 	svc := databasemigrationservice.New(session.New())
 	input := &databasemigrationservice.DeleteReplicationInstanceInput{
@@ -1005,6 +1003,8 @@ func ExampleDatabaseMigrationService_ModifyReplicationInstance_shared00() {
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
+			case databasemigrationservice.ErrCodeAccessDeniedFault:
+				fmt.Println(databasemigrationservice.ErrCodeAccessDeniedFault, aerr.Error())
 			case databasemigrationservice.ErrCodeInvalidResourceStateFault:
 				fmt.Println(databasemigrationservice.ErrCodeInvalidResourceStateFault, aerr.Error())
 			case databasemigrationservice.ErrCodeResourceAlreadyExistsFault:
@@ -1144,7 +1144,7 @@ func ExampleDatabaseMigrationService_RemoveTagsFromResource_shared00() {
 func ExampleDatabaseMigrationService_StartReplicationTask_shared00() {
 	svc := databasemigrationservice.New(session.New())
 	input := &databasemigrationservice.StartReplicationTaskInput{
-		CdcStartTime:             parseTime("2006-01-02T15:04:05Z", "2016-12-14T13:33:20Z"),
+		CdcStartTime:             parseTime("2006-01-02T15:04:05.999999999Z", "2016-12-14T13:33:20Z"),
 		ReplicationTaskArn:       aws.String("arn:aws:dms:us-east-1:123456789012:rep:6UTDJGBOUS3VI3SUWA66XFJCJQ"),
 		StartReplicationTaskType: aws.String("start-replication"),
 	}

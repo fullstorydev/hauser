@@ -20,6 +20,7 @@ import (
 
 const instanceIdentityDocument = `{
   "devpayProductCodes" : null,
+  "marketplaceProductCodes" : [ "1abc2defghijklm3nopqrs4tu" ], 
   "availabilityZone" : "us-east-1d",
   "privateIp" : "10.158.112.84",
   "version" : "2010-08-31",
@@ -163,6 +164,23 @@ func TestGetRegion(t *testing.T) {
 		t.Errorf("expect no error, got %v", err)
 	}
 	if e, a := "us-west-2", region; e != a {
+		t.Errorf("expect %v, got %v", e, a)
+	}
+}
+
+func TestGetRegion_invalidResponse(t *testing.T) {
+	server := initTestServer(
+		"/latest/meta-data/placement/availability-zone",
+		"", // no data in response
+	)
+	defer server.Close()
+	c := ec2metadata.New(unit.Session, &aws.Config{Endpoint: aws.String(server.URL + "/latest")})
+
+	region, err := c.Region()
+	if err == nil {
+		t.Errorf("expected error, got %v", err)
+	}
+	if e, a := "", region; e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
 }
