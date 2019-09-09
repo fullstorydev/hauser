@@ -26,8 +26,8 @@
  },
  "github.com/lib/pq": {
   "git-remote": "https://github.com/lib/pq",
-  "current-version-git-hash": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
-  "content-hash": "00527e2f8fd2ae0b3a3c9caba04902c060d51749"
+  "current-version-git-hash": "78223426e7c66d631117c0a9da1b7f3fde4d23a5",
+  "content-hash": "a6b168d40bcc183d88d7f99ee3945c0f1298af33"
  },
  "github.com/nishanths/fullstory": {
   "git-remote": "https://github.com/nishanths/fullstory",
