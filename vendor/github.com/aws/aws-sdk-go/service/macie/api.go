@@ -51,8 +51,7 @@ func (c *Macie) AssociateMemberAccountRequest(input *AssociateMemberAccountInput
 
 	output = &AssociateMemberAccountOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -234,8 +233,7 @@ func (c *Macie) DisassociateMemberAccountRequest(input *DisassociateMemberAccoun
 
 	output = &DisassociateMemberAccountOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -470,7 +468,7 @@ func (c *Macie) ListMemberAccountsWithContext(ctx aws.Context, input *ListMember
 //    // Example iterating over at most 3 pages of a ListMemberAccounts operation.
 //    pageNum := 0
 //    err := client.ListMemberAccountsPages(params,
-//        func(page *ListMemberAccountsOutput, lastPage bool) bool {
+//        func(page *macie.ListMemberAccountsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -616,7 +614,7 @@ func (c *Macie) ListS3ResourcesWithContext(ctx aws.Context, input *ListS3Resourc
 //    // Example iterating over at most 3 pages of a ListS3Resources operation.
 //    pageNum := 0
 //    err := client.ListS3ResourcesPages(params,
-//        func(page *ListS3ResourcesOutput, lastPage bool) bool {
+//        func(page *macie.ListS3ResourcesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3

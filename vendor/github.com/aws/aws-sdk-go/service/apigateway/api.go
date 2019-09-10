@@ -1432,8 +1432,7 @@ func (c *APIGateway) DeleteApiKeyRequest(input *DeleteApiKeyInput) (req *request
 
 	output = &DeleteApiKeyOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1517,8 +1516,7 @@ func (c *APIGateway) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (req 
 
 	output = &DeleteAuthorizerOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1612,8 +1610,7 @@ func (c *APIGateway) DeleteBasePathMappingRequest(input *DeleteBasePathMappingIn
 
 	output = &DeleteBasePathMappingOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1705,8 +1702,7 @@ func (c *APIGateway) DeleteClientCertificateRequest(input *DeleteClientCertifica
 
 	output = &DeleteClientCertificateOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1794,8 +1790,7 @@ func (c *APIGateway) DeleteDeploymentRequest(input *DeleteDeploymentInput) (req 
 
 	output = &DeleteDeploymentOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1884,8 +1879,7 @@ func (c *APIGateway) DeleteDocumentationPartRequest(input *DeleteDocumentationPa
 
 	output = &DeleteDocumentationPartOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -1975,8 +1969,7 @@ func (c *APIGateway) DeleteDocumentationVersionRequest(input *DeleteDocumentatio
 
 	output = &DeleteDocumentationVersionOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2066,8 +2059,7 @@ func (c *APIGateway) DeleteDomainNameRequest(input *DeleteDomainNameInput) (req 
 
 	output = &DeleteDomainNameOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2151,8 +2143,7 @@ func (c *APIGateway) DeleteGatewayResponseRequest(input *DeleteGatewayResponseIn
 
 	output = &DeleteGatewayResponseOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2245,8 +2236,7 @@ func (c *APIGateway) DeleteIntegrationRequest(input *DeleteIntegrationInput) (re
 
 	output = &DeleteIntegrationOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2334,8 +2324,7 @@ func (c *APIGateway) DeleteIntegrationResponseRequest(input *DeleteIntegrationRe
 
 	output = &DeleteIntegrationResponseOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2427,8 +2416,7 @@ func (c *APIGateway) DeleteMethodRequest(input *DeleteMethodInput) (req *request
 
 	output = &DeleteMethodOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2516,8 +2504,7 @@ func (c *APIGateway) DeleteMethodResponseRequest(input *DeleteMethodResponseInpu
 
 	output = &DeleteMethodResponseOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2609,8 +2596,7 @@ func (c *APIGateway) DeleteModelRequest(input *DeleteModelInput) (req *request.R
 
 	output = &DeleteModelOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2702,8 +2688,7 @@ func (c *APIGateway) DeleteRequestValidatorRequest(input *DeleteRequestValidator
 
 	output = &DeleteRequestValidatorOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2795,8 +2780,7 @@ func (c *APIGateway) DeleteResourceRequest(input *DeleteResourceInput) (req *req
 
 	output = &DeleteResourceOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2888,8 +2872,7 @@ func (c *APIGateway) DeleteRestApiRequest(input *DeleteRestApiInput) (req *reque
 
 	output = &DeleteRestApiOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -2977,8 +2960,7 @@ func (c *APIGateway) DeleteStageRequest(input *DeleteStageInput) (req *request.R
 
 	output = &DeleteStageOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -3066,8 +3048,7 @@ func (c *APIGateway) DeleteUsagePlanRequest(input *DeleteUsagePlanInput) (req *r
 
 	output = &DeleteUsagePlanOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -3155,8 +3136,7 @@ func (c *APIGateway) DeleteUsagePlanKeyRequest(input *DeleteUsagePlanKeyInput) (
 
 	output = &DeleteUsagePlanKeyOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -3249,8 +3229,7 @@ func (c *APIGateway) DeleteVpcLinkRequest(input *DeleteVpcLinkInput) (req *reque
 
 	output = &DeleteVpcLinkOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -3338,8 +3317,7 @@ func (c *APIGateway) FlushStageAuthorizersCacheRequest(input *FlushStageAuthoriz
 
 	output = &FlushStageAuthorizersCacheOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -3427,8 +3405,7 @@ func (c *APIGateway) FlushStageCacheRequest(input *FlushStageCacheInput) (req *r
 
 	output = &FlushStageCacheOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -3829,7 +3806,7 @@ func (c *APIGateway) GetApiKeysWithContext(ctx aws.Context, input *GetApiKeysInp
 //    // Example iterating over at most 3 pages of a GetApiKeys operation.
 //    pageNum := 0
 //    err := client.GetApiKeysPages(params,
-//        func(page *GetApiKeysOutput, lastPage bool) bool {
+//        func(page *apigateway.GetApiKeysOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -4225,7 +4202,7 @@ func (c *APIGateway) GetBasePathMappingsWithContext(ctx aws.Context, input *GetB
 //    // Example iterating over at most 3 pages of a GetBasePathMappings operation.
 //    pageNum := 0
 //    err := client.GetBasePathMappingsPages(params,
-//        func(page *GetBasePathMappingsOutput, lastPage bool) bool {
+//        func(page *apigateway.GetBasePathMappingsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -4448,7 +4425,7 @@ func (c *APIGateway) GetClientCertificatesWithContext(ctx aws.Context, input *Ge
 //    // Example iterating over at most 3 pages of a GetClientCertificates operation.
 //    pageNum := 0
 //    err := client.GetClientCertificatesPages(params,
-//        func(page *GetClientCertificatesOutput, lastPage bool) bool {
+//        func(page *apigateway.GetClientCertificatesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -4679,7 +4656,7 @@ func (c *APIGateway) GetDeploymentsWithContext(ctx aws.Context, input *GetDeploy
 //    // Example iterating over at most 3 pages of a GetDeployments operation.
 //    pageNum := 0
 //    err := client.GetDeploymentsPages(params,
-//        func(page *GetDeploymentsOutput, lastPage bool) bool {
+//        func(page *apigateway.GetDeploymentsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -5239,7 +5216,7 @@ func (c *APIGateway) GetDomainNamesWithContext(ctx aws.Context, input *GetDomain
 //    // Example iterating over at most 3 pages of a GetDomainNames operation.
 //    pageNum := 0
 //    err := client.GetDomainNamesPages(params,
-//        func(page *GetDomainNamesOutput, lastPage bool) bool {
+//        func(page *apigateway.GetDomainNamesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -6149,7 +6126,7 @@ func (c *APIGateway) GetModelsWithContext(ctx aws.Context, input *GetModelsInput
 //    // Example iterating over at most 3 pages of a GetModels operation.
 //    pageNum := 0
 //    err := client.GetModelsPages(params,
-//        func(page *GetModelsOutput, lastPage bool) bool {
+//        func(page *apigateway.GetModelsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -6545,7 +6522,7 @@ func (c *APIGateway) GetResourcesWithContext(ctx aws.Context, input *GetResource
 //    // Example iterating over at most 3 pages of a GetResources operation.
 //    pageNum := 0
 //    err := client.GetResourcesPages(params,
-//        func(page *GetResourcesOutput, lastPage bool) bool {
+//        func(page *apigateway.GetResourcesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -6768,7 +6745,7 @@ func (c *APIGateway) GetRestApisWithContext(ctx aws.Context, input *GetRestApisI
 //    // Example iterating over at most 3 pages of a GetRestApis operation.
 //    pageNum := 0
 //    err := client.GetRestApisPages(params,
-//        func(page *GetRestApisOutput, lastPage bool) bool {
+//        func(page *apigateway.GetRestApisOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -7417,7 +7394,7 @@ func (c *APIGateway) GetUsageWithContext(ctx aws.Context, input *GetUsageInput, 
 //    // Example iterating over at most 3 pages of a GetUsage operation.
 //    pageNum := 0
 //    err := client.GetUsagePages(params,
-//        func(page *Usage, lastPage bool) bool {
+//        func(page *apigateway.Usage, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -7735,7 +7712,7 @@ func (c *APIGateway) GetUsagePlanKeysWithContext(ctx aws.Context, input *GetUsag
 //    // Example iterating over at most 3 pages of a GetUsagePlanKeys operation.
 //    pageNum := 0
 //    err := client.GetUsagePlanKeysPages(params,
-//        func(page *GetUsagePlanKeysOutput, lastPage bool) bool {
+//        func(page *apigateway.GetUsagePlanKeysOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -7882,7 +7859,7 @@ func (c *APIGateway) GetUsagePlansWithContext(ctx aws.Context, input *GetUsagePl
 //    // Example iterating over at most 3 pages of a GetUsagePlans operation.
 //    pageNum := 0
 //    err := client.GetUsagePlansPages(params,
-//        func(page *GetUsagePlansOutput, lastPage bool) bool {
+//        func(page *apigateway.GetUsagePlansOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -8105,7 +8082,7 @@ func (c *APIGateway) GetVpcLinksWithContext(ctx aws.Context, input *GetVpcLinksI
 //    // Example iterating over at most 3 pages of a GetVpcLinks operation.
 //    pageNum := 0
 //    err := client.GetVpcLinksPages(params,
-//        func(page *GetVpcLinksOutput, lastPage bool) bool {
+//        func(page *apigateway.GetVpcLinksOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -9016,8 +8993,7 @@ func (c *APIGateway) TagResourceRequest(input *TagResourceInput) (req *request.R
 
 	output = &TagResourceOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -9120,7 +9096,8 @@ func (c *APIGateway) TestInvokeAuthorizerRequest(input *TestInvokeAuthorizerInpu
 // Simulate the execution of an Authorizer in your RestApi with headers, parameters,
 // and an incoming request body.
 //
-// Enable custom authorizers (https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html)
+// Use Lambda Function as Authorizer (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html)
+// Use Cognito User Pool as Authorizer (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9290,8 +9267,7 @@ func (c *APIGateway) UntagResourceRequest(input *UntagResourceInput) (req *reque
 
 	output = &UntagResourceOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
-	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
@@ -11373,33 +11349,34 @@ func (s *AccessLogSettings) SetFormat(v string) *AccessLogSettings {
 //
 // The following exception may be thrown when the request fails.
 //
-// UnauthorizedException
-// NotFoundException
-// TooManyRequestsException
+//    * UnauthorizedException
+//
+//    * NotFoundException
+//
+//    * TooManyRequestsException
+//
 // For detailed error code information, including the corresponding HTTP Status
 // Codes, see API Gateway Error Codes (https://docs.aws.amazon.com/apigateway/api-reference/handling-errors/#api-error-codes)
 //
 // Example: Get the information about an account.
 //
 // Request
-//
-// GET /account HTTP/1.1 Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
-// X-Amz-Date: 20160531T184618Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/us-east-1/apigateway/aws4_request,
-// SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+//  GET /account HTTP/1.1 Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
+//  X-Amz-Date: 20160531T184618Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/us-east-1/apigateway/aws4_request,
+//  SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 // Response
 //
 // The successful response returns a 200 OK status code and a payload similar
 // to the following:
-//
-// { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/account-apigateway-{rel}.html",
-// "name": "account", "templated": true }, "self": { "href": "/account" }, "account:update":
-// { "href": "/account" } }, "cloudwatchRoleArn": "arn:aws:iam::123456789012:role/apigAwsProxyRole",
-// "throttleSettings": { "rateLimit": 500, "burstLimit": 1000 } }
+//  { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/account-apigateway-{rel}.html",
+//  "name": "account", "templated": true }, "self": { "href": "/account" },
+//  "account:update": { "href": "/account" } }, "cloudwatchRoleArn": "arn:aws:iam::123456789012:role/apigAwsProxyRole",
+//  "throttleSettings": { "rateLimit": 500, "burstLimit": 1000 } }
 // In addition to making the REST API call directly, you can use the AWS CLI
 // and an AWS SDK to access this resource.
 //
-// API Gateway Limits (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-limits.html)Developer
-// Guide (https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html),
+// API Gateway Limits (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-limits.html)
+// Developer Guide (https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html),
 // AWS CLI (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-account.html)
 type Account struct {
 	_ struct{} `type:"structure"`
@@ -11486,6 +11463,9 @@ type ApiKey struct {
 	// A list of Stage resources that are associated with the ApiKey resource.
 	StageKeys []*string `locationName:"stageKeys" type:"list"`
 
+	// The collection of tags. Each tag element is associated with a given resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
 	// The value of the API Key.
 	Value *string `locationName:"value" type:"string"`
 }
@@ -11548,6 +11528,12 @@ func (s *ApiKey) SetStageKeys(v []*string) *ApiKey {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *ApiKey) SetTags(v map[string]*string) *ApiKey {
+	s.Tags = v
+	return s
+}
+
 // SetValue sets the Value field's value.
 func (s *ApiKey) SetValue(v string) *ApiKey {
 	s.Value = &v
@@ -11600,7 +11586,8 @@ func (s *ApiStage) SetThrottle(v map[string]*ThrottleSettings) *ApiStage {
 // Represents an authorization layer for methods. If enabled on a method, API
 // Gateway will activate the authorizer when a client calls the method.
 //
-// Enable custom authorization (https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html)
+// Use Lambda Function as Authorizer (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html)
+// Use Cognito User Pool as Authorizer (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)
 type Authorizer struct {
 	_ struct{} `type:"structure"`
 
@@ -11633,31 +11620,34 @@ type Authorizer struct {
 	// The identifier for the authorizer resource.
 	Id *string `locationName:"id" type:"string"`
 
-	// The identity source for which authorization is requested. For a TOKEN or
-	// COGNITO_USER_POOLS authorizer, this is required and specifies the request
-	// header mapping expression for the custom header holding the authorization
-	// token submitted by the client. For example, if the token header name is Auth,
-	// the header mapping expression is method.request.header.Auth.
-	// For the REQUEST authorizer, this is required when authorization caching is
-	// enabled. The value is a comma-separated string of one or more mapping expressions
-	// of the specified request parameters. For example, if an Auth header, a Name
-	// query string parameter are defined as identity sources, this value is method.request.header.Auth,
-	// method.request.querystring.Name. These parameters will be used to derive
-	// the authorization caching key and to perform runtime validation of the REQUEST
-	// authorizer by verifying all of the identity-related request parameters are
-	// present, not null and non-empty. Only when this is true does the authorizer
-	// invoke the authorizer Lambda function, otherwise, it returns a 401 Unauthorized
-	// response without calling the Lambda function. The valid value is a string
-	// of comma-separated mapping expressions of the specified request parameters.
-	// When the authorization caching is not enabled, this property is optional.
+	// The identity source for which authorization is requested.
+	//    * For a TOKEN or COGNITO_USER_POOLS authorizer, this is required and specifies
+	//    the request header mapping expression for the custom header holding the
+	//    authorization token submitted by the client. For example, if the token
+	//    header name is Auth, the header mapping expression is method.request.header.Auth.
+	//
+	//    * For the REQUEST authorizer, this is required when authorization caching
+	//    is enabled. The value is a comma-separated string of one or more mapping
+	//    expressions of the specified request parameters. For example, if an Auth
+	//    header, a Name query string parameter are defined as identity sources,
+	//    this value is method.request.header.Auth, method.request.querystring.Name.
+	//    These parameters will be used to derive the authorization caching key
+	//    and to perform runtime validation of the REQUEST authorizer by verifying
+	//    all of the identity-related request parameters are present, not null and
+	//    non-empty. Only when this is true does the authorizer invoke the authorizer
+	//    Lambda function, otherwise, it returns a 401 Unauthorized response without
+	//    calling the Lambda function. The valid value is a string of comma-separated
+	//    mapping expressions of the specified request parameters. When the authorization
+	//    caching is not enabled, this property is optional.
 	IdentitySource *string `locationName:"identitySource" type:"string"`
 
 	// A validation expression for the incoming identity token. For TOKEN authorizers,
-	// this value is a regular expression. API Gateway will match the aud field
-	// of the incoming token from the client against the specified regular expression.
-	// It will invoke the authorizer's Lambda function when there is a match. Otherwise,
-	// it will return a 401 Unauthorized response without calling the Lambda function.
-	// The validation expression does not apply to the REQUEST authorizer.
+	// this value is a regular expression. For COGNITO_USER_POOLS authorizers, API
+	// Gateway will match the aud field of the incoming token from the client against
+	// the specified regular expression. It will invoke the authorizer's Lambda
+	// function when there is a match. Otherwise, it will return a 401 Unauthorized
+	// response without calling the Lambda function. The validation expression does
+	// not apply to the REQUEST authorizer.
 	IdentityValidationExpression *string `locationName:"identityValidationExpression" type:"string"`
 
 	// [Required] The name of the authorizer.
@@ -11750,6 +11740,7 @@ func (s *Authorizer) SetType(v string) *Authorizer {
 //
 // A custom domain name plus a BasePathMapping specification identifies a deployed
 // RestApi in a given stage of the owner Account.
+//
 // Use Custom Domain Names (https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html)
 type BasePathMapping struct {
 	_ struct{} `type:"structure"`
@@ -11853,6 +11844,7 @@ func (s *CanarySettings) SetUseStageCache(v bool) *CanarySettings {
 // Client certificates are used to authenticate an API by the backend server.
 // To authenticate an API client (or user), use IAM roles and policies, a custom
 // Authorizer or an Amazon Cognito user pool.
+//
 // Use Client-Side Certificate (https://docs.aws.amazon.com/apigateway/latest/developerguide/getting-started-client-side-ssl-authentication.html)
 type ClientCertificate struct {
 	_ struct{} `type:"structure"`
@@ -11872,6 +11864,9 @@ type ClientCertificate struct {
 	// The PEM-encoded public key of the client certificate, which can be used to
 	// configure certificate authentication in the integration endpoint .
 	PemEncodedCertificate *string `locationName:"pemEncodedCertificate" type:"string"`
+
+	// The collection of tags. Each tag element is associated with a given resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
 // String returns the string representation
@@ -11914,6 +11909,12 @@ func (s *ClientCertificate) SetPemEncodedCertificate(v string) *ClientCertificat
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *ClientCertificate) SetTags(v map[string]*string) *ClientCertificate {
+	s.Tags = v
+	return s
+}
+
 // Request to create an ApiKey resource.
 type CreateApiKeyInput struct {
 	_ struct{} `type:"structure"`
@@ -11937,6 +11938,11 @@ type CreateApiKeyInput struct {
 
 	// DEPRECATED FOR USAGE PLANS - Specifies stages associated with the API key.
 	StageKeys []*StageKey `locationName:"stageKeys" type:"list"`
+
+	// The key-value map of strings. The valid character set is [a-zA-Z+-=._:/].
+	// The tag key can be up to 128 characters and must not start with aws:. The
+	// tag value can be up to 256 characters.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// Specifies a value of the API key.
 	Value *string `locationName:"value" type:"string"`
@@ -11988,6 +11994,12 @@ func (s *CreateApiKeyInput) SetStageKeys(v []*StageKey) *CreateApiKeyInput {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *CreateApiKeyInput) SetTags(v map[string]*string) *CreateApiKeyInput {
+	s.Tags = v
+	return s
+}
+
 // SetValue sets the Value field's value.
 func (s *CreateApiKeyInput) SetValue(v string) *CreateApiKeyInput {
 	s.Value = &v
@@ -12024,31 +12036,34 @@ type CreateAuthorizerInput struct {
 	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations.
 	AuthorizerUri *string `locationName:"authorizerUri" type:"string"`
 
-	// The identity source for which authorization is requested. For a TOKEN or
-	// COGNITO_USER_POOLS authorizer, this is required and specifies the request
-	// header mapping expression for the custom header holding the authorization
-	// token submitted by the client. For example, if the token header name is Auth,
-	// the header mapping expression is method.request.header.Auth.
-	// For the REQUEST authorizer, this is required when authorization caching is
-	// enabled. The value is a comma-separated string of one or more mapping expressions
-	// of the specified request parameters. For example, if an Auth header, a Name
-	// query string parameter are defined as identity sources, this value is method.request.header.Auth,
-	// method.request.querystring.Name. These parameters will be used to derive
-	// the authorization caching key and to perform runtime validation of the REQUEST
-	// authorizer by verifying all of the identity-related request parameters are
-	// present, not null and non-empty. Only when this is true does the authorizer
-	// invoke the authorizer Lambda function, otherwise, it returns a 401 Unauthorized
-	// response without calling the Lambda function. The valid value is a string
-	// of comma-separated mapping expressions of the specified request parameters.
-	// When the authorization caching is not enabled, this property is optional.
+	// The identity source for which authorization is requested.
+	//    * For a TOKEN or COGNITO_USER_POOLS authorizer, this is required and specifies
+	//    the request header mapping expression for the custom header holding the
+	//    authorization token submitted by the client. For example, if the token
+	//    header name is Auth, the header mapping expression is method.request.header.Auth.
+	//
+	//    * For the REQUEST authorizer, this is required when authorization caching
+	//    is enabled. The value is a comma-separated string of one or more mapping
+	//    expressions of the specified request parameters. For example, if an Auth
+	//    header, a Name query string parameter are defined as identity sources,
+	//    this value is method.request.header.Auth, method.request.querystring.Name.
+	//    These parameters will be used to derive the authorization caching key
+	//    and to perform runtime validation of the REQUEST authorizer by verifying
+	//    all of the identity-related request parameters are present, not null and
+	//    non-empty. Only when this is true does the authorizer invoke the authorizer
+	//    Lambda function, otherwise, it returns a 401 Unauthorized response without
+	//    calling the Lambda function. The valid value is a string of comma-separated
+	//    mapping expressions of the specified request parameters. When the authorization
+	//    caching is not enabled, this property is optional.
 	IdentitySource *string `locationName:"identitySource" type:"string"`
 
 	// A validation expression for the incoming identity token. For TOKEN authorizers,
-	// this value is a regular expression. API Gateway will match the aud field
-	// of the incoming token from the client against the specified regular expression.
-	// It will invoke the authorizer's Lambda function when there is a match. Otherwise,
-	// it will return a 401 Unauthorized response without calling the Lambda function.
-	// The validation expression does not apply to the REQUEST authorizer.
+	// this value is a regular expression. For COGNITO_USER_POOLS authorizers, API
+	// Gateway will match the aud field of the incoming token from the client against
+	// the specified regular expression. It will invoke the authorizer's Lambda
+	// function when there is a match. Otherwise, it will return a 401 Unauthorized
+	// response without calling the Lambda function. The validation expression does
+	// not apply to the REQUEST authorizer.
 	IdentityValidationExpression *string `locationName:"identityValidationExpression" type:"string"`
 
 	// [Required] The name of the authorizer.
@@ -12093,6 +12108,9 @@ func (s *CreateAuthorizerInput) Validate() error {
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
@@ -12170,7 +12188,7 @@ type CreateBasePathMappingInput struct {
 
 	// The base path name that callers of the API must provide as part of the URL
 	// after the domain name. This value must be unique for all of the mappings
-	// across a single API. Leave this blank if you do not want callers to specify
+	// across a single API. Specify '(none)' if you do not want callers to specify
 	// a base path name after the domain name.
 	BasePath *string `locationName:"basePath" type:"string"`
 
@@ -12184,8 +12202,8 @@ type CreateBasePathMappingInput struct {
 	// RestApiId is a required field
 	RestApiId *string `locationName:"restApiId" type:"string" required:"true"`
 
-	// The name of the API's stage that you want to use for this mapping. Leave
-	// this blank if you do not want callers to explicitly specify the stage name
+	// The name of the API's stage that you want to use for this mapping. Specify
+	// '(none)' if you do not want callers to explicitly specify the stage name
 	// after any base path name.
 	Stage *string `locationName:"stage" type:"string"`
 }
@@ -12205,6 +12223,9 @@ func (s *CreateBasePathMappingInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateBasePathMappingInput"}
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
@@ -12293,6 +12314,9 @@ func (s *CreateDeploymentInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateDeploymentInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -12400,6 +12424,9 @@ func (s *CreateDocumentationPartInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.Location != nil {
 		if err := s.Location.Validate(); err != nil {
 			invalidParams.AddNested("Location", err.(request.ErrInvalidParams))
@@ -12469,6 +12496,9 @@ func (s *CreateDocumentationVersionInput) Validate() error {
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -12548,6 +12578,15 @@ type CreateDomainNameInput struct {
 	// The user-friendly name of the certificate that will be used by regional endpoint
 	// for this domain name.
 	RegionalCertificateName *string `locationName:"regionalCertificateName" type:"string"`
+
+	// The Transport Layer Security (TLS) version + cipher suite for this DomainName.
+	// The valid values are TLS_1_0 and TLS_1_2.
+	SecurityPolicy *string `locationName:"securityPolicy" type:"string" enum:"SecurityPolicy"`
+
+	// The key-value map of strings. The valid character set is [a-zA-Z+-=._:/].
+	// The tag key can be up to 128 characters and must not start with aws:. The
+	// tag value can be up to 256 characters.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
 // String returns the string representation
@@ -12627,6 +12666,18 @@ func (s *CreateDomainNameInput) SetRegionalCertificateName(v string) *CreateDoma
 	return s
 }
 
+// SetSecurityPolicy sets the SecurityPolicy field's value.
+func (s *CreateDomainNameInput) SetSecurityPolicy(v string) *CreateDomainNameInput {
+	s.SecurityPolicy = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateDomainNameInput) SetTags(v map[string]*string) *CreateDomainNameInput {
+	s.Tags = v
+	return s
+}
+
 // Request to add a new Model to an existing RestApi resource.
 type CreateModelInput struct {
 	_ struct{} `type:"structure"`
@@ -12675,6 +12726,9 @@ func (s *CreateModelInput) Validate() error {
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -12750,6 +12804,9 @@ func (s *CreateRequestValidatorInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -12817,11 +12874,17 @@ func (s *CreateResourceInput) Validate() error {
 	if s.ParentId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ParentId"))
 	}
+	if s.ParentId != nil && len(*s.ParentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ParentId", 1))
+	}
 	if s.PathPart == nil {
 		invalidParams.Add(request.NewErrParamRequired("PathPart"))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -12853,10 +12916,11 @@ type CreateRestApiInput struct {
 	_ struct{} `type:"structure"`
 
 	// The source of the API key for metering requests according to a usage plan.
-	// Valid values are: HEADER to read the API key from the X-API-Key header of
-	// a request.
-	// AUTHORIZER to read the API key from the UsageIdentifierKey from a custom
-	// authorizer.
+	// Valid values are:
+	//    * HEADER to read the API key from the X-API-Key header of a request.
+	//
+	//    * AUTHORIZER to read the API key from the UsageIdentifierKey from a custom
+	//    authorizer.
 	ApiKeySource *string `locationName:"apiKeySource" type:"string" enum:"ApiKeySourceType"`
 
 	// The list of binary media types supported by the RestApi. By default, the
@@ -12886,8 +12950,13 @@ type CreateRestApiInput struct {
 	Name *string `locationName:"name" type:"string" required:"true"`
 
 	// A stringified JSON policy document that applies to this RestApi regardless
-	// of the caller and Method
+	// of the caller and Method configuration.
 	Policy *string `locationName:"policy" type:"string"`
+
+	// The key-value map of strings. The valid character set is [a-zA-Z+-=._:/].
+	// The tag key can be up to 128 characters and must not start with aws:. The
+	// tag value can be up to 256 characters.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A version identifier for the API.
 	Version *string `locationName:"version" type:"string"`
@@ -12964,6 +13033,12 @@ func (s *CreateRestApiInput) SetPolicy(v string) *CreateRestApiInput {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *CreateRestApiInput) SetTags(v map[string]*string) *CreateRestApiInput {
+	s.Tags = v
+	return s
+}
+
 // SetVersion sets the Version field's value.
 func (s *CreateRestApiInput) SetVersion(v string) *CreateRestApiInput {
 	s.Version = &v
@@ -12999,7 +13074,9 @@ type CreateStageInput struct {
 	// RestApiId is a required field
 	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
 
-	// [Required] The name for the Stage resource.
+	// [Required] The name for the Stage resource. Stage names can only contain
+	// alphanumeric characters, hyphens, and underscores. Maximum length is 128
+	// characters.
 	//
 	// StageName is a required field
 	StageName *string `locationName:"stageName" type:"string" required:"true"`
@@ -13036,6 +13113,9 @@ func (s *CreateStageInput) Validate() error {
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
@@ -13133,6 +13213,11 @@ type CreateUsagePlanInput struct {
 	// The quota of the usage plan.
 	Quota *QuotaSettings `locationName:"quota" type:"structure"`
 
+	// The key-value map of strings. The valid character set is [a-zA-Z+-=._:/].
+	// The tag key can be up to 128 characters and must not start with aws:. The
+	// tag value can be up to 256 characters.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
 	// The throttling limits of the usage plan.
 	Throttle *ThrottleSettings `locationName:"throttle" type:"structure"`
 }
@@ -13181,6 +13266,12 @@ func (s *CreateUsagePlanInput) SetName(v string) *CreateUsagePlanInput {
 // SetQuota sets the Quota field's value.
 func (s *CreateUsagePlanInput) SetQuota(v *QuotaSettings) *CreateUsagePlanInput {
 	s.Quota = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateUsagePlanInput) SetTags(v map[string]*string) *CreateUsagePlanInput {
+	s.Tags = v
 	return s
 }
 
@@ -13234,6 +13325,9 @@ func (s *CreateUsagePlanKeyInput) Validate() error {
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
 	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13273,6 +13367,11 @@ type CreateVpcLinkInput struct {
 	//
 	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The key-value map of strings. The valid character set is [a-zA-Z+-=._:/].
+	// The tag key can be up to 128 characters and must not start with aws:. The
+	// tag value can be up to 256 characters.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// [Required] The ARNs of network load balancers of the VPC targeted by the
 	// VPC link. The network load balancers must be owned by the same AWS account
@@ -13320,6 +13419,12 @@ func (s *CreateVpcLinkInput) SetName(v string) *CreateVpcLinkInput {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *CreateVpcLinkInput) SetTags(v map[string]*string) *CreateVpcLinkInput {
+	s.Tags = v
+	return s
+}
+
 // SetTargetArns sets the TargetArns field's value.
 func (s *CreateVpcLinkInput) SetTargetArns(v []*string) *CreateVpcLinkInput {
 	s.TargetArns = v
@@ -13351,6 +13456,9 @@ func (s *DeleteApiKeyInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DeleteApiKeyInput"}
 	if s.ApiKey == nil {
 		invalidParams.Add(request.NewErrParamRequired("ApiKey"))
+	}
+	if s.ApiKey != nil && len(*s.ApiKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApiKey", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13410,8 +13518,14 @@ func (s *DeleteAuthorizerInput) Validate() error {
 	if s.AuthorizerId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AuthorizerId"))
 	}
+	if s.AuthorizerId != nil && len(*s.AuthorizerId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizerId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13452,6 +13566,8 @@ type DeleteBasePathMappingInput struct {
 
 	// [Required] The base path name of the BasePathMapping resource to delete.
 	//
+	// To specify an empty base path, set this parameter to '(none)'.
+	//
 	// BasePath is a required field
 	BasePath *string `location:"uri" locationName:"base_path" type:"string" required:"true"`
 
@@ -13477,8 +13593,14 @@ func (s *DeleteBasePathMappingInput) Validate() error {
 	if s.BasePath == nil {
 		invalidParams.Add(request.NewErrParamRequired("BasePath"))
 	}
+	if s.BasePath != nil && len(*s.BasePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BasePath", 1))
+	}
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13539,6 +13661,9 @@ func (s *DeleteClientCertificateInput) Validate() error {
 	if s.ClientCertificateId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ClientCertificateId"))
 	}
+	if s.ClientCertificateId != nil && len(*s.ClientCertificateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientCertificateId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13597,8 +13722,14 @@ func (s *DeleteDeploymentInput) Validate() error {
 	if s.DeploymentId == nil {
 		invalidParams.Add(request.NewErrParamRequired("DeploymentId"))
 	}
+	if s.DeploymentId != nil && len(*s.DeploymentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeploymentId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13664,8 +13795,14 @@ func (s *DeleteDocumentationPartInput) Validate() error {
 	if s.DocumentationPartId == nil {
 		invalidParams.Add(request.NewErrParamRequired("DocumentationPartId"))
 	}
+	if s.DocumentationPartId != nil && len(*s.DocumentationPartId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DocumentationPartId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13731,8 +13868,14 @@ func (s *DeleteDocumentationVersionInput) Validate() error {
 	if s.DocumentationVersion == nil {
 		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
 	}
+	if s.DocumentationVersion != nil && len(*s.DocumentationVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DocumentationVersion", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13793,6 +13936,9 @@ func (s *DeleteDomainNameInput) Validate() error {
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
 	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13825,27 +13971,47 @@ func (s DeleteDomainNameOutput) GoString() string {
 type DeleteGatewayResponseInput struct {
 	_ struct{} `type:"structure"`
 
-	// [Required] The response type of the associated GatewayResponse. Valid values
-	// are ACCESS_DENIED
-	// API_CONFIGURATION_ERROR
-	// AUTHORIZER_FAILURE
-	//  AUTHORIZER_CONFIGURATION_ERROR
-	// BAD_REQUEST_PARAMETERS
-	// BAD_REQUEST_BODY
-	// DEFAULT_4XX
-	// DEFAULT_5XX
-	// EXPIRED_TOKEN
-	// INVALID_SIGNATURE
-	// INTEGRATION_FAILURE
-	// INTEGRATION_TIMEOUT
-	// INVALID_API_KEY
-	// MISSING_AUTHENTICATION_TOKEN
-	//  QUOTA_EXCEEDED
-	// REQUEST_TOO_LARGE
-	// RESOURCE_NOT_FOUND
-	// THROTTLED
-	// UNAUTHORIZED
-	// UNSUPPORTED_MEDIA_TYPE
+	// [Required]
+	// The response type of the associated GatewayResponse. Valid values are
+	//    * ACCESS_DENIED
+	//
+	//    * API_CONFIGURATION_ERROR
+	//
+	//    * AUTHORIZER_FAILURE
+	//
+	//    * AUTHORIZER_CONFIGURATION_ERROR
+	//
+	//    * BAD_REQUEST_PARAMETERS
+	//
+	//    * BAD_REQUEST_BODY
+	//
+	//    * DEFAULT_4XX
+	//
+	//    * DEFAULT_5XX
+	//
+	//    * EXPIRED_TOKEN
+	//
+	//    * INVALID_SIGNATURE
+	//
+	//    * INTEGRATION_FAILURE
+	//
+	//    * INTEGRATION_TIMEOUT
+	//
+	//    * INVALID_API_KEY
+	//
+	//    * MISSING_AUTHENTICATION_TOKEN
+	//
+	//    * QUOTA_EXCEEDED
+	//
+	//    * REQUEST_TOO_LARGE
+	//
+	//    * RESOURCE_NOT_FOUND
+	//
+	//    * THROTTLED
+	//
+	//    * UNAUTHORIZED
+	//
+	//    * UNSUPPORTED_MEDIA_TYPE
 	//
 	// ResponseType is a required field
 	ResponseType *string `location:"uri" locationName:"response_type" type:"string" required:"true" enum:"GatewayResponseType"`
@@ -13872,8 +14038,14 @@ func (s *DeleteGatewayResponseInput) Validate() error {
 	if s.ResponseType == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResponseType"))
 	}
+	if s.ResponseType != nil && len(*s.ResponseType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResponseType", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13944,11 +14116,20 @@ func (s *DeleteIntegrationInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14030,14 +14211,26 @@ func (s *DeleteIntegrationResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14120,11 +14313,20 @@ func (s *DeleteMethodInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14206,14 +14408,26 @@ func (s *DeleteMethodResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14291,8 +14505,14 @@ func (s *DeleteModelInput) Validate() error {
 	if s.ModelName == nil {
 		invalidParams.Add(request.NewErrParamRequired("ModelName"))
 	}
+	if s.ModelName != nil && len(*s.ModelName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelName", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14358,8 +14578,14 @@ func (s *DeleteRequestValidatorInput) Validate() error {
 	if s.RequestValidatorId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RequestValidatorId"))
 	}
+	if s.RequestValidatorId != nil && len(*s.RequestValidatorId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RequestValidatorId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14425,8 +14651,14 @@ func (s *DeleteResourceInput) Validate() error {
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14487,6 +14719,9 @@ func (s *DeleteRestApiInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -14545,8 +14780,14 @@ func (s *DeleteStageInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14607,6 +14848,9 @@ func (s *DeleteUsagePlanInput) Validate() error {
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
 	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -14653,8 +14897,14 @@ func (s *DeleteUsagePlanKeyInput) Validate() error {
 	if s.KeyId == nil {
 		invalidParams.Add(request.NewErrParamRequired("KeyId"))
 	}
+	if s.KeyId != nil && len(*s.KeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
+	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14729,6 +14979,9 @@ func (s *DeleteVpcLinkInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DeleteVpcLinkInput"}
 	if s.VpcLinkId == nil {
 		invalidParams.Add(request.NewErrParamRequired("VpcLinkId"))
+	}
+	if s.VpcLinkId != nil && len(*s.VpcLinkId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcLinkId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15123,6 +15376,16 @@ type DomainName struct {
 	// The custom domain name as an API host name, for example, my-api.example.com.
 	DomainName *string `locationName:"domainName" type:"string"`
 
+	// The status of the DomainName migration. The valid values are AVAILABLE and
+	// UPDATING. If the status is UPDATING, the domain cannot be modified further
+	// until the existing operation is complete. If it is AVAILABLE, the domain
+	// can be updated.
+	DomainNameStatus *string `locationName:"domainNameStatus" type:"string" enum:"DomainNameStatus"`
+
+	// An optional text message containing detailed information about status of
+	// the DomainName migration.
+	DomainNameStatusMessage *string `locationName:"domainNameStatusMessage" type:"string"`
+
 	// The endpoint configuration of this DomainName showing the endpoint types
 	// of the domain name.
 	EndpointConfiguration *EndpointConfiguration `locationName:"endpointConfiguration" type:"structure"`
@@ -15145,6 +15408,13 @@ type DomainName struct {
 	// For more information, see Set up a Regional Custom Domain Name (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-regional-api-custom-domain-create.html)
 	// and AWS Regions and Endpoints for API Gateway (https://docs.aws.amazon.com/general/latest/gr/rande.html#apigateway_region).
 	RegionalHostedZoneId *string `locationName:"regionalHostedZoneId" type:"string"`
+
+	// The Transport Layer Security (TLS) version + cipher suite for this DomainName.
+	// The valid values are TLS_1_0 and TLS_1_2.
+	SecurityPolicy *string `locationName:"securityPolicy" type:"string" enum:"SecurityPolicy"`
+
+	// The collection of tags. Each tag element is associated with a given resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
 // String returns the string representation
@@ -15193,6 +15463,18 @@ func (s *DomainName) SetDomainName(v string) *DomainName {
 	return s
 }
 
+// SetDomainNameStatus sets the DomainNameStatus field's value.
+func (s *DomainName) SetDomainNameStatus(v string) *DomainName {
+	s.DomainNameStatus = &v
+	return s
+}
+
+// SetDomainNameStatusMessage sets the DomainNameStatusMessage field's value.
+func (s *DomainName) SetDomainNameStatusMessage(v string) *DomainName {
+	s.DomainNameStatusMessage = &v
+	return s
+}
+
 // SetEndpointConfiguration sets the EndpointConfiguration field's value.
 func (s *DomainName) SetEndpointConfiguration(v *EndpointConfiguration) *DomainName {
 	s.EndpointConfiguration = v
@@ -15220,6 +15502,18 @@ func (s *DomainName) SetRegionalDomainName(v string) *DomainName {
 // SetRegionalHostedZoneId sets the RegionalHostedZoneId field's value.
 func (s *DomainName) SetRegionalHostedZoneId(v string) *DomainName {
 	s.RegionalHostedZoneId = &v
+	return s
+}
+
+// SetSecurityPolicy sets the SecurityPolicy field's value.
+func (s *DomainName) SetSecurityPolicy(v string) *DomainName {
+	s.SecurityPolicy = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DomainName) SetTags(v map[string]*string) *DomainName {
+	s.Tags = v
 	return s
 }
 
@@ -15282,8 +15576,14 @@ func (s *FlushStageAuthorizersCacheInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15349,8 +15649,14 @@ func (s *FlushStageCacheInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15391,6 +15697,11 @@ type GenerateClientCertificateInput struct {
 
 	// The description of the ClientCertificate.
 	Description *string `locationName:"description" type:"string"`
+
+	// The key-value map of strings. The valid character set is [a-zA-Z+-=._:/].
+	// The tag key can be up to 128 characters and must not start with aws:. The
+	// tag value can be up to 256 characters.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
 // String returns the string representation
@@ -15406,6 +15717,12 @@ func (s GenerateClientCertificateInput) GoString() string {
 // SetDescription sets the Description field's value.
 func (s *GenerateClientCertificateInput) SetDescription(v string) *GenerateClientCertificateInput {
 	s.Description = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *GenerateClientCertificateInput) SetTags(v map[string]*string) *GenerateClientCertificateInput {
+	s.Tags = v
 	return s
 }
 
@@ -15453,6 +15770,9 @@ func (s *GetApiKeyInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetApiKeyInput"}
 	if s.ApiKey == nil {
 		invalidParams.Add(request.NewErrParamRequired("ApiKey"))
+	}
+	if s.ApiKey != nil && len(*s.ApiKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApiKey", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15611,8 +15931,14 @@ func (s *GetAuthorizerInput) Validate() error {
 	if s.AuthorizerId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AuthorizerId"))
 	}
+	if s.AuthorizerId != nil && len(*s.AuthorizerId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizerId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15666,6 +15992,9 @@ func (s *GetAuthorizersInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -15693,7 +16022,8 @@ func (s *GetAuthorizersInput) SetRestApiId(v string) *GetAuthorizersInput {
 
 // Represents a collection of Authorizer resources.
 //
-// Enable custom authorization (https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html)
+// Use Lambda Function as Authorizer (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html)
+// Use Cognito User Pool as Authorizer (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)
 type GetAuthorizersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -15731,7 +16061,7 @@ type GetBasePathMappingInput struct {
 
 	// [Required] The base path name that callers of the API must provide as part
 	// of the URL after the domain name. This value must be unique for all of the
-	// mappings across a single API. Leave this blank if you do not want callers
+	// mappings across a single API. Specify '(none)' if you do not want callers
 	// to specify any base path name after the domain name.
 	//
 	// BasePath is a required field
@@ -15759,8 +16089,14 @@ func (s *GetBasePathMappingInput) Validate() error {
 	if s.BasePath == nil {
 		invalidParams.Add(request.NewErrParamRequired("BasePath"))
 	}
+	if s.BasePath != nil && len(*s.BasePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BasePath", 1))
+	}
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15813,6 +16149,9 @@ func (s *GetBasePathMappingsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetBasePathMappingsInput"}
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15898,6 +16237,9 @@ func (s *GetClientCertificateInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetClientCertificateInput"}
 	if s.ClientCertificateId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ClientCertificateId"))
+	}
+	if s.ClientCertificateId != nil && len(*s.ClientCertificateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientCertificateId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16020,8 +16362,14 @@ func (s *GetDeploymentInput) Validate() error {
 	if s.DeploymentId == nil {
 		invalidParams.Add(request.NewErrParamRequired("DeploymentId"))
 	}
+	if s.DeploymentId != nil && len(*s.DeploymentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeploymentId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16080,6 +16428,9 @@ func (s *GetDeploymentsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetDeploymentsInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16180,8 +16531,14 @@ func (s *GetDocumentationPartInput) Validate() error {
 	if s.DocumentationPartId == nil {
 		invalidParams.Add(request.NewErrParamRequired("DocumentationPartId"))
 	}
+	if s.DocumentationPartId != nil && len(*s.DocumentationPartId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DocumentationPartId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16250,6 +16607,9 @@ func (s *GetDocumentationPartsInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -16301,7 +16661,8 @@ func (s *GetDocumentationPartsInput) SetType(v string) *GetDocumentationPartsInp
 
 // The collection of documentation parts of an API.
 //
-// Documenting an API (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html), DocumentationPart
+// Documenting an API (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html),
+// DocumentationPart
 type GetDocumentationPartsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -16364,8 +16725,14 @@ func (s *GetDocumentationVersionInput) Validate() error {
 	if s.DocumentationVersion == nil {
 		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
 	}
+	if s.DocumentationVersion != nil && len(*s.DocumentationVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DocumentationVersion", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16418,6 +16785,9 @@ func (s *GetDocumentationVersionsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetDocumentationVersionsInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16507,6 +16877,9 @@ func (s *GetDomainNameInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetDomainNameInput"}
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16605,7 +16978,7 @@ type GetExportInput struct {
 	ExportType *string `location:"uri" locationName:"export_type" type:"string" required:"true"`
 
 	// A key-value map of query string parameters that specify properties of the
-	// export, depending on the requested exportType. For exportTypeoas30 and swagger,
+	// export, depending on the requested exportType. For exportType oas30 and swagger,
 	// any combination of the following parameters are supported: extensions='integrations'
 	// or extensions='apigateway' will export the API with x-amazon-apigateway-integration
 	// extensions. extensions='authorizers' will export the API with x-amazon-apigateway-authorizer
@@ -16640,11 +17013,20 @@ func (s *GetExportInput) Validate() error {
 	if s.ExportType == nil {
 		invalidParams.Add(request.NewErrParamRequired("ExportType"))
 	}
+	if s.ExportType != nil && len(*s.ExportType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExportType", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16730,27 +17112,47 @@ func (s *GetExportOutput) SetContentType(v string) *GetExportOutput {
 type GetGatewayResponseInput struct {
 	_ struct{} `type:"structure"`
 
-	// [Required] The response type of the associated GatewayResponse. Valid values
-	// are ACCESS_DENIED
-	// API_CONFIGURATION_ERROR
-	// AUTHORIZER_FAILURE
-	//  AUTHORIZER_CONFIGURATION_ERROR
-	// BAD_REQUEST_PARAMETERS
-	// BAD_REQUEST_BODY
-	// DEFAULT_4XX
-	// DEFAULT_5XX
-	// EXPIRED_TOKEN
-	// INVALID_SIGNATURE
-	// INTEGRATION_FAILURE
-	// INTEGRATION_TIMEOUT
-	// INVALID_API_KEY
-	// MISSING_AUTHENTICATION_TOKEN
-	//  QUOTA_EXCEEDED
-	// REQUEST_TOO_LARGE
-	// RESOURCE_NOT_FOUND
-	// THROTTLED
-	// UNAUTHORIZED
-	// UNSUPPORTED_MEDIA_TYPE
+	// [Required]
+	// The response type of the associated GatewayResponse. Valid values are
+	//    * ACCESS_DENIED
+	//
+	//    * API_CONFIGURATION_ERROR
+	//
+	//    * AUTHORIZER_FAILURE
+	//
+	//    * AUTHORIZER_CONFIGURATION_ERROR
+	//
+	//    * BAD_REQUEST_PARAMETERS
+	//
+	//    * BAD_REQUEST_BODY
+	//
+	//    * DEFAULT_4XX
+	//
+	//    * DEFAULT_5XX
+	//
+	//    * EXPIRED_TOKEN
+	//
+	//    * INVALID_SIGNATURE
+	//
+	//    * INTEGRATION_FAILURE
+	//
+	//    * INTEGRATION_TIMEOUT
+	//
+	//    * INVALID_API_KEY
+	//
+	//    * MISSING_AUTHENTICATION_TOKEN
+	//
+	//    * QUOTA_EXCEEDED
+	//
+	//    * REQUEST_TOO_LARGE
+	//
+	//    * RESOURCE_NOT_FOUND
+	//
+	//    * THROTTLED
+	//
+	//    * UNAUTHORIZED
+	//
+	//    * UNSUPPORTED_MEDIA_TYPE
 	//
 	// ResponseType is a required field
 	ResponseType *string `location:"uri" locationName:"response_type" type:"string" required:"true" enum:"GatewayResponseType"`
@@ -16777,8 +17179,14 @@ func (s *GetGatewayResponseInput) Validate() error {
 	if s.ResponseType == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResponseType"))
 	}
+	if s.ResponseType != nil && len(*s.ResponseType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResponseType", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -16837,6 +17245,9 @@ func (s *GetGatewayResponsesInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -16867,159 +17278,161 @@ func (s *GetGatewayResponsesInput) SetRestApiId(v string) *GetGatewayResponsesIn
 // this collection.
 //
 // For more information about valid gateway response types, see Gateway Response
-// Types Supported by API Gateway (https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html)Example:
-// Get the collection of gateway responses of an API
+// Types Supported by API Gateway (https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html)
+//
+// Example: Get the collection of gateway responses of an API
 //
 // Request
 //
 // This example request shows how to retrieve the GatewayResponses collection
 // from an API.
-//
-// GET /restapis/o81lxisefl/gatewayresponses HTTP/1.1 Host: beta-apigateway.us-east-1.amazonaws.com
-// Content-Type: application/json X-Amz-Date: 20170503T220604Z Authorization:
-// AWS4-HMAC-SHA256 Credential={access-key-id}/20170503/us-east-1/apigateway/aws4_request,
-// SignedHeaders=content-type;host;x-amz-date, Signature=59b42fe54a76a5de8adf2c67baa6d39206f8e9ad49a1d77ccc6a5da3103a398a
-// Cache-Control: no-cache Postman-Token: 5637af27-dc29-fc5c-9dfe-0645d52cb515
+//  GET /restapis/o81lxisefl/gatewayresponses HTTP/1.1 Host: beta-apigateway.us-east-1.amazonaws.com
+//  Content-Type: application/json X-Amz-Date: 20170503T220604Z Authorization:
+//  AWS4-HMAC-SHA256 Credential={access-key-id}/20170503/us-east-1/apigateway/aws4_request,
+//  SignedHeaders=content-type;host;x-amz-date, Signature=59b42fe54a76a5de8adf2c67baa6d39206f8e9ad49a1d77ccc6a5da3103a398a
+//  Cache-Control: no-cache Postman-Token: 5637af27-dc29-fc5c-9dfe-0645d52cb515
 //
 // Response
 //
 // The successful operation returns the 200 OK status code and a payload similar
 // to the following:
-//
-// { "_links": { "curies": { "href": "http://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-gatewayresponse-{rel}.html",
-// "name": "gatewayresponse", "templated": true }, "self": { "href": "/restapis/o81lxisefl/gatewayresponses"
-// }, "first": { "href": "/restapis/o81lxisefl/gatewayresponses" }, "gatewayresponse:by-type":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "item": [ { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_FAILURE"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/RESOURCE_NOT_FOUND" },
-// { "href": "/restapis/o81lxisefl/gatewayresponses/REQUEST_TOO_LARGE" }, {
-// "href": "/restapis/o81lxisefl/gatewayresponses/THROTTLED" }, { "href": "/restapis/o81lxisefl/gatewayresponses/UNSUPPORTED_MEDIA_TYPE"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_CONFIGURATION_ERROR"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_5XX" }, { "href":
-// "/restapis/o81lxisefl/gatewayresponses/DEFAULT_4XX" }, { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_PARAMETERS"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_BODY" },
-// { "href": "/restapis/o81lxisefl/gatewayresponses/EXPIRED_TOKEN" }, { "href":
-// "/restapis/o81lxisefl/gatewayresponses/ACCESS_DENIED" }, { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_API_KEY"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/UNAUTHORIZED" }, { "href":
-// "/restapis/o81lxisefl/gatewayresponses/API_CONFIGURATION_ERROR" }, { "href":
-// "/restapis/o81lxisefl/gatewayresponses/QUOTA_EXCEEDED" }, { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_TIMEOUT"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
-// }, { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_SIGNATURE" },
-// { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_FAILURE" } ]
-// }, "_embedded": { "item": [ { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_FAILURE"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_FAILURE"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "INTEGRATION_FAILURE", "statusCode": "504" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/RESOURCE_NOT_FOUND" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/RESOURCE_NOT_FOUND"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "RESOURCE_NOT_FOUND", "statusCode": "404" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/REQUEST_TOO_LARGE" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/REQUEST_TOO_LARGE"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "REQUEST_TOO_LARGE", "statusCode": "413" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/THROTTLED" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/THROTTLED"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "THROTTLED", "statusCode": "429" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/UNSUPPORTED_MEDIA_TYPE"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/UNSUPPORTED_MEDIA_TYPE"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "UNSUPPORTED_MEDIA_TYPE", "statusCode": "415" }, { "_links": { "self": {
-// "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_CONFIGURATION_ERROR"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_CONFIGURATION_ERROR"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "AUTHORIZER_CONFIGURATION_ERROR", "statusCode": "500" }, { "_links": { "self":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_5XX" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_5XX"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "DEFAULT_5XX" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_4XX"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_4XX"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "DEFAULT_4XX" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_PARAMETERS"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_PARAMETERS"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "BAD_REQUEST_PARAMETERS", "statusCode": "400" }, { "_links": { "self": {
-// "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_BODY" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_BODY"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "BAD_REQUEST_BODY", "statusCode": "400" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/EXPIRED_TOKEN" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/EXPIRED_TOKEN"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "EXPIRED_TOKEN", "statusCode": "403" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/ACCESS_DENIED"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/ACCESS_DENIED"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "ACCESS_DENIED", "statusCode": "403" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_API_KEY"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_API_KEY"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "INVALID_API_KEY", "statusCode": "403" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/UNAUTHORIZED" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/UNAUTHORIZED"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "UNAUTHORIZED", "statusCode": "401" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/API_CONFIGURATION_ERROR"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/API_CONFIGURATION_ERROR"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "API_CONFIGURATION_ERROR", "statusCode": "500" }, { "_links": { "self": {
-// "href": "/restapis/o81lxisefl/gatewayresponses/QUOTA_EXCEEDED" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/QUOTA_EXCEEDED"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "QUOTA_EXCEEDED", "statusCode": "429" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_TIMEOUT" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_TIMEOUT"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "INTEGRATION_TIMEOUT", "statusCode": "504" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "MISSING_AUTHENTICATION_TOKEN", "statusCode": "403" }, { "_links": { "self":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_SIGNATURE" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_SIGNATURE"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "INVALID_SIGNATURE", "statusCode": "403" }, { "_links": { "self": { "href":
-// "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_FAILURE" }, "gatewayresponse:put":
-// { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
-// true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_FAILURE"
-// } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
-// { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
-// "AUTHORIZER_FAILURE", "statusCode": "500" } ] } }
+//  { "_links": { "curies": { "href": "http://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-gatewayresponse-{rel}.html",
+//  "name": "gatewayresponse", "templated": true }, "self": { "href": "/restapis/o81lxisefl/gatewayresponses"
+//  }, "first": { "href": "/restapis/o81lxisefl/gatewayresponses" }, "gatewayresponse:by-type":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "item": [ { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_FAILURE"
+//  }, { "href": "/restapis/o81lxisefl/gatewayresponses/RESOURCE_NOT_FOUND"
+//  }, { "href": "/restapis/o81lxisefl/gatewayresponses/REQUEST_TOO_LARGE" },
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/THROTTLED" }, { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/UNSUPPORTED_MEDIA_TYPE" }, { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_CONFIGURATION_ERROR" },
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_5XX" }, { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/DEFAULT_4XX" }, { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_PARAMETERS"
+//  }, { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_BODY" },
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/EXPIRED_TOKEN" }, { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/ACCESS_DENIED" }, { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_API_KEY"
+//  }, { "href": "/restapis/o81lxisefl/gatewayresponses/UNAUTHORIZED" }, { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/API_CONFIGURATION_ERROR" }, { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/QUOTA_EXCEEDED" }, { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_TIMEOUT"
+//  }, { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
+//  }, { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_SIGNATURE" },
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_FAILURE" } ]
+//  }, "_embedded": { "item": [ { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_FAILURE"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_FAILURE"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "INTEGRATION_FAILURE", "statusCode": "504" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/RESOURCE_NOT_FOUND" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/RESOURCE_NOT_FOUND"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "RESOURCE_NOT_FOUND", "statusCode": "404" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/REQUEST_TOO_LARGE" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/REQUEST_TOO_LARGE"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "REQUEST_TOO_LARGE", "statusCode": "413" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/THROTTLED" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/THROTTLED"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "THROTTLED", "statusCode": "429" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/UNSUPPORTED_MEDIA_TYPE"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/UNSUPPORTED_MEDIA_TYPE"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "UNSUPPORTED_MEDIA_TYPE", "statusCode": "415" }, { "_links": { "self": {
+//  "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_CONFIGURATION_ERROR"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_CONFIGURATION_ERROR"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "AUTHORIZER_CONFIGURATION_ERROR", "statusCode": "500" }, { "_links": { "self":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_5XX" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_5XX"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "DEFAULT_5XX" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_4XX"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/DEFAULT_4XX"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "DEFAULT_4XX" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_PARAMETERS"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_PARAMETERS"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "BAD_REQUEST_PARAMETERS", "statusCode": "400" }, { "_links": { "self": {
+//  "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_BODY" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/BAD_REQUEST_BODY"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "BAD_REQUEST_BODY", "statusCode": "400" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/EXPIRED_TOKEN" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/EXPIRED_TOKEN"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "EXPIRED_TOKEN", "statusCode": "403" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/ACCESS_DENIED" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/ACCESS_DENIED"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "ACCESS_DENIED", "statusCode": "403" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/INVALID_API_KEY" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_API_KEY"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "INVALID_API_KEY", "statusCode": "403" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/UNAUTHORIZED" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/UNAUTHORIZED"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "UNAUTHORIZED", "statusCode": "401" }, { "_links": { "self": { "href": "/restapis/o81lxisefl/gatewayresponses/API_CONFIGURATION_ERROR"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/API_CONFIGURATION_ERROR"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "API_CONFIGURATION_ERROR", "statusCode": "500" }, { "_links": { "self":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/QUOTA_EXCEEDED" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/QUOTA_EXCEEDED"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "QUOTA_EXCEEDED", "statusCode": "429" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_TIMEOUT" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INTEGRATION_TIMEOUT"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "INTEGRATION_TIMEOUT", "statusCode": "504" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN" },
+//  "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "MISSING_AUTHENTICATION_TOKEN", "statusCode": "403" }, { "_links": { "self":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_SIGNATURE" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/INVALID_SIGNATURE"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "INVALID_SIGNATURE", "statusCode": "403" }, { "_links": { "self": { "href":
+//  "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_FAILURE" }, "gatewayresponse:put":
+//  { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}", "templated":
+//  true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/AUTHORIZER_FAILURE"
+//  } }, "defaultResponse": true, "responseParameters": {}, "responseTemplates":
+//  { "application/json": "{\"message\":$context.error.messageString}" }, "responseType":
+//  "AUTHORIZER_FAILURE", "statusCode": "500" } ] } }
 //
 // Customize Gateway Responses (https://docs.aws.amazon.com/apigateway/latest/developerguide/customize-gateway-responses.html)
 type GetGatewayResponsesOutput struct {
@@ -17089,11 +17502,20 @@ func (s *GetIntegrationInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17161,14 +17583,26 @@ func (s *GetIntegrationResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17237,11 +17671,20 @@ func (s *GetMethodInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17309,14 +17752,26 @@ func (s *GetMethodResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17385,8 +17840,14 @@ func (s *GetModelInput) Validate() error {
 	if s.ModelName == nil {
 		invalidParams.Add(request.NewErrParamRequired("ModelName"))
 	}
+	if s.ModelName != nil && len(*s.ModelName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelName", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17444,8 +17905,14 @@ func (s *GetModelTemplateInput) Validate() error {
 	if s.ModelName == nil {
 		invalidParams.Add(request.NewErrParamRequired("ModelName"))
 	}
+	if s.ModelName != nil && len(*s.ModelName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelName", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17525,6 +17992,9 @@ func (s *GetModelsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetModelsInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17616,8 +18086,14 @@ func (s *GetRequestValidatorInput) Validate() error {
 	if s.RequestValidatorId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RequestValidatorId"))
 	}
+	if s.RequestValidatorId != nil && len(*s.RequestValidatorId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RequestValidatorId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17670,6 +18146,9 @@ func (s *GetRequestValidatorsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetRequestValidatorsInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17773,8 +18252,14 @@ func (s *GetResourceInput) Validate() error {
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17841,6 +18326,9 @@ func (s *GetResourcesInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetResourcesInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -17932,6 +18420,9 @@ func (s *GetRestApiInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetRestApiInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18059,11 +18550,20 @@ func (s *GetSdkInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.SdkType == nil {
 		invalidParams.Add(request.NewErrParamRequired("SdkType"))
 	}
+	if s.SdkType != nil && len(*s.SdkType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SdkType", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18163,6 +18663,9 @@ func (s *GetSdkTypeInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetSdkTypeInput"}
 	if s.Id == nil {
 		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18274,8 +18777,14 @@ func (s *GetStageInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18324,6 +18833,9 @@ func (s *GetStagesInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetStagesInput"}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18383,7 +18895,7 @@ type GetTagsInput struct {
 	Position *string `location:"querystring" locationName:"position" type:"string"`
 
 	// [Required] The ARN of a resource that can be tagged. The resource ARN must
-	// be URL-encoded. At present, Stage is the only taggable resource.
+	// be URL-encoded.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resource_arn" type:"string" required:"true"`
@@ -18404,6 +18916,9 @@ func (s *GetTagsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetTagsInput"}
 	if s.ResourceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18507,6 +19022,9 @@ func (s *GetUsageInput) Validate() error {
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
 	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -18576,6 +19094,9 @@ func (s *GetUsagePlanInput) Validate() error {
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
 	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -18622,8 +19143,14 @@ func (s *GetUsagePlanKeyInput) Validate() error {
 	if s.KeyId == nil {
 		invalidParams.Add(request.NewErrParamRequired("KeyId"))
 	}
+	if s.KeyId != nil && len(*s.KeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
+	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18681,6 +19208,9 @@ func (s *GetUsagePlanKeysInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetUsagePlanKeysInput"}
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
+	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18851,6 +19381,9 @@ func (s *GetVpcLinkInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetVpcLinkInput"}
 	if s.VpcLinkId == nil {
 		invalidParams.Add(request.NewErrParamRequired("VpcLinkId"))
+	}
+	if s.VpcLinkId != nil && len(*s.VpcLinkId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcLinkId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -19078,6 +19611,9 @@ func (s *ImportDocumentationPartsInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -19113,6 +19649,7 @@ func (s *ImportDocumentationPartsInput) SetRestApiId(v string) *ImportDocumentat
 //
 // This is used to return the result when documentation parts in an external
 // (e.g., OpenAPI) file are imported into API Gateway
+//
 // Documenting an API (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html),
 // documentationpart:import (https://docs.aws.amazon.com/apigateway/api-reference/link-relation/documentationpart-import/),
 // DocumentationPart
@@ -19174,14 +19711,15 @@ type ImportRestApiInput struct {
 	// endpointConfigurationTypes=REGIONAL, or endpointConfigurationTypes=PRIVATE.
 	// The default endpoint type is EDGE.
 	//
-	// To handle imported basePath, set parameters as basePath=ignore, basePath=prepend
-	// or basePath=split.
+	// To handle imported basepath, set parameters as basepath=ignore, basepath=prepend
+	// or basepath=split.
 	//
 	// For example, the AWS CLI command to exclude documentation from the imported
 	// API is:
 	//
 	//    aws apigateway import-rest-api --parameters ignore=documentation --body
 	//    'file:///path/to/imported-api-body.json'
+	//
 	// The AWS CLI command to set the regional endpoint on the imported API is:
 	//
 	//    aws apigateway import-rest-api --parameters endpointConfigurationTypes=REGIONAL
@@ -19238,10 +19776,14 @@ func (s *ImportRestApiInput) SetParameters(v map[string]*string) *ImportRestApiI
 type Integration struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the integration's cache key parameters.
+	// A list of request parameters whose values API Gateway caches. To be valid
+	// values for cacheKeyParameters, these parameters must also be specified for
+	// Method requestParameters.
 	CacheKeyParameters []*string `locationName:"cacheKeyParameters" type:"list"`
 
-	// Specifies the integration's cache namespace.
+	// An API-specific tag group of related cached parameters. To be valid values
+	// for cacheKeyParameters, these parameters must also be specified for Method
+	// requestParameters.
 	CacheNamespace *string `locationName:"cacheNamespace" type:"string"`
 
 	// The (id (https://docs.aws.amazon.com/apigateway/api-reference/resource/vpc-link/#id))
@@ -19266,7 +19808,7 @@ type Integration struct {
 	//
 	// If this property is not defined, the request payload will be passed through
 	// from the method request to integration request without modification, provided
-	// that the passthroughBehaviors is configured to support payload pass-through.
+	// that the passthroughBehavior is configured to support payload pass-through.
 	ContentHandling *string `locationName:"contentHandling" type:"string" enum:"ContentHandlingStrategy"`
 
 	// Specifies the credentials required for the integration, if any. For AWS integrations,
@@ -19284,23 +19826,23 @@ type Integration struct {
 	// Example: Get integration responses of a method
 	//
 	// Request
-	//
-	// GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200
-	// HTTP/1.1 Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
-	// X-Amz-Date: 20160607T191449Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160607/us-east-1/apigateway/aws4_request,
-	// SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+	//   GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200
+	//   HTTP/1.1 Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
+	//   X-Amz-Date: 20160607T191449Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160607/us-east-1/apigateway/aws4_request,
+	//   SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 	// Response
 	//
-	// The successful response returns 200 OKstatus and a payload as follows:
+	// The successful response returns 200 OK status and a payload as follows:
+	//  { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
+	//  "name": "integrationresponse", "templated": true }, "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
+	//  "title": "200" }, "integrationresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
+	//  }, "integrationresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
+	//  } }, "responseParameters": { "method.response.header.Content-Type": "'application/xml'"
+	//  }, "responseTemplates": { "application/json": "$util.urlDecode(\"%3CkinesisStreams%3E#foreach($stream
+	//  in $input.path('$.StreamNames'))%3Cstream%3E%3Cname%3E$stream%3C/name%3E%3C/stream%3E#end%3C/kinesisStreams%3E\")\n"
+	//  }, "statusCode": "200" }
 	//
-	// { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
-	// "name": "integrationresponse", "templated": true }, "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
-	// "title": "200" }, "integrationresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
-	// }, "integrationresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
-	// } }, "responseParameters": { "method.response.header.Content-Type": "'application/xml'"
-	// }, "responseTemplates": { "application/json": "$util.urlDecode(\"%3CkinesisStreams%3E#foreach($stream
-	// in $input.path('$.StreamNames'))%3Cstream%3E%3Cname%3E$stream%3C/name%3E%3C/stream%3E#end%3C/kinesisStreams%3E\")\n"
-	// }, "statusCode": "200" }
+	// Creating an API (https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-create-api.html)
 	IntegrationResponses map[string]*IntegrationResponse `locationName:"integrationResponses" type:"map"`
 
 	// Specifies how the method request body of an unmapped content type will be
@@ -19309,19 +19851,22 @@ type Integration struct {
 	// or the content type does not match any of the mapped content types, as specified
 	// in requestTemplates. The valid value is one of the following:
 	//
-	// WHEN_NO_MATCH: passes the method request body through the integration request
-	// to the back end without transformation when the method request content type
-	// does not match any content type associated with the mapping templates defined
-	// in the integration request.
-	// WHEN_NO_TEMPLATES: passes the method request body through the integration
-	// request to the back end without transformation when no mapping template is
-	// defined in the integration request. If a template is defined when this option
-	// is selected, the method request of an unmapped content-type will be rejected
-	// with an HTTP 415 Unsupported Media Type response.
-	// NEVER: rejects the method request with an HTTP 415 Unsupported Media Type
-	// response when either the method request content type does not match any content
-	// type associated with the mapping templates defined in the integration request
-	// or no mapping template is defined in the integration request.
+	//    * WHEN_NO_MATCH: passes the method request body through the integration
+	//    request to the back end without transformation when the method request
+	//    content type does not match any content type associated with the mapping
+	//    templates defined in the integration request.
+	//
+	//    * WHEN_NO_TEMPLATES: passes the method request body through the integration
+	//    request to the back end without transformation when no mapping template
+	//    is defined in the integration request. If a template is defined when this
+	//    option is selected, the method request of an unmapped content-type will
+	//    be rejected with an HTTP 415 Unsupported Media Type response.
+	//
+	//    * NEVER: rejects the method request with an HTTP 415 Unsupported Media
+	//    Type response when either the method request content type does not match
+	//    any content type associated with the mapping templates defined in the
+	//    integration request or no mapping template is defined in the integration
+	//    request.
 	PassthroughBehavior *string `locationName:"passthroughBehavior" type:"string"`
 
 	// A key-value map specifying request parameters that are passed from the method
@@ -19349,18 +19894,22 @@ type Integration struct {
 	//    including the Lambda function-invoking action. With the Lambda function-invoking
 	//    action, this is referred to as the Lambda custom integration. With any
 	//    other AWS service action, this is known as AWS integration.
+	//
 	//    * AWS_PROXY: for integrating the API method request with the Lambda function-invoking
 	//    action with the client request passed through as-is. This integration
 	//    is also referred to as the Lambda proxy integration.
+	//
 	//    * HTTP: for integrating the API method request with an HTTP endpoint,
 	//    including a private HTTP endpoint within a VPC. This integration is also
 	//    referred to as the HTTP custom integration.
+	//
 	//    * HTTP_PROXY: for integrating the API method request with an HTTP endpoint,
 	//    including a private HTTP endpoint within a VPC, with the client request
 	//    passed through as-is. This is also referred to as the HTTP proxy integration.
 	//
 	//    * MOCK: for integrating the API method request with API Gateway as a "loop-back"
 	//    endpoint without invoking any backend.
+	//
 	// For the HTTP and HTTP proxy integrations, each integration can specify a
 	// protocol (http/https), port and path. Standard 80 and 443 ports are supported
 	// as well as custom ports above 1024. An HTTP or HTTP proxy integration with
@@ -19370,13 +19919,13 @@ type Integration struct {
 
 	// Specifies Uniform Resource Identifier (URI) of the integration endpoint.
 	//
-	//    *  For HTTP or HTTP_PROXY integrations, the URI must be a fully formed,
-	//    encoded HTTP(S) URL according to the RFC-3986 specification (_blank),
+	//    * For HTTP or HTTP_PROXY integrations, the URI must be a fully formed,
+	//    encoded HTTP(S) URL according to the RFC-3986 specification (https://en.wikipedia.org/wiki/Uniform_Resource_Identifier),
 	//    for either standard integration, where connectionType is not VPC_LINK,
 	//    or private integration, where connectionType is VPC_LINK. For a private
 	//    HTTP integration, the URI is not used for routing.
 	//
-	//    *  For AWS or AWS_PROXY integrations, the URI is of the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
+	//    * For AWS or AWS_PROXY integrations, the URI is of the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
 	//    Here, {Region} is the API Gateway region (e.g., us-east-1); {service}
 	//    is the name of the integrated AWS service (e.g., s3); and {subdomain}
 	//    is a designated subdomain supported by certain AWS service for fast host-name
@@ -19596,60 +20145,59 @@ func (s *IntegrationResponse) SetStatusCode(v string) *IntegrationResponse {
 //
 // The following example request retrieves the information about the GET method
 // on an API resource (3kzxbg5sa2) of an API (fugvjdxtri).
-//
-//    GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET HTTP/1.1 Content-Type:
-//    application/json Host: apigateway.us-east-1.amazonaws.com X-Amz-Date:
-//    20160603T210259Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160603/us-east-1/apigateway/aws4_request,
-//    SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+//  GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET HTTP/1.1 Content-Type:
+//  application/json Host: apigateway.us-east-1.amazonaws.com X-Amz-Date: 20160603T210259Z
+//  Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160603/us-east-1/apigateway/aws4_request,
+//  SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 // Response
 //
 // The successful response returns a 200 OK status code and a payload similar
 // to the following:
-//
-//    { "_links": { "curies": [ { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-{rel}.html",
-//    "name": "integration", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
-//    "name": "integrationresponse", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-{rel}.html",
-//    "name": "method", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
-//    "name": "methodresponse", "templated": true } ], "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET",
-//    "name": "GET", "title": "GET" }, "integration:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-//    }, "method:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
-//    }, "method:integration": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-//    }, "method:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
-//    "name": "200", "title": "200" }, "method:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
-//    }, "methodresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/{status_code}",
-//    "templated": true } }, "apiKeyRequired": true, "authorizationType": "NONE",
-//    "httpMethod": "GET", "_embedded": { "method:integration": { "_links":
-//    { "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-//    }, "integration:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-//    }, "integration:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
-//    "name": "200", "title": "200" }, "integration:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-//    }, "integrationresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/{status_code}",
-//    "templated": true } }, "cacheKeyParameters": [], "cacheNamespace": "3kzxbg5sa2",
-//    "credentials": "arn:aws:iam::123456789012:role/apigAwsProxyRole", "httpMethod":
-//    "POST", "passthroughBehavior": "WHEN_NO_MATCH", "requestParameters": {
-//    "integration.request.header.Content-Type": "'application/x-amz-json-1.1'"
-//    }, "requestTemplates": { "application/json": "{\n}" }, "type": "AWS",
-//    "uri": "arn:aws:apigateway:us-east-1:kinesis:action/ListStreams", "_embedded":
-//    { "integration:responses": { "_links": { "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
-//    "name": "200", "title": "200" }, "integrationresponse:delete": { "href":
-//    "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
-//    }, "integrationresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
-//    } }, "responseParameters": { "method.response.header.Content-Type": "'application/xml'"
-//    }, "responseTemplates": { "application/json": "$util.urlDecode(\"%3CkinesisStreams%3E%23foreach(%24stream%20in%20%24input.path(%27%24.StreamNames%27))%3Cstream%3E%3Cname%3E%24stream%3C%2Fname%3E%3C%2Fstream%3E%23end%3C%2FkinesisStreams%3E\")"
-//    }, "statusCode": "200" } } }, "method:responses": { "_links": { "self":
-//    { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
-//    "name": "200", "title": "200" }, "methodresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
-//    }, "methodresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
-//    } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
-//    { "method.response.header.Content-Type": false }, "statusCode": "200"
-//    } } }
+//  { "_links": { "curies": [ { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-{rel}.html",
+//  "name": "integration", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
+//  "name": "integrationresponse", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-{rel}.html",
+//  "name": "method", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
+//  "name": "methodresponse", "templated": true } ], "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET",
+//  "name": "GET", "title": "GET" }, "integration:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+//  }, "method:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
+//  }, "method:integration": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+//  }, "method:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
+//  "name": "200", "title": "200" }, "method:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
+//  }, "methodresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/{status_code}",
+//  "templated": true } }, "apiKeyRequired": true, "authorizationType": "NONE",
+//  "httpMethod": "GET", "_embedded": { "method:integration": { "_links": {
+//  "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+//  }, "integration:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+//  }, "integration:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
+//  "name": "200", "title": "200" }, "integration:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+//  }, "integrationresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/{status_code}",
+//  "templated": true } }, "cacheKeyParameters": [], "cacheNamespace": "3kzxbg5sa2",
+//  "credentials": "arn:aws:iam::123456789012:role/apigAwsProxyRole", "httpMethod":
+//  "POST", "passthroughBehavior": "WHEN_NO_MATCH", "requestParameters": { "integration.request.header.Content-Type":
+//  "'application/x-amz-json-1.1'" }, "requestTemplates": { "application/json":
+//  "{\n}" }, "type": "AWS", "uri": "arn:aws:apigateway:us-east-1:kinesis:action/ListStreams",
+//  "_embedded": { "integration:responses": { "_links": { "self": { "href":
+//  "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
+//  "name": "200", "title": "200" }, "integrationresponse:delete": { "href":
+//  "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
+//  }, "integrationresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
+//  } }, "responseParameters": { "method.response.header.Content-Type": "'application/xml'"
+//  }, "responseTemplates": { "application/json": "$util.urlDecode(\"%3CkinesisStreams%3E%23foreach(%24stream%20in%20%24input.path(%27%24.StreamNames%27))%3Cstream%3E%3Cname%3E%24stream%3C%2Fname%3E%3C%2Fstream%3E%23end%3C%2FkinesisStreams%3E\")"
+//  }, "statusCode": "200" } } }, "method:responses": { "_links": { "self":
+//  { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
+//  "name": "200", "title": "200" }, "methodresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
+//  }, "methodresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
+//  } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
+//  { "method.response.header.Content-Type": false }, "statusCode": "200" }
+//  } }
 // In the example above, the response template for the 200 OK response maps
 // the JSON output from the ListStreams action in the back end to an XML output.
 // The mapping template is URL-encoded as %3CkinesisStreams%3E%23foreach(%24stream%20in%20%24input.path(%27%24.StreamNames%27))%3Cstream%3E%3Cname%3E%24stream%3C%2Fname%3E%3C%2Fstream%3E%23end%3C%2FkinesisStreams%3E
 // and the output is decoded using the $util.urlDecode() (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#util-templat-reference)
 // helper function.
 //
-// MethodResponse, Integration, IntegrationResponse, Resource, Set up an API's method (https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-method-settings.html)
+// MethodResponse, Integration, IntegrationResponse, Resource, Set up an API's
+// method (https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-method-settings.html)
 type Method struct {
 	_ struct{} `type:"structure"`
 
@@ -19686,38 +20234,42 @@ type Method struct {
 	// Example:
 	//
 	// Request
-	//
-	// GET /restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration HTTP/1.1
-	// Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com Content-Length:
-	// 117 X-Amz-Date: 20160613T213210Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160613/us-east-1/apigateway/aws4_request,
-	// SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+	//   GET /restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration HTTP/1.1
+	//   Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
+	//   Content-Length: 117 X-Amz-Date: 20160613T213210Z Authorization: AWS4-HMAC-SHA256
+	//   Credential={access_key_ID}/20160613/us-east-1/apigateway/aws4_request,
+	//   SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 	// Response
 	//
-	// The successful response returns a 200 OKstatus code and a payload similar to the following:
+	// The successful response returns a 200 OK status code and a payload similar
+	// to the following:
+	//  { "_links": { "curies": [ { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-{rel}.html",
+	//  "name": "integration", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
+	//  "name": "integrationresponse", "templated": true } ], "self": { "href":
+	//  "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration" }, "integration:delete":
+	//  { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration"
+	//  }, "integration:responses": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200",
+	//  "name": "200", "title": "200" }, "integration:update": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration"
+	//  }, "integrationresponse:put": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/{status_code}",
+	//  "templated": true } }, "cacheKeyParameters": [], "cacheNamespace": "0cjtch",
+	//  "credentials": "arn:aws:iam::123456789012:role/apigAwsProxyRole", "httpMethod":
+	//  "POST", "passthroughBehavior": "WHEN_NO_MATCH", "requestTemplates": { "application/json":
+	//  "{\n \"a\": \"$input.params('operand1')\",\n \"b\": \"$input.params('operand2')\",
+	//  \n \"op\": \"$input.params('operator')\" \n}" }, "type": "AWS", "uri": "arn:aws:apigateway:us-west-2:lambda:path//2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:Calc/invocations",
+	//  "_embedded": { "integration:responses": { "_links": { "self": { "href":
+	//  "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200",
+	//  "name": "200", "title": "200" }, "integrationresponse:delete": { "href":
+	//  "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200"
+	//  }, "integrationresponse:update": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200"
+	//  } }, "responseParameters": { "method.response.header.operator": "integration.response.body.op",
+	//  "method.response.header.operand_2": "integration.response.body.b", "method.response.header.operand_1":
+	//  "integration.response.body.a" }, "responseTemplates": { "application/json":
+	//  "#set($res = $input.path('$'))\n{\n \"result\": \"$res.a, $res.b, $res.op
+	//  => $res.c\",\n \"a\" : \"$res.a\",\n \"b\" : \"$res.b\",\n \"op\" : \"$res.op\",\n
+	//  \"c\" : \"$res.c\"\n}" }, "selectionPattern": "", "statusCode": "200" }
+	//  } }
 	//
-	// { "_links": { "curies": [ { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-{rel}.html",
-	// "name": "integration", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
-	// "name": "integrationresponse", "templated": true } ], "self": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration"
-	// }, "integration:delete": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration"
-	// }, "integration:responses": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200",
-	// "name": "200", "title": "200" }, "integration:update": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration"
-	// }, "integrationresponse:put": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/{status_code}",
-	// "templated": true } }, "cacheKeyParameters": [], "cacheNamespace": "0cjtch",
-	// "credentials": "arn:aws:iam::123456789012:role/apigAwsProxyRole", "httpMethod":
-	// "POST", "passthroughBehavior": "WHEN_NO_MATCH", "requestTemplates": { "application/json":
-	// "{\n \"a\": \"$input.params('operand1')\",\n \"b\": \"$input.params('operand2')\",
-	// \n \"op\": \"$input.params('operator')\" \n}" }, "type": "AWS", "uri": "arn:aws:apigateway:us-west-2:lambda:path//2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:Calc/invocations",
-	// "_embedded": { "integration:responses": { "_links": { "self": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200",
-	// "name": "200", "title": "200" }, "integrationresponse:delete": { "href":
-	// "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200"
-	// }, "integrationresponse:update": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/integration/responses/200"
-	// } }, "responseParameters": { "method.response.header.operator": "integration.response.body.op",
-	// "method.response.header.operand_2": "integration.response.body.b", "method.response.header.operand_1":
-	// "integration.response.body.a" }, "responseTemplates": { "application/json":
-	// "#set($res = $input.path('$'))\n{\n \"result\": \"$res.a, $res.b, $res.op
-	// => $res.c\",\n \"a\" : \"$res.a\",\n \"b\" : \"$res.b\",\n \"op\" : \"$res.op\",\n
-	// \"c\" : \"$res.c\"\n}" }, "selectionPattern": "", "statusCode": "200" } }
-	// }
+	// AWS CLI (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-integration.html)
 	MethodIntegration *Integration `locationName:"methodIntegration" type:"structure"`
 
 	// Gets a method response associated with a given HTTP status code.
@@ -19730,30 +20282,30 @@ type Method struct {
 	// Example: Get a 200 OK response of a GET method
 	//
 	// Request
-	//
-	//    GET /restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200 HTTP/1.1
-	//    Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
-	//    Content-Length: 117 X-Amz-Date: 20160613T215008Z Authorization: AWS4-HMAC-SHA256
-	//    Credential={access_key_ID}/20160613/us-east-1/apigateway/aws4_request,
-	//    SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+	//   GET /restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200 HTTP/1.1
+	//   Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
+	//   Content-Length: 117 X-Amz-Date: 20160613T215008Z Authorization: AWS4-HMAC-SHA256
+	//   Credential={access_key_ID}/20160613/us-east-1/apigateway/aws4_request,
+	//   SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 	// Response
 	//
 	// The successful response returns a 200 OK status code and a payload similar
 	// to the following:
+	//  { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
+	//  "name": "methodresponse", "templated": true }, "self": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200",
+	//  "title": "200" }, "methodresponse:delete": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200"
+	//  }, "methodresponse:update": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200"
+	//  } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
+	//  { "method.response.header.operator": false, "method.response.header.operand_2":
+	//  false, "method.response.header.operand_1": false }, "statusCode": "200"
+	//  }
 	//
-	//    { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
-	//    "name": "methodresponse", "templated": true }, "self": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200",
-	//    "title": "200" }, "methodresponse:delete": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200"
-	//    }, "methodresponse:update": { "href": "/restapis/uojnr9hd57/resources/0cjtch/methods/GET/responses/200"
-	//    } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
-	//    { "method.response.header.operator": false, "method.response.header.operand_2":
-	//    false, "method.response.header.operand_1": false }, "statusCode": "200"
-	//    }
+	// AWS CLI (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-method-response.html)
 	MethodResponses map[string]*MethodResponse `locationName:"methodResponses" type:"map"`
 
 	// A human-friendly operation identifier for the method. For example, you can
-	// assign the operationName of ListPets for the GET /pets method in PetStore
-	// (https://petstore-demo-endpoint.execute-api.com/petstore/pets) example.
+	// assign the operationName of ListPets for the GET /pets method in the PetStore
+	// example.
 	OperationName *string `locationName:"operationName" type:"string"`
 
 	// A key-value map specifying data schemas, represented by Model resources,
@@ -19860,22 +20412,21 @@ func (s *Method) SetRequestValidatorId(v string) *Method {
 // Request
 //
 // The example request retrieves a MethodResponse of the 200 status code.
-//
-//    GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200
-//    HTTP/1.1 Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
-//    X-Amz-Date: 20160603T222952Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160603/us-east-1/apigateway/aws4_request,
-//    SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+//  GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200
+//  HTTP/1.1 Content-Type: application/json Host: apigateway.us-east-1.amazonaws.com
+//  X-Amz-Date: 20160603T222952Z Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20160603/us-east-1/apigateway/aws4_request,
+//  SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 // Response
 //
 // The successful response returns 200 OK status and a payload as follows:
+//  { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
+//  "name": "methodresponse", "templated": true }, "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
+//  "title": "200" }, "methodresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
+//  }, "methodresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
+//  } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
+//  { "method.response.header.Content-Type": false }, "statusCode": "200" }
 //
-//    { "_links": { "curies": { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
-//    "name": "methodresponse", "templated": true }, "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
-//    "title": "200" }, "methodresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
-//    }, "methodresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
-//    } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
-//    { "method.response.header.Content-Type": false }, "statusCode": "200"
-//    }
+// Method, IntegrationResponse, Integration Creating an API (https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-create-api.html)
 type MethodResponse struct {
 	_ struct{} `type:"structure"`
 
@@ -20250,27 +20801,47 @@ type PutGatewayResponseInput struct {
 	// pairs.
 	ResponseTemplates map[string]*string `locationName:"responseTemplates" type:"map"`
 
-	// [Required] The response type of the associated GatewayResponse. Valid values
-	// are ACCESS_DENIED
-	// API_CONFIGURATION_ERROR
-	// AUTHORIZER_FAILURE
-	//  AUTHORIZER_CONFIGURATION_ERROR
-	// BAD_REQUEST_PARAMETERS
-	// BAD_REQUEST_BODY
-	// DEFAULT_4XX
-	// DEFAULT_5XX
-	// EXPIRED_TOKEN
-	// INVALID_SIGNATURE
-	// INTEGRATION_FAILURE
-	// INTEGRATION_TIMEOUT
-	// INVALID_API_KEY
-	// MISSING_AUTHENTICATION_TOKEN
-	//  QUOTA_EXCEEDED
-	// REQUEST_TOO_LARGE
-	// RESOURCE_NOT_FOUND
-	// THROTTLED
-	// UNAUTHORIZED
-	// UNSUPPORTED_MEDIA_TYPE
+	// [Required]
+	// The response type of the associated GatewayResponse. Valid values are
+	//    * ACCESS_DENIED
+	//
+	//    * API_CONFIGURATION_ERROR
+	//
+	//    * AUTHORIZER_FAILURE
+	//
+	//    * AUTHORIZER_CONFIGURATION_ERROR
+	//
+	//    * BAD_REQUEST_PARAMETERS
+	//
+	//    * BAD_REQUEST_BODY
+	//
+	//    * DEFAULT_4XX
+	//
+	//    * DEFAULT_5XX
+	//
+	//    * EXPIRED_TOKEN
+	//
+	//    * INVALID_SIGNATURE
+	//
+	//    * INTEGRATION_FAILURE
+	//
+	//    * INTEGRATION_TIMEOUT
+	//
+	//    * INVALID_API_KEY
+	//
+	//    * MISSING_AUTHENTICATION_TOKEN
+	//
+	//    * QUOTA_EXCEEDED
+	//
+	//    * REQUEST_TOO_LARGE
+	//
+	//    * RESOURCE_NOT_FOUND
+	//
+	//    * THROTTLED
+	//
+	//    * UNAUTHORIZED
+	//
+	//    * UNSUPPORTED_MEDIA_TYPE
 	//
 	// ResponseType is a required field
 	ResponseType *string `location:"uri" locationName:"response_type" type:"string" required:"true" enum:"GatewayResponseType"`
@@ -20280,7 +20851,7 @@ type PutGatewayResponseInput struct {
 	// RestApiId is a required field
 	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
 
-	// The HTTP status code of the GatewayResponse
+	// The HTTP status code of the GatewayResponse.
 	StatusCode *string `locationName:"statusCode" type:"string"`
 }
 
@@ -20300,8 +20871,14 @@ func (s *PutGatewayResponseInput) Validate() error {
 	if s.ResponseType == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResponseType"))
 	}
+	if s.ResponseType != nil && len(*s.ResponseType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResponseType", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -20344,10 +20921,10 @@ func (s *PutGatewayResponseInput) SetStatusCode(v string) *PutGatewayResponseInp
 type PutIntegrationInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies a put integration input's cache key parameters.
+	// An API-specific tag group of related cached parameters.
 	CacheKeyParameters []*string `locationName:"cacheKeyParameters" type:"list"`
 
-	// Specifies a put integration input's cache namespace.
+	// A list of request parameters whose values are to be cached.
 	CacheNamespace *string `locationName:"cacheNamespace" type:"string"`
 
 	// The (id (https://docs.aws.amazon.com/apigateway/api-reference/resource/vpc-link/#id))
@@ -20372,7 +20949,7 @@ type PutIntegrationInput struct {
 	//
 	// If this property is not defined, the request payload will be passed through
 	// from the method request to integration request without modification, provided
-	// that the passthroughBehaviors is configured to support payload pass-through.
+	// that the passthroughBehavior is configured to support payload pass-through.
 	ContentHandling *string `locationName:"contentHandling" type:"string" enum:"ContentHandlingStrategy"`
 
 	// Specifies whether credentials are required for a put integration.
@@ -20439,13 +21016,13 @@ type PutIntegrationInput struct {
 
 	// Specifies Uniform Resource Identifier (URI) of the integration endpoint.
 	//
-	//    *  For HTTP or HTTP_PROXY integrations, the URI must be a fully formed,
-	//    encoded HTTP(S) URL according to the RFC-3986 specification (_blank),
+	//    * For HTTP or HTTP_PROXY integrations, the URI must be a fully formed,
+	//    encoded HTTP(S) URL according to the RFC-3986 specification (https://en.wikipedia.org/wiki/Uniform_Resource_Identifier),
 	//    for either standard integration, where connectionType is not VPC_LINK,
 	//    or private integration, where connectionType is VPC_LINK. For a private
 	//    HTTP integration, the URI is not used for routing.
 	//
-	//    *  For AWS or AWS_PROXY integrations, the URI is of the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
+	//    * For AWS or AWS_PROXY integrations, the URI is of the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
 	//    Here, {Region} is the API Gateway region (e.g., us-east-1); {service}
 	//    is the name of the integrated AWS service (e.g., s3); and {subdomain}
 	//    is a designated subdomain supported by certain AWS service for fast host-name
@@ -20477,11 +21054,20 @@ func (s *PutIntegrationInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
@@ -20662,14 +21248,26 @@ func (s *PutIntegrationResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -20761,8 +21359,8 @@ type PutMethodInput struct {
 	HttpMethod *string `location:"uri" locationName:"http_method" type:"string" required:"true"`
 
 	// A human-friendly operation identifier for the method. For example, you can
-	// assign the operationName of ListPets for the GET /pets method in PetStore
-	// (https://petstore-demo-endpoint.execute-api.com/petstore/pets) example.
+	// assign the operationName of ListPets for the GET /pets method in the PetStore
+	// example.
 	OperationName *string `locationName:"operationName" type:"string"`
 
 	// Specifies the Model resources used for the request's content type. Request
@@ -20813,11 +21411,20 @@ func (s *PutMethodInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -20951,14 +21558,26 @@ func (s *PutMethodResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -21053,6 +21672,9 @@ func (s *PutRestApiInput) Validate() error {
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -21163,50 +21785,49 @@ type Resource struct {
 	// Example: Get the GET method of an API resource
 	//
 	// Request
-	//
-	// GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET HTTP/1.1 Content-Type:
-	// application/json Host: apigateway.us-east-1.amazonaws.com X-Amz-Date: 20170223T031827Z
-	// Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20170223/us-east-1/apigateway/aws4_request,
-	// SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
+	//  GET /restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET HTTP/1.1 Content-Type:
+	//  application/json Host: apigateway.us-east-1.amazonaws.com X-Amz-Date: 20170223T031827Z
+	//  Authorization: AWS4-HMAC-SHA256 Credential={access_key_ID}/20170223/us-east-1/apigateway/aws4_request,
+	//  SignedHeaders=content-type;host;x-amz-date, Signature={sig4_hash}
 	// Response
-	//
-	// { "_links": { "curies": [ { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-{rel}.html",
-	// "name": "integration", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
-	// "name": "integrationresponse", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-{rel}.html",
-	// "name": "method", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
-	// "name": "methodresponse", "templated": true } ], "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET",
-	// "name": "GET", "title": "GET" }, "integration:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-	// }, "method:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
-	// }, "method:integration": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-	// }, "method:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
-	// "name": "200", "title": "200" }, "method:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
-	// }, "methodresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/{status_code}",
-	// "templated": true } }, "apiKeyRequired": false, "authorizationType": "NONE",
-	// "httpMethod": "GET", "_embedded": { "method:integration": { "_links": { "self":
-	// { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-	// }, "integration:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-	// }, "integration:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
-	// "name": "200", "title": "200" }, "integration:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
-	// }, "integrationresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/{status_code}",
-	// "templated": true } }, "cacheKeyParameters": [], "cacheNamespace": "3kzxbg5sa2",
-	// "credentials": "arn:aws:iam::123456789012:role/apigAwsProxyRole", "httpMethod":
-	// "POST", "passthroughBehavior": "WHEN_NO_MATCH", "requestParameters": { "integration.request.header.Content-Type":
-	// "'application/x-amz-json-1.1'" }, "requestTemplates": { "application/json":
-	// "{\n}" }, "type": "AWS", "uri": "arn:aws:apigateway:us-east-1:kinesis:action/ListStreams",
-	// "_embedded": { "integration:responses": { "_links": { "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
-	// "name": "200", "title": "200" }, "integrationresponse:delete": { "href":
-	// "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
-	// }, "integrationresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
-	// } }, "responseParameters": { "method.response.header.Content-Type": "'application/xml'"
-	// }, "responseTemplates": { "application/json": "$util.urlDecode(\"%3CkinesisStreams%3E#foreach($stream
-	// in $input.path('$.StreamNames'))%3Cstream%3E%3Cname%3E$stream%3C/name%3E%3C/stream%3E#end%3C/kinesisStreams%3E\")\n"
-	// }, "statusCode": "200" } } }, "method:responses": { "_links": { "self": {
-	// "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
-	// "name": "200", "title": "200" }, "methodresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
-	// }, "methodresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
-	// } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
-	// { "method.response.header.Content-Type": false }, "statusCode": "200" } }
-	// }
+	//  { "_links": { "curies": [ { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-{rel}.html",
+	//  "name": "integration", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-integration-response-{rel}.html",
+	//  "name": "integrationresponse", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-{rel}.html",
+	//  "name": "method", "templated": true }, { "href": "https://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-method-response-{rel}.html",
+	//  "name": "methodresponse", "templated": true } ], "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET",
+	//  "name": "GET", "title": "GET" }, "integration:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+	//  }, "method:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
+	//  }, "method:integration": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+	//  }, "method:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
+	//  "name": "200", "title": "200" }, "method:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET"
+	//  }, "methodresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/{status_code}",
+	//  "templated": true } }, "apiKeyRequired": false, "authorizationType": "NONE",
+	//  "httpMethod": "GET", "_embedded": { "method:integration": { "_links": {
+	//  "self": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+	//  }, "integration:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+	//  }, "integration:responses": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
+	//  "name": "200", "title": "200" }, "integration:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration"
+	//  }, "integrationresponse:put": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/{status_code}",
+	//  "templated": true } }, "cacheKeyParameters": [], "cacheNamespace": "3kzxbg5sa2",
+	//  "credentials": "arn:aws:iam::123456789012:role/apigAwsProxyRole", "httpMethod":
+	//  "POST", "passthroughBehavior": "WHEN_NO_MATCH", "requestParameters": { "integration.request.header.Content-Type":
+	//  "'application/x-amz-json-1.1'" }, "requestTemplates": { "application/json":
+	//  "{\n}" }, "type": "AWS", "uri": "arn:aws:apigateway:us-east-1:kinesis:action/ListStreams",
+	//  "_embedded": { "integration:responses": { "_links": { "self": { "href":
+	//  "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200",
+	//  "name": "200", "title": "200" }, "integrationresponse:delete": { "href":
+	//  "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
+	//  }, "integrationresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/integration/responses/200"
+	//  } }, "responseParameters": { "method.response.header.Content-Type": "'application/xml'"
+	//  }, "responseTemplates": { "application/json": "$util.urlDecode(\"%3CkinesisStreams%3E#foreach($stream
+	//  in $input.path('$.StreamNames'))%3Cstream%3E%3Cname%3E$stream%3C/name%3E%3C/stream%3E#end%3C/kinesisStreams%3E\")\n"
+	//  }, "statusCode": "200" } } }, "method:responses": { "_links": { "self":
+	//  { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200",
+	//  "name": "200", "title": "200" }, "methodresponse:delete": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
+	//  }, "methodresponse:update": { "href": "/restapis/fugvjdxtri/resources/3kzxbg5sa2/methods/GET/responses/200"
+	//  } }, "responseModels": { "application/json": "Empty" }, "responseParameters":
+	//  { "method.response.header.Content-Type": false }, "statusCode": "200" }
+	//  } }
 	// If the OPTIONS is enabled on the resource, you can follow the example here
 	// to get that method. Just replace the GET of the last path segment in the
 	// request URL with OPTIONS.
@@ -21260,10 +21881,11 @@ type RestApi struct {
 	_ struct{} `type:"structure"`
 
 	// The source of the API key for metering requests according to a usage plan.
-	// Valid values are: HEADER to read the API key from the X-API-Key header of
-	// a request.
-	// AUTHORIZER to read the API key from the UsageIdentifierKey from a custom
-	// authorizer.
+	// Valid values are:
+	//    * HEADER to read the API key from the X-API-Key header of a request.
+	//
+	//    * AUTHORIZER to read the API key from the UsageIdentifierKey from a custom
+	//    authorizer.
 	ApiKeySource *string `locationName:"apiKeySource" type:"string" enum:"ApiKeySourceType"`
 
 	// The list of binary media types supported by the RestApi. By default, the
@@ -21295,8 +21917,11 @@ type RestApi struct {
 	Name *string `locationName:"name" type:"string"`
 
 	// A stringified JSON policy document that applies to this RestApi regardless
-	// of the caller and Method
+	// of the caller and Method configuration.
 	Policy *string `locationName:"policy" type:"string"`
+
+	// The collection of tags. Each tag element is associated with a given resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A version identifier for the API.
 	Version *string `locationName:"version" type:"string"`
@@ -21367,6 +21992,12 @@ func (s *RestApi) SetName(v string) *RestApi {
 // SetPolicy sets the Policy field's value.
 func (s *RestApi) SetPolicy(v string) *RestApi {
 	s.Policy = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *RestApi) SetTags(v map[string]*string) *RestApi {
+	s.Tags = v
 	return s
 }
 
@@ -21541,7 +22172,8 @@ type Stage struct {
 	MethodSettings map[string]*MethodSetting `locationName:"methodSettings" type:"map"`
 
 	// The name of the stage is the first path segment in the Uniform Resource Identifier
-	// (URI) of a call to API Gateway.
+	// (URI) of a call to API Gateway. Stage names can only contain alphanumeric
+	// characters, hyphens, and underscores. Maximum length is 128 characters.
 	StageName *string `locationName:"stageName" type:"string"`
 
 	// The collection of tags. Each tag element is associated with a given resource.
@@ -21554,6 +22186,9 @@ type Stage struct {
 	// can have alphanumeric and underscore characters, and the values must match
 	// [A-Za-z0-9-._~:/?#&=,]+.
 	Variables map[string]*string `locationName:"variables" type:"map"`
+
+	// The ARN of the WebAcl associated with the Stage.
+	WebAclArn *string `locationName:"webAclArn" type:"string"`
 }
 
 // String returns the string representation
@@ -21662,6 +22297,12 @@ func (s *Stage) SetVariables(v map[string]*string) *Stage {
 	return s
 }
 
+// SetWebAclArn sets the WebAclArn field's value.
+func (s *Stage) SetWebAclArn(v string) *Stage {
+	s.WebAclArn = &v
+	return s
+}
+
 // A reference to a unique stage identified in the format {restApiId}/{stage}.
 type StageKey struct {
 	_ struct{} `type:"structure"`
@@ -21700,7 +22341,7 @@ type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
 	// [Required] The ARN of a resource that can be tagged. The resource ARN must
-	// be URL-encoded. At present, Stage is the only taggable resource.
+	// be URL-encoded.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resource_arn" type:"string" required:"true"`
@@ -21728,6 +22369,9 @@ func (s *TagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
 	if s.ResourceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
 	}
 	if s.Tags == nil {
 		invalidParams.Add(request.NewErrParamRequired("Tags"))
@@ -21820,8 +22464,14 @@ func (s *TestInvokeAuthorizerInput) Validate() error {
 	if s.AuthorizerId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AuthorizerId"))
 	}
+	if s.AuthorizerId != nil && len(*s.AuthorizerId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizerId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22017,11 +22667,20 @@ func (s *TestInvokeMethodInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22195,7 +22854,7 @@ type UntagResourceInput struct {
 	_ struct{} `type:"structure"`
 
 	// [Required] The ARN of a resource that can be tagged. The resource ARN must
-	// be URL-encoded. At present, Stage is the only taggable resource.
+	// be URL-encoded.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resource_arn" type:"string" required:"true"`
@@ -22221,6 +22880,9 @@ func (s *UntagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
 	if s.ResourceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
 	}
 	if s.TagKeys == nil {
 		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
@@ -22313,6 +22975,9 @@ func (s *UpdateApiKeyInput) Validate() error {
 	if s.ApiKey == nil {
 		invalidParams.Add(request.NewErrParamRequired("ApiKey"))
 	}
+	if s.ApiKey != nil && len(*s.ApiKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApiKey", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -22367,8 +23032,14 @@ func (s *UpdateAuthorizerInput) Validate() error {
 	if s.AuthorizerId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AuthorizerId"))
 	}
+	if s.AuthorizerId != nil && len(*s.AuthorizerId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizerId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22401,6 +23072,8 @@ type UpdateBasePathMappingInput struct {
 
 	// [Required] The base path of the BasePathMapping resource to change.
 	//
+	// To specify an empty base path, set this parameter to '(none)'.
+	//
 	// BasePath is a required field
 	BasePath *string `location:"uri" locationName:"base_path" type:"string" required:"true"`
 
@@ -22430,8 +23103,14 @@ func (s *UpdateBasePathMappingInput) Validate() error {
 	if s.BasePath == nil {
 		invalidParams.Add(request.NewErrParamRequired("BasePath"))
 	}
+	if s.BasePath != nil && len(*s.BasePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BasePath", 1))
+	}
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22488,6 +23167,9 @@ func (s *UpdateClientCertificateInput) Validate() error {
 	if s.ClientCertificateId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ClientCertificateId"))
 	}
+	if s.ClientCertificateId != nil && len(*s.ClientCertificateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientCertificateId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -22543,8 +23225,14 @@ func (s *UpdateDeploymentInput) Validate() error {
 	if s.DeploymentId == nil {
 		invalidParams.Add(request.NewErrParamRequired("DeploymentId"))
 	}
+	if s.DeploymentId != nil && len(*s.DeploymentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeploymentId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22606,8 +23294,14 @@ func (s *UpdateDocumentationPartInput) Validate() error {
 	if s.DocumentationPartId == nil {
 		invalidParams.Add(request.NewErrParamRequired("DocumentationPartId"))
 	}
+	if s.DocumentationPartId != nil && len(*s.DocumentationPartId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DocumentationPartId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22669,8 +23363,14 @@ func (s *UpdateDocumentationVersionInput) Validate() error {
 	if s.DocumentationVersion == nil {
 		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
 	}
+	if s.DocumentationVersion != nil && len(*s.DocumentationVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DocumentationVersion", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22727,6 +23427,9 @@ func (s *UpdateDomainNameInput) Validate() error {
 	if s.DomainName == nil {
 		invalidParams.Add(request.NewErrParamRequired("DomainName"))
 	}
+	if s.DomainName != nil && len(*s.DomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -22754,27 +23457,47 @@ type UpdateGatewayResponseInput struct {
 	// the order specified in this list.
 	PatchOperations []*PatchOperation `locationName:"patchOperations" type:"list"`
 
-	// [Required] The response type of the associated GatewayResponse. Valid values
-	// are ACCESS_DENIED
-	// API_CONFIGURATION_ERROR
-	// AUTHORIZER_FAILURE
-	//  AUTHORIZER_CONFIGURATION_ERROR
-	// BAD_REQUEST_PARAMETERS
-	// BAD_REQUEST_BODY
-	// DEFAULT_4XX
-	// DEFAULT_5XX
-	// EXPIRED_TOKEN
-	// INVALID_SIGNATURE
-	// INTEGRATION_FAILURE
-	// INTEGRATION_TIMEOUT
-	// INVALID_API_KEY
-	// MISSING_AUTHENTICATION_TOKEN
-	//  QUOTA_EXCEEDED
-	// REQUEST_TOO_LARGE
-	// RESOURCE_NOT_FOUND
-	// THROTTLED
-	// UNAUTHORIZED
-	// UNSUPPORTED_MEDIA_TYPE
+	// [Required]
+	// The response type of the associated GatewayResponse. Valid values are
+	//    * ACCESS_DENIED
+	//
+	//    * API_CONFIGURATION_ERROR
+	//
+	//    * AUTHORIZER_FAILURE
+	//
+	//    * AUTHORIZER_CONFIGURATION_ERROR
+	//
+	//    * BAD_REQUEST_PARAMETERS
+	//
+	//    * BAD_REQUEST_BODY
+	//
+	//    * DEFAULT_4XX
+	//
+	//    * DEFAULT_5XX
+	//
+	//    * EXPIRED_TOKEN
+	//
+	//    * INVALID_SIGNATURE
+	//
+	//    * INTEGRATION_FAILURE
+	//
+	//    * INTEGRATION_TIMEOUT
+	//
+	//    * INVALID_API_KEY
+	//
+	//    * MISSING_AUTHENTICATION_TOKEN
+	//
+	//    * QUOTA_EXCEEDED
+	//
+	//    * REQUEST_TOO_LARGE
+	//
+	//    * RESOURCE_NOT_FOUND
+	//
+	//    * THROTTLED
+	//
+	//    * UNAUTHORIZED
+	//
+	//    * UNSUPPORTED_MEDIA_TYPE
 	//
 	// ResponseType is a required field
 	ResponseType *string `location:"uri" locationName:"response_type" type:"string" required:"true" enum:"GatewayResponseType"`
@@ -22801,8 +23524,14 @@ func (s *UpdateGatewayResponseInput) Validate() error {
 	if s.ResponseType == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResponseType"))
 	}
+	if s.ResponseType != nil && len(*s.ResponseType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResponseType", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -22833,41 +23562,39 @@ func (s *UpdateGatewayResponseInput) SetRestApiId(v string) *UpdateGatewayRespon
 // response parameters and mapping templates.
 //
 // For more information about valid gateway response types, see Gateway Response
-// Types Supported by API Gateway (https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html)Example:
-// Get a Gateway Response of a given response type
+// Types Supported by API Gateway (https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html)
+//
+// Example: Get a Gateway Response of a given response type
 //
 // Request
 //
 // This example shows how to get a gateway response of the MISSING_AUTHENTICATION_TOKEN
 // type.
-//
-// GET /restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN HTTP/1.1
-// Host: beta-apigateway.us-east-1.amazonaws.com Content-Type: application/json
-// X-Amz-Date: 20170503T202516Z Authorization: AWS4-HMAC-SHA256 Credential={access-key-id}/20170503/us-east-1/apigateway/aws4_request,
-// SignedHeaders=content-type;host;x-amz-date, Signature=1b52460e3159c1a26cff29093855d50ea141c1c5b937528fecaf60f51129697a
-// Cache-Control: no-cache Postman-Token: 3b2a1ce9-c848-2e26-2e2f-9c2caefbed45
-//
+//  GET /restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN HTTP/1.1
+//  Host: beta-apigateway.us-east-1.amazonaws.com Content-Type: application/json
+//  X-Amz-Date: 20170503T202516Z Authorization: AWS4-HMAC-SHA256 Credential={access-key-id}/20170503/us-east-1/apigateway/aws4_request,
+//  SignedHeaders=content-type;host;x-amz-date, Signature=1b52460e3159c1a26cff29093855d50ea141c1c5b937528fecaf60f51129697a
+//  Cache-Control: no-cache Postman-Token: 3b2a1ce9-c848-2e26-2e2f-9c2caefbed45
 // The response type is specified as a URL path.
 //
 // Response
 //
 // The successful operation returns the 200 OK status code and a payload similar
 // to the following:
-//
-// { "_links": { "curies": { "href": "http://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-gatewayresponse-{rel}.html",
-// "name": "gatewayresponse", "templated": true }, "self": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
-// }, "gatewayresponse:delete": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
-// }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
-// "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
-// } }, "defaultResponse": false, "responseParameters": { "gatewayresponse.header.x-request-path":
-// "method.request.path.petId", "gatewayresponse.header.Access-Control-Allow-Origin":
-// "'a.b.c'", "gatewayresponse.header.x-request-query": "method.request.querystring.q",
-// "gatewayresponse.header.x-request-header": "method.request.header.Accept"
-// }, "responseTemplates": { "application/json": "{\n \"message\": $context.error.messageString,\n
-// \"type\": \"$context.error.responseType\",\n \"stage\": \"$context.stage\",\n
-// \"resourcePath\": \"$context.resourcePath\",\n \"stageVariables.a\": \"$stageVariables.a\",\n
-// \"statusCode\": \"'404'\"\n}" }, "responseType": "MISSING_AUTHENTICATION_TOKEN",
-// "statusCode": "404" }
+//  { "_links": { "curies": { "href": "http://docs.aws.amazon.com/apigateway/latest/developerguide/restapi-gatewayresponse-{rel}.html",
+//  "name": "gatewayresponse", "templated": true }, "self": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
+//  }, "gatewayresponse:delete": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
+//  }, "gatewayresponse:put": { "href": "/restapis/o81lxisefl/gatewayresponses/{response_type}",
+//  "templated": true }, "gatewayresponse:update": { "href": "/restapis/o81lxisefl/gatewayresponses/MISSING_AUTHENTICATION_TOKEN"
+//  } }, "defaultResponse": false, "responseParameters": { "gatewayresponse.header.x-request-path":
+//  "method.request.path.petId", "gatewayresponse.header.Access-Control-Allow-Origin":
+//  "'a.b.c'", "gatewayresponse.header.x-request-query": "method.request.querystring.q",
+//  "gatewayresponse.header.x-request-header": "method.request.header.Accept"
+//  }, "responseTemplates": { "application/json": "{\n \"message\": $context.error.messageString,\n
+//  \"type\": \"$context.error.responseType\",\n \"stage\": \"$context.stage\",\n
+//  \"resourcePath\": \"$context.resourcePath\",\n \"stageVariables.a\": \"$stageVariables.a\",\n
+//  \"statusCode\": \"'404'\"\n}" }, "responseType": "MISSING_AUTHENTICATION_TOKEN",
+//  "statusCode": "404" }
 //
 // Customize Gateway Responses (https://docs.aws.amazon.com/apigateway/latest/developerguide/customize-gateway-responses.html)
 type UpdateGatewayResponseOutput struct {
@@ -22886,27 +23613,46 @@ type UpdateGatewayResponseOutput struct {
 	// pairs.
 	ResponseTemplates map[string]*string `locationName:"responseTemplates" type:"map"`
 
-	// The response type of the associated GatewayResponse. Valid values are ACCESS_DENIED
+	// The response type of the associated GatewayResponse. Valid values are
+	//    * ACCESS_DENIED
 	//
-	// API_CONFIGURATION_ERROR
-	// AUTHORIZER_FAILURE
-	//  AUTHORIZER_CONFIGURATION_ERROR
-	// BAD_REQUEST_PARAMETERS
-	// BAD_REQUEST_BODY
-	// DEFAULT_4XX
-	// DEFAULT_5XX
-	// EXPIRED_TOKEN
-	// INVALID_SIGNATURE
-	// INTEGRATION_FAILURE
-	// INTEGRATION_TIMEOUT
-	// INVALID_API_KEY
-	// MISSING_AUTHENTICATION_TOKEN
-	//  QUOTA_EXCEEDED
-	// REQUEST_TOO_LARGE
-	// RESOURCE_NOT_FOUND
-	// THROTTLED
-	// UNAUTHORIZED
-	// UNSUPPORTED_MEDIA_TYPE
+	//    * API_CONFIGURATION_ERROR
+	//
+	//    * AUTHORIZER_FAILURE
+	//
+	//    * AUTHORIZER_CONFIGURATION_ERROR
+	//
+	//    * BAD_REQUEST_PARAMETERS
+	//
+	//    * BAD_REQUEST_BODY
+	//
+	//    * DEFAULT_4XX
+	//
+	//    * DEFAULT_5XX
+	//
+	//    * EXPIRED_TOKEN
+	//
+	//    * INVALID_SIGNATURE
+	//
+	//    * INTEGRATION_FAILURE
+	//
+	//    * INTEGRATION_TIMEOUT
+	//
+	//    * INVALID_API_KEY
+	//
+	//    * MISSING_AUTHENTICATION_TOKEN
+	//
+	//    * QUOTA_EXCEEDED
+	//
+	//    * REQUEST_TOO_LARGE
+	//
+	//    * RESOURCE_NOT_FOUND
+	//
+	//    * THROTTLED
+	//
+	//    * UNAUTHORIZED
+	//
+	//    * UNSUPPORTED_MEDIA_TYPE
 	ResponseType *string `locationName:"responseType" type:"string" enum:"GatewayResponseType"`
 
 	// The HTTP status code for this GatewayResponse.
@@ -22993,11 +23739,20 @@ func (s *UpdateIntegrationInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23075,14 +23830,26 @@ func (s *UpdateIntegrationResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23161,11 +23928,20 @@ func (s *UpdateMethodInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23243,14 +24019,26 @@ func (s *UpdateMethodResponseInput) Validate() error {
 	if s.HttpMethod == nil {
 		invalidParams.Add(request.NewErrParamRequired("HttpMethod"))
 	}
+	if s.HttpMethod != nil && len(*s.HttpMethod) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HttpMethod", 1))
+	}
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
 	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StatusCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("StatusCode"))
+	}
+	if s.StatusCode != nil && len(*s.StatusCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StatusCode", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23324,8 +24112,14 @@ func (s *UpdateModelInput) Validate() error {
 	if s.ModelName == nil {
 		invalidParams.Add(request.NewErrParamRequired("ModelName"))
 	}
+	if s.ModelName != nil && len(*s.ModelName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelName", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23387,8 +24181,14 @@ func (s *UpdateRequestValidatorInput) Validate() error {
 	if s.RequestValidatorId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RequestValidatorId"))
 	}
+	if s.RequestValidatorId != nil && len(*s.RequestValidatorId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RequestValidatorId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23511,8 +24311,14 @@ func (s *UpdateResourceInput) Validate() error {
 	if s.ResourceId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
 	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23569,6 +24375,9 @@ func (s *UpdateRestApiInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -23623,8 +24432,14 @@ func (s *UpdateStageInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
+	if s.RestApiId != nil && len(*s.RestApiId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RestApiId", 1))
+	}
 	if s.StageName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23688,8 +24503,14 @@ func (s *UpdateUsageInput) Validate() error {
 	if s.KeyId == nil {
 		invalidParams.Add(request.NewErrParamRequired("KeyId"))
 	}
+	if s.KeyId != nil && len(*s.KeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
+	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23746,6 +24567,9 @@ func (s *UpdateUsagePlanInput) Validate() error {
 	if s.UsagePlanId == nil {
 		invalidParams.Add(request.NewErrParamRequired("UsagePlanId"))
 	}
+	if s.UsagePlanId != nil && len(*s.UsagePlanId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UsagePlanId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -23795,6 +24619,9 @@ func (s *UpdateVpcLinkInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UpdateVpcLinkInput"}
 	if s.VpcLinkId == nil {
 		invalidParams.Add(request.NewErrParamRequired("VpcLinkId"))
+	}
+	if s.VpcLinkId != nil && len(*s.VpcLinkId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcLinkId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23846,6 +24673,9 @@ type UpdateVpcLinkOutput struct {
 	// A description about the VPC link status.
 	StatusMessage *string `locationName:"statusMessage" type:"string"`
 
+	// The collection of tags. Each tag element is associated with a given resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
 	// The ARNs of network load balancers of the VPC targeted by the VPC link. The
 	// network load balancers must be owned by the same AWS account of the API owner.
 	TargetArns []*string `locationName:"targetArns" type:"list"`
@@ -23891,6 +24721,12 @@ func (s *UpdateVpcLinkOutput) SetStatusMessage(v string) *UpdateVpcLinkOutput {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *UpdateVpcLinkOutput) SetTags(v map[string]*string) *UpdateVpcLinkOutput {
+	s.Tags = v
+	return s
+}
+
 // SetTargetArns sets the TargetArns field's value.
 func (s *UpdateVpcLinkOutput) SetTargetArns(v []*string) *UpdateVpcLinkOutput {
 	s.TargetArns = v
@@ -23899,7 +24735,8 @@ func (s *UpdateVpcLinkOutput) SetTargetArns(v []*string) *UpdateVpcLinkOutput {
 
 // Represents the usage data of a usage plan.
 //
-// Create and Use Usage Plans (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html), Manage Usage in a Usage Plan (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans-with-console.html#api-gateway-usage-plan-manage-usage)
+// Create and Use Usage Plans (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html),
+// Manage Usage in a Usage Plan (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans-with-console.html#api-gateway-usage-plan-manage-usage)
 type Usage struct {
 	_ struct{} `type:"structure"`
 
@@ -23992,6 +24829,9 @@ type UsagePlan struct {
 	// The maximum number of permitted requests per a given unit time interval.
 	Quota *QuotaSettings `locationName:"quota" type:"structure"`
 
+	// The collection of tags. Each tag element is associated with a given resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
 	// The request throttle limits of a usage plan.
 	Throttle *ThrottleSettings `locationName:"throttle" type:"structure"`
 }
@@ -24042,6 +24882,12 @@ func (s *UsagePlan) SetQuota(v *QuotaSettings) *UsagePlan {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *UsagePlan) SetTags(v map[string]*string) *UsagePlan {
+	s.Tags = v
+	return s
+}
+
 // SetThrottle sets the Throttle field's value.
 func (s *UsagePlan) SetThrottle(v *ThrottleSettings) *UsagePlan {
 	s.Throttle = v
@@ -24053,7 +24899,8 @@ func (s *UsagePlan) SetThrottle(v *ThrottleSettings) *UsagePlan {
 // To associate an API stage with a selected API key in a usage plan, you must
 // create a UsagePlanKey resource to represent the selected ApiKey.
 //
-// " Create and Use Usage Plans (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html)
+// "
+// Create and Use Usage Plans (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html)
 type UsagePlanKey struct {
 	_ struct{} `type:"structure"`
 
@@ -24231,6 +25078,17 @@ const (
 	DocumentationPartTypeResponseBody = "RESPONSE_BODY"
 )
 
+const (
+	// DomainNameStatusAvailable is a DomainNameStatus enum value
+	DomainNameStatusAvailable = "AVAILABLE"
+
+	// DomainNameStatusUpdating is a DomainNameStatus enum value
+	DomainNameStatusUpdating = "UPDATING"
+
+	// DomainNameStatusPending is a DomainNameStatus enum value
+	DomainNameStatusPending = "PENDING"
+)
+
 // The endpoint type. The valid values are EDGE for edge-optimized API setup,
 // most suitable for mobile applications; REGIONAL for regional API endpoint
 // setup, most suitable for calling from AWS Region; and PRIVATE for private
@@ -24374,6 +25232,14 @@ const (
 
 	// QuotaPeriodTypeMonth is a QuotaPeriodType enum value
 	QuotaPeriodTypeMonth = "MONTH"
+)
+
+const (
+	// SecurityPolicyTls10 is a SecurityPolicy enum value
+	SecurityPolicyTls10 = "TLS_1_0"
+
+	// SecurityPolicyTls12 is a SecurityPolicy enum value
+	SecurityPolicyTls12 = "TLS_1_2"
 )
 
 const (
