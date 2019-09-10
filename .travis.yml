@@ -9,7 +9,7 @@ matrix:
       env:
       - GO111MODULE=off
       - VET=1
-    - go: "1.11"
+    - go: "1.11.4"
       env: GO111MODULE=on
     - go: "1.12"
       env: GO111MODULE=off
