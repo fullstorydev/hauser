@@ -210,6 +210,10 @@ func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.E
 	}
 
 	if wh.IsUploadOnly() {
+		if err := wh.SaveSyncPoints(bundles...); err != nil {
+			log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
+			return err
+		}
 		return nil
 	}
 
@@ -228,6 +232,7 @@ func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.E
 		log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
 		return err
 	}
+
 	return nil
 }
 
