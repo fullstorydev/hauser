@@ -1,7 +1,6 @@
 package main
 
 import (
-	"compress/gzip"
 	"encoding/csv"
 	"encoding/json"
 	"flag"
@@ -14,10 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fullstorydev/hauser/config"
-	"github.com/fullstorydev/hauser/warehouse"
 	"github.com/nishanths/fullstory"
 	"github.com/pkg/errors"
+
+	"github.com/fullstorydev/hauser/config"
+	"github.com/fullstorydev/hauser/warehouse"
 )
 
 var (
@@ -231,17 +231,11 @@ func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.E
 	return nil
 }
 
-func withAcceptEncoding() func(r *http.Request) {
-	return func(r *http.Request) {
-		r.Header.Set("Accept-Encoding", "*")
-	}
-}
-
 func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, error) {
 	log.Printf("Getting Export Data for bundle %d\n", bundleID)
 	var fsErr error
 	for r := 1; r <= maxAttempts; r++ {
-		stream, err := fs.ExportData(bundleID, withAcceptEncoding())
+		stream, err := fs.ExportData(bundleID)
 		if err == nil {
 			return stream, nil
 		}
@@ -284,13 +278,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string,
 	}
 	defer stream.Close()
 
-	gzstream, err := gzip.NewReader(stream)
-	if err != nil {
-		log.Printf("Failed gzip reader: %s", err)
-		return 0, err
-	}
-
-	decoder := json.NewDecoder(gzstream)
+	decoder := json.NewDecoder(stream)
 	decoder.UseNumber()
 
 	// skip array open delimiter
@@ -340,14 +328,7 @@ func WriteBundleToJson(fs *fullstory.Client, bundleID int, filename string) (byt
 	}
 	defer outfile.Close()
 
-	gzstream, err := gzip.NewReader(stream)
-	if err != nil {
-		log.Printf("Failed gzip reader: %s", err)
-		return 0, err
-	}
-	defer gzstream.Close()
-
-	written, err := io.Copy(outfile, gzstream)
+	written, err := io.Copy(outfile, stream)
 	if err != nil {
 		log.Printf("Failed to copy input stream to file: %s", err)
 		return 0, err
