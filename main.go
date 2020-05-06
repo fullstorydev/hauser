@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nishanths/fullstory"
 	"github.com/pkg/errors"
 
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 	"github.com/fullstorydev/hauser/warehouse"
 )
@@ -37,7 +37,7 @@ const (
 // Record represents a single export row in the export file
 type Record map[string]interface{}
 
-type ExportProcessor func(warehouse.Warehouse, []string, *fullstory.Client, []fullstory.ExportMeta) (int, error)
+type ExportProcessor func(warehouse.Warehouse, []string, *client.Client, []client.ExportMeta) (int, error)
 
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
@@ -89,10 +89,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, re
 func ProcessExportsSince(wh warehouse.Warehouse, tableColumns []string, since time.Time, exportProcessor ExportProcessor) (int, error) {
 	log.Printf("Checking for new export files since %s", since)
 
-	fs := fullstory.NewClient(conf.FsApiToken)
-	if conf.ExportURL != "" {
-		fs.Config.BaseURL = conf.ExportURL
-	}
+	fs := client.NewClient(conf)
 	exports, err := fs.ExportList(since)
 	if err != nil {
 		log.Printf("Failed to fetch export list: %s", err)
@@ -104,7 +101,7 @@ func ProcessExportsSince(wh warehouse.Warehouse, tableColumns []string, since ti
 
 // ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
 // occurs, or until they are all processed.
-func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs *client.Client, exports []client.ExportMeta) (int, error) {
 	for _, e := range exports {
 		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
 		mark := time.Now()
@@ -152,7 +149,7 @@ func ProcessFilesIndividually(wh warehouse.Warehouse, tableColumns []string, fs 
 // day to be processed is the day from the first export bundle's Start value.  When all the bundles with that same day
 // have been written to the CSV file, it is loaded to the warehouse, and the function quits without attempting to
 // process remaining bundles (they'll get picked up on the next call to ProcessExportsSince)
-func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullstory.Client, exports []fullstory.ExportMeta) (int, error) {
+func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *client.Client, exports []client.ExportMeta) (int, error) {
 	if len(exports) == 0 {
 		return 0, nil
 	}
@@ -172,7 +169,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullst
 	defer outfile.Close()
 	csvOut := csv.NewWriter(outfile)
 
-	var processedBundles []fullstory.ExportMeta
+	var processedBundles []client.ExportMeta
 	var totalRecords int
 	groupDay := exports[0].Start.UTC().Truncate(24 * time.Hour)
 	for _, e := range exports {
@@ -201,7 +198,7 @@ func ProcessFilesByDay(wh warehouse.Warehouse, tableColumns []string, fs *fullst
 	return len(processedBundles), nil
 }
 
-func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.ExportMeta) error {
+func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...client.ExportMeta) error {
 	var objPath string
 	var err error
 	if objPath, err = wh.UploadFile(filename); err != nil {
@@ -231,7 +228,7 @@ func LoadBundles(wh warehouse.Warehouse, filename string, bundles ...fullstory.E
 	return nil
 }
 
-func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, error) {
+func getExportData(fs *client.Client, bundleID int) (client.ExportData, error) {
 	log.Printf("Getting Export Data for bundle %d\n", bundleID)
 	var fsErr error
 	for r := 1; r <= maxAttempts; r++ {
@@ -255,7 +252,7 @@ func getExportData(fs *fullstory.Client, bundleID int) (fullstory.ExportData, er
 }
 
 func getRetryInfo(err error) (bool, time.Duration) {
-	if statusError, ok := err.(fullstory.StatusError); ok {
+	if statusError, ok := err.(client.StatusError); ok {
 		// If the status code is NOT 429 and the code is below 500 we will not attempt to retry
 		if statusError.StatusCode != http.StatusTooManyRequests && statusError.StatusCode < 500 {
 			return false, defaultRetryAfterDuration
@@ -270,7 +267,7 @@ func getRetryInfo(err error) (bool, time.Duration) {
 }
 
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
-func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
+func WriteBundleToCSV(fs *client.Client, bundleID int, tableColumns []string, csvOut *csv.Writer, wh warehouse.Warehouse) (numRecords int, err error) {
 	stream, err := getExportData(fs, bundleID)
 	if err != nil {
 		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)
@@ -313,7 +310,7 @@ func WriteBundleToCSV(fs *fullstory.Client, bundleID int, tableColumns []string,
 }
 
 // WriteBundleToJson writes the bundle corresponding to the given bundleID to a Json file
-func WriteBundleToJson(fs *fullstory.Client, bundleID int, filename string) (bytesWritten int64, err error) {
+func WriteBundleToJson(fs *client.Client, bundleID int, filename string) (bytesWritten int64, err error) {
 	stream, err := getExportData(fs, bundleID)
 	if err != nil {
 		log.Printf("Failed to fetch bundle %d: %s", bundleID, err)

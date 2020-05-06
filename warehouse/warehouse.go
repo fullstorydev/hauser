@@ -5,13 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nishanths/fullstory"
+	"github.com/fullstorydev/hauser/client"
 )
 
 type Warehouse interface {
 	LastSyncPoint() (time.Time, error)
-	SaveSyncPoints(bundles ...fullstory.ExportMeta) error
-	LoadToWarehouse(filename string, bundles ...fullstory.ExportMeta) error
+	SaveSyncPoints(bundles ...client.ExportMeta) error
+	LoadToWarehouse(filename string, bundles ...client.ExportMeta) error
 	ValueToString(val interface{}, isTime bool) string
 	GetExportTableColumns() []string
 	EnsureCompatibleExportTable() error

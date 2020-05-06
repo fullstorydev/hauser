@@ -2,14 +2,15 @@ package warehouse
 
 import (
 	"fmt"
-	"github.com/fullstorydev/hauser/config"
-	"github.com/nishanths/fullstory"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/fullstorydev/hauser/client"
+	"github.com/fullstorydev/hauser/config"
 )
 
 type LocalDisk struct {
@@ -71,7 +72,7 @@ func (w *LocalDisk) LastSyncPoint() (time.Time, error) {
 }
 
 // SaveSyncPoints writes the current time to timestamp file
-func (w *LocalDisk) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
+func (w *LocalDisk) SaveSyncPoints(bundles ...client.ExportMeta) error {
 	if len(bundles) == 0 {
 		panic("Zero-length bundle list passed to SaveSyncPoints")
 	}
@@ -84,7 +85,7 @@ func (w *LocalDisk) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	return ioutil.WriteFile(filename, timedata, 0644)
 }
 
-func (w *LocalDisk) LoadToWarehouse(objName string, bundles ...fullstory.ExportMeta) error {
+func (w *LocalDisk) LoadToWarehouse(objName string, bundles ...client.ExportMeta) error {
 	//Do nothing, as that method is called during the current workflow
 	return nil
 }

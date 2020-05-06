@@ -1,4 +1,4 @@
-package fullstory
+package client
 
 import (
 	"encoding/json"
@@ -9,62 +9,6 @@ import (
 	"strconv"
 	"time"
 )
-
-// Session represents the FullStory session for a user.
-type Session struct {
-	UserID    int
-	SessionID int
-	Created   time.Time
-	URL       string
-}
-
-func (s *Session) UnmarshalJSON(data []byte) error {
-	aux := struct {
-		UserID    int    `json:"UserId"`
-		SessionID int    `json:"SessionId"`
-		Created   int64  `json:"CreatedTime"`
-		URL       string `json:"FsUrl"`
-	}{}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	s.UserID = aux.UserID
-	s.SessionID = aux.SessionID
-	s.Created = time.Unix(aux.Created, 0)
-	s.URL = aux.URL
-	return nil
-}
-
-// Sessions returns a list of Session for the supplied parameters.
-// If limit == -1, limit is ignored.
-//
-// For more details, see:
-//   http://help.fullstory.com/develop-rest/137382-rest-api-retrieving-a-list-of-sessions-for-a-given-user-after-the-fact
-func (c *Client) Sessions(limit int, uid, email string) ([]Session, error) {
-	v := make(url.Values)
-	if limit != -1 {
-		v.Add("limit", strconv.Itoa(limit))
-	}
-	v.Add("uid", uid)
-	v.Add("email", email)
-
-	req, err := http.NewRequest("GET", c.BaseURL+"/sessions"+"?"+v.Encode(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := c.doReq(req)
-	if err != nil {
-		return nil, err
-	}
-	defer body.Close()
-
-	var s []Session
-	if err := json.NewDecoder(body).Decode(&s); err != nil {
-		return nil, err
-	}
-	return s, nil
-}
 
 // ExportMeta is metadata about ExportData.
 type ExportMeta struct {
