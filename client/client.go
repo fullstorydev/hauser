@@ -11,9 +11,6 @@ import (
 	"github.com/fullstorydev/hauser/config"
 )
 
-// BaseURL is the base URL for the fullstory.com API.
-const BaseURL = "https://export.fullstory.com/api/v1"
-
 var _ error = StatusError{}
 
 // StatusError is returned when the HTTP roundtrip succeeds, but the response status
@@ -33,20 +30,14 @@ func (e StatusError) Error() string {
 type Client struct {
 	HTTPClient *http.Client
 	Config     *config.Config
-	BaseURL    string
 }
 
 // NewClient returns a Client initialized with http.DefaultClient and the
 // supplied apiToken.
 func NewClient(config *config.Config) *Client {
-	baseURL := BaseURL
-	if config.ExportURL != "" {
-		baseURL = config.ExportURL
-	}
 	return &Client{
 		HTTPClient: http.DefaultClient,
 		Config:     config,
-		BaseURL:    baseURL,
 	}
 }
 
