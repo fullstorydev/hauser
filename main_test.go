@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/warehouse"
-	"github.com/nishanths/fullstory"
 	"github.com/pkg/errors"
 )
 
@@ -24,22 +24,22 @@ func TestGetRetryInfo(t *testing.T) {
 			expRetryAfter: defaultRetryAfterDuration,
 		},
 		{
-			err:           fullstory.StatusError{StatusCode: http.StatusTooManyRequests, RetryAfter: 3 * time.Second},
+			err:           client.StatusError{StatusCode: http.StatusTooManyRequests, RetryAfter: 3 * time.Second},
 			expDoRetry:    true,
 			expRetryAfter: 3 * time.Second,
 		},
 		{
-			err:           fullstory.StatusError{StatusCode: http.StatusInternalServerError, RetryAfter: 3 * time.Second},
+			err:           client.StatusError{StatusCode: http.StatusInternalServerError, RetryAfter: 3 * time.Second},
 			expDoRetry:    true,
 			expRetryAfter: 3 * time.Second,
 		},
 		{
-			err:           fullstory.StatusError{StatusCode: http.StatusServiceUnavailable, RetryAfter: 3 * time.Second},
+			err:           client.StatusError{StatusCode: http.StatusServiceUnavailable, RetryAfter: 3 * time.Second},
 			expDoRetry:    true,
 			expRetryAfter: 3 * time.Second,
 		},
 		{
-			err:           fullstory.StatusError{StatusCode: http.StatusNotFound, RetryAfter: 3 * time.Second},
+			err:           client.StatusError{StatusCode: http.StatusNotFound, RetryAfter: 3 * time.Second},
 			expDoRetry:    false,
 			expRetryAfter: defaultRetryAfterDuration,
 		},

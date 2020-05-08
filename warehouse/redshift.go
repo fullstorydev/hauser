@@ -15,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/lib/pq"
-	"github.com/nishanths/fullstory"
 
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
@@ -187,7 +187,7 @@ func (rs *Redshift) DeleteFile(s3obj string) {
 	}
 }
 
-func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...fullstory.ExportMeta) error {
+func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...client.ExportMeta) error {
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
@@ -266,7 +266,7 @@ func (rs *Redshift) CreateSyncTable() error {
 	return err
 }
 
-func (rs *Redshift) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
+func (rs *Redshift) SaveSyncPoints(bundles ...client.ExportMeta) error {
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {

@@ -7,16 +7,20 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+// DefaultExportURL is the standard base URL for the fullstory.com API.
+const DefaultExportURL = "https://export.fullstory.com/api/v1"
+
 type Config struct {
-	Warehouse       string
-	FsApiToken      string
-	Backoff         duration
-	BackoffStepsMax int
-	CheckInterval   duration
-	TmpDir          string
-	ListExportLimit int
-	GroupFilesByDay bool
-	SaveAsJson      bool
+	Warehouse            string
+	FsApiToken           string
+	AdditionalHttpHeader []Header
+	Backoff              duration
+	BackoffStepsMax      int
+	CheckInterval        duration
+	TmpDir               string
+	ListExportLimit      int
+	GroupFilesByDay      bool
+	SaveAsJson           bool
 
 	// for debug only; can point to localhost
 	ExportURL string
@@ -31,6 +35,11 @@ type Config struct {
 
 	// local filesystem: Local
 	Local LocalConfig
+}
+
+type Header struct {
+	Key   string
+	Value string
 }
 
 type S3Config struct {
@@ -91,6 +100,11 @@ func Load(filename string) (*Config, error) {
 
 	if _, err := toml.Decode(string(tomlData), &conf); err != nil {
 		return nil, err
+	}
+
+	// Set any defaults.
+	if conf.ExportURL == "" {
+		conf.ExportURL = DefaultExportURL
 	}
 
 	return &conf, nil

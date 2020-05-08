@@ -12,8 +12,8 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
-	"github.com/nishanths/fullstory"
 
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
@@ -113,7 +113,7 @@ func (bq *BigQuery) LastSyncPoint() (time.Time, error) {
 	return t, nil
 }
 
-func (bq *BigQuery) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
+func (bq *BigQuery) SaveSyncPoints(bundles ...client.ExportMeta) error {
 	if err := bq.connectToBQ(); err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (bq *BigQuery) SaveSyncPoints(bundles ...fullstory.ExportMeta) error {
 	return bq.waitForJob(job)
 }
 
-func (bq *BigQuery) LoadToWarehouse(objName string, bundles ...fullstory.ExportMeta) error {
+func (bq *BigQuery) LoadToWarehouse(objName string, bundles ...client.ExportMeta) error {
 	if err := bq.connectToBQ(); err != nil {
 		return err
 	}
