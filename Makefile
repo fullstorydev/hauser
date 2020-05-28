@@ -6,6 +6,7 @@ dirs_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type d | grep -vE '\./\.|v
 files_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type f -name '*.go')
 all_to_check=$(files_to_check) $(dirs_to_check)
 
+
 # TODO: run golint and errcheck, but only to catch *new* violations and
 # decide whether to change code or not (e.g. we need to be able to whitelist
 # violations already in the code). They can be useful to catch errors, but
@@ -52,7 +53,7 @@ ineffassign:
 .PHONY: predeclared
 predeclared:
 	$(INSTALLTOOL) github.com/nishanths/predeclared
-	predeclared $(all_to_check)
+	predeclared . $(dirs_to_check)
 
 # Intentionally omitted from CI, but target here for ad-hoc reports.
 .PHONY: golint
