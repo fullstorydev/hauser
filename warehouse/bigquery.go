@@ -12,7 +12,6 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
-
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
@@ -178,7 +177,7 @@ func (bq *BigQuery) LoadToWarehouse(objName string, bundles ...client.ExportMeta
 func (bq *BigQuery) EnsureCompatibleExportTable() error {
 	// Get Hauser Schema
 	// this is required if we create a new table or if we have to compare to the existing table schema
-	hauserSchema, err := bigquery.InferSchema(bundleEvent{})
+	hauserSchema, err := bigquery.InferSchema(BundleEvent{})
 	if err != nil {
 		return err
 	}

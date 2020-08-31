@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -105,6 +106,13 @@ func Load(filename string) (*Config, error) {
 	// Set any defaults.
 	if conf.ExportURL == "" {
 		conf.ExportURL = DefaultExportURL
+	}
+
+	if conf.TmpDir == "" {
+		conf.TmpDir, err = ioutil.TempDir("", "hauser")
+		if err != nil {
+			log.Fatalf("failed to create temporary dir: %s", err)
+		}
 	}
 
 	return &conf, nil

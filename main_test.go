@@ -4,13 +4,92 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/fullstorydev/hauser/client"
+	"github.com/fullstorydev/hauser/config"
+	hausertest "github.com/fullstorydev/hauser/testing"
 	"github.com/fullstorydev/hauser/warehouse"
 	"github.com/pkg/errors"
 )
+
+func Ok(t *testing.T, err error, format string, a ...interface{}) {
+	if err != nil {
+		format += ": unexpected error: %s"
+		a = append(a, err)
+		t.Errorf(format, a...)
+	}
+}
+
+func Assert(t *testing.T, condition bool, format string, a ...interface{}) {
+	if !condition {
+		t.Errorf(format, a...)
+	}
+}
+
+func Equals(t *testing.T, expected, actual interface{}, format string, a ...interface{}) {
+	if expected != actual {
+		format += ": want %v (type %v), got %v (type %v)"
+		a = append(a, expected, reflect.TypeOf(expected), actual, reflect.TypeOf(actual))
+		t.Errorf(format, a...)
+	}
+}
+
+func StrSliceEquals(t *testing.T, expected, actual []string, format string, a ...interface{}) {
+	format += ": want %v, got %v (type %v)"
+	a = append(a, expected, reflect.TypeOf(expected), actual, reflect.TypeOf(actual))
+
+	if len(expected) != len(actual) {
+		t.Errorf(format, a)
+	}
+	for i, e := range expected {
+		if e != actual[i] {
+			t.Errorf(format, a)
+		}
+	}
+}
+
+func TestHauser(t *testing.T) {
+
+	testCases := []struct {
+		name            string
+		testdata        string
+		freqSetting     int32
+		expectedBundles int
+	}{
+		{
+			name:            "base case",
+			testdata:        "./testing/testdata/testdata.json",
+			freqSetting:     48,
+			expectedBundles: 5,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			conf := &config.Config{}
+			fsClient := hausertest.NewMockDataExportClient(tc.freqSetting, tc.testdata)
+			wh := hausertest.NewMockWarehouse()
+
+			hauser := NewHauser(conf, fsClient, wh)
+			err := hauser.Init()
+
+			Ok(t, err, "failed to init")
+			Assert(t, wh.Initialized, "expected warehouse to be initialized")
+
+			numBundles, err := hauser.ProcessNext()
+			Ok(t, err, "failed to process next bundles")
+			Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
+			Equals(t, tc.expectedBundles, len(wh.UploadedFiles), "unexepected number of upload files")
+			Equals(t, tc.expectedBundles, len(wh.DeletedFiles), "unexepected number of deleted files")
+			Equals(t, tc.expectedBundles, len(wh.LoadedFiles), "unexepected number of loaded files")
+			StrSliceEquals(t, wh.UploadedFiles, wh.LoadedFiles, "file mismatch")
+			StrSliceEquals(t, wh.UploadedFiles, wh.DeletedFiles, "file mismatch")
+		})
+	}
+}
 
 func TestGetRetryInfo(t *testing.T) {
 	testCases := []struct {
