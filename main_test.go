@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"reflect"
 	"testing"
 	"time"
@@ -14,6 +19,8 @@ import (
 	"github.com/fullstorydev/hauser/warehouse"
 	"github.com/pkg/errors"
 )
+
+var update = flag.Bool("update", false, "update upload files")
 
 func Ok(t *testing.T, err error, format string, a ...interface{}) {
 	if err != nil {
@@ -56,37 +63,66 @@ func TestHauser(t *testing.T) {
 	testCases := []struct {
 		name            string
 		testdata        string
+		outputDir       string
 		freqSetting     int32
 		expectedBundles int
+		config          *config.Config
 	}{
 		{
 			name:            "base case",
-			testdata:        "./testing/testdata/testdata.json",
+			testdata:        "./testing/testdata/raw.json",
+			outputDir:       "./testing/testdata/default",
 			freqSetting:     48,
 			expectedBundles: 5,
+			config:          &config.Config{},
+		},
+		{
+			name:            "group by day case",
+			testdata:        "./testing/testdata/raw.json",
+			outputDir:       "./testing/testdata/groupByDay",
+			freqSetting:     48,
+			expectedBundles: 5,
+			config: &config.Config{
+				GroupFilesByDay: true,
+			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			conf := &config.Config{}
 			fsClient := hausertest.NewMockDataExportClient(tc.freqSetting, tc.testdata)
 			wh := hausertest.NewMockWarehouse()
 
-			hauser := NewHauser(conf, fsClient, wh)
+			hauser := NewHauser(tc.config, fsClient, wh)
 			err := hauser.Init()
 
 			Ok(t, err, "failed to init")
 			Assert(t, wh.Initialized, "expected warehouse to be initialized")
-
-			numBundles, err := hauser.ProcessNext()
-			Ok(t, err, "failed to process next bundles")
+			numBundles := 0
+			for {
+				newBundles, err := hauser.ProcessNext()
+				Ok(t, err, "failed to process next bundles")
+				if newBundles == 0 {
+					break
+				}
+				numBundles += newBundles
+			}
 			Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
 			Equals(t, tc.expectedBundles, len(wh.UploadedFiles), "unexepected number of upload files")
 			Equals(t, tc.expectedBundles, len(wh.DeletedFiles), "unexepected number of deleted files")
 			Equals(t, tc.expectedBundles, len(wh.LoadedFiles), "unexepected number of loaded files")
-			StrSliceEquals(t, wh.UploadedFiles, wh.LoadedFiles, "file mismatch")
-			StrSliceEquals(t, wh.UploadedFiles, wh.DeletedFiles, "file mismatch")
+			StrSliceEquals(t, wh.LoadedFiles, wh.DeletedFiles, "file mismatch")
+
+			for name, data := range wh.UploadedFiles {
+				fname := path.Join(tc.outputDir, name)
+				if *update {
+					Ok(t, ioutil.WriteFile(fname, data, os.ModePerm), "failed to write test file")
+				} else {
+					expected, err := ioutil.ReadFile(fname)
+					Ok(t, err, "failed to read expected output file")
+					Assert(t, bytes.Equal(expected, data), "uploaded file doesn't match expected")
+				}
+			}
 		})
 	}
 }

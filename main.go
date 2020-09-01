@@ -35,8 +35,6 @@ const (
 // Record represents a single export row in the export file
 type Record map[string]interface{}
 
-type ExportProcessor func(warehouse.Warehouse, []string, *client.Client, []client.ExportMeta) (int, error)
-
 type HauserService struct {
 	config       *config.Config
 	fsClient     client.DataExportClient
@@ -118,42 +116,48 @@ func (h *HauserService) ProcessExportsSince(since time.Time) (int, error) {
 // occurs, or until they are all processed.
 func (h *HauserService) ProcessFilesIndividually(exports []client.ExportMeta) (int, error) {
 	for _, e := range exports {
-		log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
-		mark := time.Now()
-		var filename string
-		var statusMessage string
-		if h.config.SaveAsJson {
-			filename = filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.json", e.ID))
-			defer os.Remove(filename)
-			writtenCount, err := h.WriteBundleToJson(e.ID, filename)
-			if err != nil {
-				log.Printf("Failed to create tmp json file: %s", err)
-				return 0, err
-			}
-			statusMessage = fmt.Sprintf("Processing of bundle %d (%d bytes)", e.ID, writtenCount)
-		} else {
-			filename = filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", e.ID))
-			outfile, err := os.Create(filename)
-			if err != nil {
-				log.Printf("Failed to create tmp csv file: %s", err)
-				return 0, err
-			}
-			defer os.Remove(filename)
-			defer outfile.Close()
-			csvOut := csv.NewWriter(outfile)
+		err := func() error {
+			log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
+			mark := time.Now()
+			var filename string
+			var statusMessage string
+			if h.config.SaveAsJson {
+				filename = filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.json", e.ID))
+				defer os.Remove(filename)
+				writtenCount, err := h.WriteBundleToJson(e.ID, filename)
+				if err != nil {
+					log.Printf("Failed to create tmp json file: %s", err)
+					return err
+				}
+				statusMessage = fmt.Sprintf("Processing of bundle %d (%d bytes)", e.ID, writtenCount)
+			} else {
+				filename = filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", e.ID))
+				outfile, err := os.Create(filename)
+				if err != nil {
+					log.Printf("Failed to create tmp csv file: %s", err)
+					return err
+				}
+				defer os.Remove(filename)
+				defer outfile.Close()
+				csvOut := csv.NewWriter(outfile)
 
-			recordCount, err := h.WriteBundleToCSV(e.ID, h.tableColumns, csvOut)
-			if err != nil {
-				return 0, err
+				recordCount, err := h.WriteBundleToCSV(e.ID, h.tableColumns, csvOut)
+				if err != nil {
+					return err
+				}
+				statusMessage = fmt.Sprintf("Processing of bundle %d (%d records)", e.ID, recordCount)
 			}
-			statusMessage = fmt.Sprintf("Processing of bundle %d (%d records)", e.ID, recordCount)
+
+			if err := h.LoadBundles(filename, e); err != nil {
+				return err
+			}
+
+			log.Printf("%s took %s", statusMessage, time.Since(mark))
+			return nil
+		}()
+		if err != nil {
+			return 0, errors.Errorf("Failed to process bundle: %s", err)
 		}
-
-		if err := h.LoadBundles(filename, e); err != nil {
-			return 0, err
-		}
-
-		log.Printf("%s took %s", statusMessage, time.Since(mark))
 	}
 
 	// return how many files were processed
@@ -372,6 +376,9 @@ func (h *HauserService) Init() error {
 	// NB: We SHOULD fetch the table columns ONLY after the call to EnsureCompatibleExportTable.
 	// The EnsureCompatibleExportTable function potentially alters the schema of the export table in the client warehouse.
 	h.tableColumns = h.warehouse.GetExportTableColumns()
+	for i, col := range h.tableColumns {
+		h.tableColumns[i] = strings.ToLower(col)
+	}
 	return nil
 }
 

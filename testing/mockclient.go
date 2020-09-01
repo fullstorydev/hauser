@@ -71,7 +71,6 @@ func (m *MockDataExportClient) ExportList(start time.Time) ([]client.ExportMeta,
 		bundleStart = bundleStop
 		bundleStop = bundleStop.Add(bundleDuration)
 	}
-	fmt.Println(fmt.Sprintf("META: %v", meta))
 	return meta, nil
 }
 

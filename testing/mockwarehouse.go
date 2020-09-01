@@ -3,6 +3,8 @@ package testing
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -23,7 +25,7 @@ type MockWarehouse struct {
 	Initialized   bool
 	Syncs         []client.ExportMeta
 	LoadedFiles   []string
-	UploadedFiles []string
+	UploadedFiles map[string][]byte
 	DeletedFiles  []string
 }
 
@@ -35,7 +37,7 @@ func NewMockWarehouse() *MockWarehouse {
 		Initialized:   false,
 		Syncs:         nil,
 		LoadedFiles:   nil,
-		UploadedFiles: nil,
+		UploadedFiles: make(map[string][]byte, 0),
 		DeletedFiles:  nil,
 	}
 }
@@ -57,7 +59,7 @@ func (m *MockWarehouse) SaveSyncPoints(bundles ...client.ExportMeta) error {
 
 func (m *MockWarehouse) LoadToWarehouse(filename string, _ ...client.ExportMeta) error {
 	isUploaded := false
-	for _, name := range m.UploadedFiles {
+	for name := range m.UploadedFiles {
 		if filename == name {
 			isUploaded = true
 			break
@@ -95,7 +97,12 @@ func (m *MockWarehouse) EnsureCompatibleExportTable() error {
 
 func (m *MockWarehouse) UploadFile(name string) (string, error) {
 	_, objName := filepath.Split(name)
-	m.UploadedFiles = append(m.UploadedFiles, objName)
+	f, err := os.Open(name)
+	if err != nil {
+		return "", err
+	}
+	data, err := ioutil.ReadAll(f)
+	m.UploadedFiles[objName] = data
 	return objName, nil
 }
 
