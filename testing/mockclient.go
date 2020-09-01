@@ -94,11 +94,11 @@ func (m *MockDataExportClient) ExportData(id int, _ ...func(r *http.Request)) (c
 
 func mustParseEventStartTime(record map[string]interface{}) time.Time {
 	if v, ok := record["EventStart"]; !ok {
-		panic(fmt.Sprintf("EventStart didn't exist for record"))
+		panic("EventStart didn't exist for record")
 	} else if str, ok := v.(string); !ok {
-		panic(fmt.Sprintf("Invalid format for EventStart"))
+		panic("Invalid format for EventStart")
 	} else if eventTime, err := time.Parse(time.RFC3339Nano, str); err != nil {
-		panic(fmt.Sprintf("Invalid format for EventStart"))
+		panic("Invalid format for EventStart")
 	} else {
 		return eventTime
 	}

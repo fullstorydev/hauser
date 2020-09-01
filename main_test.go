@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 	hausertest "github.com/fullstorydev/hauser/testing"
+	"github.com/fullstorydev/hauser/testing/testutils"
 	"github.com/fullstorydev/hauser/warehouse"
 	"github.com/pkg/errors"
 )
@@ -27,34 +27,6 @@ func Ok(t *testing.T, err error, format string, a ...interface{}) {
 		format += ": unexpected error: %s"
 		a = append(a, err)
 		t.Errorf(format, a...)
-	}
-}
-
-func Assert(t *testing.T, condition bool, format string, a ...interface{}) {
-	if !condition {
-		t.Errorf(format, a...)
-	}
-}
-
-func Equals(t *testing.T, expected, actual interface{}, format string, a ...interface{}) {
-	if expected != actual {
-		format += ": want %v (type %v), got %v (type %v)"
-		a = append(a, expected, reflect.TypeOf(expected), actual, reflect.TypeOf(actual))
-		t.Errorf(format, a...)
-	}
-}
-
-func StrSliceEquals(t *testing.T, expected, actual []string, format string, a ...interface{}) {
-	format += ": want %v, got %v (type %v)"
-	a = append(a, expected, reflect.TypeOf(expected), actual, reflect.TypeOf(actual))
-
-	if len(expected) != len(actual) {
-		t.Errorf(format, a)
-	}
-	for i, e := range expected {
-		if e != actual[i] {
-			t.Errorf(format, a)
-		}
 	}
 }
 
@@ -97,7 +69,7 @@ func TestHauser(t *testing.T) {
 			err := hauser.Init()
 
 			Ok(t, err, "failed to init")
-			Assert(t, wh.Initialized, "expected warehouse to be initialized")
+			testutils.Assert(t, wh.Initialized, "expected warehouse to be initialized")
 			numBundles := 0
 			for {
 				newBundles, err := hauser.ProcessNext()
@@ -107,11 +79,11 @@ func TestHauser(t *testing.T) {
 				}
 				numBundles += newBundles
 			}
-			Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
-			Equals(t, tc.expectedBundles, len(wh.UploadedFiles), "unexepected number of upload files")
-			Equals(t, tc.expectedBundles, len(wh.DeletedFiles), "unexepected number of deleted files")
-			Equals(t, tc.expectedBundles, len(wh.LoadedFiles), "unexepected number of loaded files")
-			StrSliceEquals(t, wh.LoadedFiles, wh.DeletedFiles, "file mismatch")
+			testutils.Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
+			testutils.Equals(t, tc.expectedBundles, len(wh.UploadedFiles), "unexepected number of upload files")
+			testutils.Equals(t, tc.expectedBundles, len(wh.DeletedFiles), "unexepected number of deleted files")
+			testutils.Equals(t, tc.expectedBundles, len(wh.LoadedFiles), "unexepected number of loaded files")
+			testutils.StrSliceEquals(t, wh.LoadedFiles, wh.DeletedFiles, "file mismatch")
 
 			for name, data := range wh.UploadedFiles {
 				fname := path.Join(tc.outputDir, name)
@@ -120,7 +92,7 @@ func TestHauser(t *testing.T) {
 				} else {
 					expected, err := ioutil.ReadFile(fname)
 					Ok(t, err, "failed to read expected output file")
-					Assert(t, bytes.Equal(expected, data), "uploaded file doesn't match expected")
+					testutils.Assert(t, bytes.Equal(expected, data), "uploaded file doesn't match expected")
 				}
 			}
 		})

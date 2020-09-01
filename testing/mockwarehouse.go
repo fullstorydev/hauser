@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -37,7 +36,7 @@ func NewMockWarehouse() *MockWarehouse {
 		Initialized:   false,
 		Syncs:         nil,
 		LoadedFiles:   nil,
-		UploadedFiles: make(map[string][]byte, 0),
+		UploadedFiles: make(map[string][]byte),
 		DeletedFiles:  nil,
 	}
 }
@@ -66,7 +65,7 @@ func (m *MockWarehouse) LoadToWarehouse(filename string, _ ...client.ExportMeta)
 		}
 	}
 	if !isUploaded {
-		return errors.New(fmt.Sprintf("no such file: %s", filename))
+		return fmt.Errorf("no such file: %s", filename)
 	}
 	m.LoadedFiles = append(m.LoadedFiles, filename)
 	return nil
@@ -102,6 +101,9 @@ func (m *MockWarehouse) UploadFile(name string) (string, error) {
 		return "", err
 	}
 	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
 	m.UploadedFiles[objName] = data
 	return objName, nil
 }

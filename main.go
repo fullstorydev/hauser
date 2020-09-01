@@ -395,11 +395,12 @@ func (h *HauserService) Run() {
 		log.Fatal(err)
 	}
 	for {
-		if numBundles, err := h.ProcessNext(); err != nil {
-			if h.BackoffOnError(err) {
-				continue
-			}
-		} else if numBundles > 0 {
+		numBundles, err := h.ProcessNext()
+		if h.BackoffOnError(err) {
+			continue
+		}
+
+		if numBundles > 0 {
 			continue
 		}
 
