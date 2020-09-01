@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"bytes"
@@ -42,16 +42,16 @@ func TestHauser(t *testing.T) {
 	}{
 		{
 			name:            "base case",
-			testdata:        "./testing/testdata/raw.json",
-			outputDir:       "./testing/testdata/default",
+			testdata:        "../testing/testdata/raw.json",
+			outputDir:       "../testing/testdata/default",
 			freqSetting:     48,
 			expectedBundles: 5,
 			config:          &config.Config{},
 		},
 		{
 			name:            "group by day case",
-			testdata:        "./testing/testdata/raw.json",
-			outputDir:       "./testing/testdata/groupByDay",
+			testdata:        "../testing/testdata/raw.json",
+			outputDir:       "../testing/testdata/groupByDay",
 			freqSetting:     48,
 			expectedBundles: 5,
 			config: &config.Config{
