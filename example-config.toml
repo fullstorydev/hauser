@@ -42,6 +42,7 @@ Project = "<your project>"
 Dataset = "<your dataset>"
 ExportTable = "fs_export"
 SyncTable = "fs_sync"
+PartitionExpiration = "0"
 
 [local]
 SaveDir = "<Path to your local folder to save files to>"
