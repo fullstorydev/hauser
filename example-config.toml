@@ -42,6 +42,11 @@ Project = "<your project>"
 Dataset = "<your dataset>"
 ExportTable = "fs_export"
 SyncTable = "fs_sync"
+# The amount of time after which the partitions will expire
+# Valid time units are "s", "m", "h" (seconds, minutes, hours).
+# For example, "720h" would expire the partitions after 30 days.
+# If this value is omitted or "0", then the partitions will not expire.
+PartitionExpiration = "0"
 
 [local]
 SaveDir = "<Path to your local folder to save files to>"

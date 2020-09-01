@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"io/ioutil"
 	"time"
 
@@ -68,10 +69,11 @@ type GCSConfig struct {
 }
 
 type BigQueryConfig struct {
-	Project     string
-	Dataset     string
-	ExportTable string
-	SyncTable   string
+	Project             string
+	Dataset             string
+	ExportTable         string
+	SyncTable           string
+	PartitionExpiration duration
 }
 
 type duration struct {
@@ -105,6 +107,10 @@ func Load(filename string) (*Config, error) {
 	// Set any defaults.
 	if conf.ExportURL == "" {
 		conf.ExportURL = DefaultExportURL
+	}
+
+	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
+		return nil, errors.New("BigQuery expiration value must be positive")
 	}
 
 	return &conf, nil

@@ -12,7 +12,6 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
-
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
@@ -206,26 +205,29 @@ func (bq *BigQuery) EnsureCompatibleExportTable() error {
 		return err
 	}
 
+	needsUpdate := false
 	// Find the fields from the hauser schema that are missing from the BiqQuery table
 	missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
-
 	// If fields are missing, we add them to the table schema
+	update := bigquery.TableMetadataToUpdate{}
 	if len(missingFields) > 0 {
 		// Append missing fields to export table schema
-		md.Schema = append(md.Schema, missingFields...)
-		if err := bq.updateTable(table, md.Schema); err != nil {
+		update.Schema = append(md.Schema, missingFields...)
+		needsUpdate = true
+	}
+
+	if md.TimePartitioning.Expiration != bq.conf.BigQuery.PartitionExpiration.Duration {
+		update.TimePartitioning = &bigquery.TimePartitioning{
+			Expiration: bq.conf.BigQuery.PartitionExpiration.Duration,
+			Field:      md.TimePartitioning.Field,
+		}
+		needsUpdate = true
+	}
+
+	if needsUpdate {
+		if _, err := table.Update(bq.ctx, update, md.ETag); err != nil {
 			return nil
 		}
-	}
-	return nil
-}
-
-func (bq *BigQuery) updateTable(table *bigquery.Table, schema bigquery.Schema) error {
-	// update the table so we update the schema
-	log.Printf("Updating Export table schema")
-	tmd := bigquery.TableMetadataToUpdate{Schema: schema}
-	if _, err := table.Update(bq.ctx, tmd, ""); err != nil {
-		return err
 	}
 	return nil
 }
@@ -309,8 +311,10 @@ func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 
 	table := bq.bqClient.Dataset(bq.conf.BigQuery.Dataset).Table(bq.conf.BigQuery.ExportTable)
 	tableMetaData := bigquery.TableMetadata{
-		Schema:           hauserSchema,
-		TimePartitioning: &bigquery.TimePartitioning{},
+		Schema: hauserSchema,
+		TimePartitioning: &bigquery.TimePartitioning{
+			Expiration: bq.conf.BigQuery.PartitionExpiration.Duration,
+		},
 	}
 
 	// create export table as date partitioned, with no expiration date (it can be set later)
