@@ -26,11 +26,23 @@ func (e StatusError) Error() string {
 	return fmt.Sprintf("fullstory: response error: Status:%s, StatusCode:%d, RetryAfter:%v", e.Status, e.StatusCode, e.RetryAfter)
 }
 
+// DataExportClient represents an interface for interacting with the FullStory Data Export API
+type DataExportClient interface {
+	// ExportList returns a list of exports that contain data from the provided start time.
+	// This list can then be used to request the actual data from `ExportData()` below.
+	ExportList(start time.Time) ([]ExportMeta, error)
+	// ExportData retrieves the data for a corresponding export ID and returns a reader for
+	// the data.
+	ExportData(id int, modifyReq ...func(r *http.Request)) (ExportData, error)
+}
+
 // Client represents a HTTP client for making requests to the FullStory API.
 type Client struct {
 	HTTPClient *http.Client
 	Config     *config.Config
 }
+
+var _ DataExportClient = (*Client)(nil)
 
 // NewClient returns a Client initialized with http.DefaultClient and the
 // supplied apiToken.

@@ -1,16 +1,103 @@
-package main
+package internal
 
 import (
+	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"testing"
 	"time"
 
 	"github.com/fullstorydev/hauser/client"
+	"github.com/fullstorydev/hauser/config"
+	hausertest "github.com/fullstorydev/hauser/testing"
+	"github.com/fullstorydev/hauser/testing/testutils"
 	"github.com/fullstorydev/hauser/warehouse"
 	"github.com/pkg/errors"
 )
+
+var update = flag.Bool("update", false, "update upload files")
+
+func Ok(t *testing.T, err error, format string, a ...interface{}) {
+	if err != nil {
+		format += ": unexpected error: %s"
+		a = append(a, err)
+		t.Errorf(format, a...)
+	}
+}
+
+func TestHauser(t *testing.T) {
+
+	testCases := []struct {
+		name            string
+		testdata        string
+		outputDir       string
+		freqSetting     int32
+		expectedBundles int
+		config          *config.Config
+	}{
+		{
+			name:            "base case",
+			testdata:        "../testing/testdata/raw.json",
+			outputDir:       "../testing/testdata/default",
+			freqSetting:     48,
+			expectedBundles: 5,
+			config:          &config.Config{},
+		},
+		{
+			name:            "group by day case",
+			testdata:        "../testing/testdata/raw.json",
+			outputDir:       "../testing/testdata/groupByDay",
+			freqSetting:     48,
+			expectedBundles: 5,
+			config: &config.Config{
+				GroupFilesByDay: true,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fsClient := hausertest.NewMockDataExportClient(tc.freqSetting, tc.testdata)
+			wh := hausertest.NewMockWarehouse()
+
+			hauser := NewHauser(tc.config, fsClient, wh)
+			err := hauser.Init()
+
+			Ok(t, err, "failed to init")
+			testutils.Assert(t, wh.Initialized, "expected warehouse to be initialized")
+			numBundles := 0
+			for {
+				newBundles, err := hauser.ProcessNext()
+				Ok(t, err, "failed to process next bundles")
+				if newBundles == 0 {
+					break
+				}
+				numBundles += newBundles
+			}
+			testutils.Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
+			testutils.Equals(t, tc.expectedBundles, len(wh.UploadedFiles), "unexepected number of upload files")
+			testutils.Equals(t, tc.expectedBundles, len(wh.DeletedFiles), "unexepected number of deleted files")
+			testutils.Equals(t, tc.expectedBundles, len(wh.LoadedFiles), "unexepected number of loaded files")
+			testutils.StrSliceEquals(t, wh.LoadedFiles, wh.DeletedFiles, "file mismatch")
+
+			for name, data := range wh.UploadedFiles {
+				fname := path.Join(tc.outputDir, name)
+				if *update {
+					Ok(t, ioutil.WriteFile(fname, data, os.ModePerm), "failed to write test file")
+				} else {
+					expected, err := ioutil.ReadFile(fname)
+					Ok(t, err, "failed to read expected output file")
+					testutils.Assert(t, bytes.Equal(expected, data), "uploaded file doesn't match expected")
+				}
+			}
+		})
+	}
+}
 
 func TestGetRetryInfo(t *testing.T) {
 	testCases := []struct {

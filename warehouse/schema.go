@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// bundleEvent represents a single event, as it's structured inside a FullStory export bundle.
-type bundleEvent struct {
+// BundleEvent represents a single event, as it's structured inside a FullStory export bundle.
+type BundleEvent struct {
 	EventCustomName        string
 	EventStart             time.Time
 	EventType              string
@@ -86,7 +86,7 @@ type FieldTypeMapper map[string]string
 // a JSON document that contains an array of event data objects. The fields in the bundle schema
 // reflect the attributes of those event JSON objects.
 func BundleFields() map[string]BundleField {
-	t := reflect.TypeOf(bundleEvent{})
+	t := reflect.TypeOf(BundleEvent{})
 	result := make(map[string]BundleField, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		result[strings.ToLower(t.Field(i).Name)] = BundleField{
@@ -102,7 +102,7 @@ func BundleFields() map[string]BundleField {
 // finally be loaded.
 func ExportTableSchema(ftm FieldTypeMapper) Schema {
 	// for now, the export table schema contains the same set of fields as the raw bundles
-	return structToSchema(bundleEvent{}, ftm)
+	return structToSchema(BundleEvent{}, ftm)
 }
 
 func SyncTableSchema(ftm FieldTypeMapper) Schema {
