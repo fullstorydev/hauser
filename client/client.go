@@ -31,10 +31,9 @@ type Client struct {
 	HTTPClient *http.Client
 	Config     *config.Config
 }
-
-// NewClient returns a Client initialized with http.DefaultClient and the
+// NewDefaultClient returns a Client initialized with http.DefaultClient and the
 // supplied apiToken.
-func NewClient(config *config.Config) *Client {
+func NewDefaultClient(config *config.Config) *Client {
 	return &Client{
 		HTTPClient: http.DefaultClient,
 		Config:     config,
@@ -45,7 +44,7 @@ func NewClient(config *config.Config) *Client {
 // Necessary authentication headers are added before performing the request.
 //
 // If the error is nil, the caller is responsible for closing the returned data.
-func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
+func (c *Client) DoReq(req *http.Request) (io.ReadCloser, error) {
 	req.Header.Set("Authorization", "Basic "+c.Config.FsApiToken)
 	for _, header := range c.Config.AdditionalHttpHeader {
 		req.Header.Set(header.Key, header.Value)

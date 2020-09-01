@@ -42,7 +42,7 @@ func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 		return nil, err
 	}
 
-	body, err := c.doReq(req)
+	body, err := c.DoReq(req)
 	if err != nil {
 		return nil, err
 	}
@@ -82,5 +82,5 @@ func (c *Client) ExportData(id int, modifyReq ...func(r *http.Request)) (ExportD
 		mr(req)
 	}
 
-	return c.doReq(req)
+	return c.DoReq(req)
 }
