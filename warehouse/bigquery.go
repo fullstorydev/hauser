@@ -205,9 +205,9 @@ func (bq *BigQuery) EnsureCompatibleExportTable() error {
 		needsUpdate = true
 	}
 
-	if md.TimePartitioning.Expiration != bq.conf.BigQuery.PartitionExpiration.Duration {
+	if md.TimePartitioning.Expiration != bq.conf.PartitionExpiration.Duration {
 		update.TimePartitioning = &bigquery.TimePartitioning{
-			Expiration: bq.conf.BigQuery.PartitionExpiration.Duration,
+			Expiration: bq.conf.PartitionExpiration.Duration,
 			Field:      md.TimePartitioning.Field,
 		}
 		needsUpdate = true
@@ -302,7 +302,7 @@ func (bq *BigQuery) createExportTable(hauserSchema bigquery.Schema) error {
 	tableMetaData := bigquery.TableMetadata{
 		Schema: hauserSchema,
 		TimePartitioning: &bigquery.TimePartitioning{
-			Expiration: bq.conf.BigQuery.PartitionExpiration.Duration,
+			Expiration: bq.conf.PartitionExpiration.Duration,
 		},
 	}
 
