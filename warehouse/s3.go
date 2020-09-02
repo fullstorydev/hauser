@@ -6,12 +6,14 @@ import (
 	"io"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
@@ -26,6 +28,14 @@ func NewS3Storage(conf *config.S3Config) *S3Storage {
 	return &S3Storage{
 		conf: conf,
 	}
+}
+
+func (s *S3Storage) LastSyncPoint(ctx context.Context) (time.Time, error) {
+	return StorageMixin{s}.LastSyncPoint(ctx)
+}
+
+func (s *S3Storage) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
+	return StorageMixin{s}.SaveSyncPoints(ctx, bundles...)
 }
 
 func (s *S3Storage) SaveFile(ctx context.Context, name string, reader io.Reader) error {

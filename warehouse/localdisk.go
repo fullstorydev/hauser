@@ -7,12 +7,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
 type LocalDisk struct {
-	StorageMixin
 	conf *config.LocalConfig
 }
 
@@ -37,6 +38,14 @@ func NewLocalDisk(c *config.LocalConfig) *LocalDisk {
 	return &LocalDisk{
 		conf: c,
 	}
+}
+
+func (w *LocalDisk) LastSyncPoint(ctx context.Context) (time.Time, error) {
+	return StorageMixin{w}.LastSyncPoint(ctx)
+}
+
+func (w *LocalDisk) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
+	return StorageMixin{w}.SaveSyncPoints(ctx, bundles...)
 }
 
 func (w *LocalDisk) SaveFile(_ context.Context, name string, reader io.Reader) error {
@@ -64,4 +73,8 @@ func (w *LocalDisk) ReadFile(_ context.Context, name string) (io.Reader, error) 
 		return nil, ErrFileNotFound
 	}
 	return os.Open(filename)
+}
+
+func (w *LocalDisk) GetFileReference(name string) string {
+	return filepath.Join(w.conf.SaveDir, name)
 }

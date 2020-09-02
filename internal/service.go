@@ -375,6 +375,7 @@ func (h *HauserService) lastSyncPoint(ctx context.Context) (time.Time, error) {
 
 func (h *HauserService) BackoffOnError(err error) bool {
 	if err != nil {
+		log.Printf("failed to process exports: %s", err)
 		if currentBackoffStep == uint(h.config.BackoffStepsMax) {
 			log.Fatalf("Reached max retries; exiting")
 		}

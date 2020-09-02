@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
 type GCSStorage struct {
-	StorageMixin
 	config    *config.GCSConfig
 	gcsClient *storage.Client
 }
@@ -24,12 +25,28 @@ func NewGCSStorage(conf *config.GCSConfig, gcsClient *storage.Client) *GCSStorag
 	}
 }
 
+func (g *GCSStorage) LastSyncPoint(ctx context.Context) (time.Time, error) {
+	return StorageMixin{g}.LastSyncPoint(ctx)
+}
+
+func (g *GCSStorage) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
+	return StorageMixin{g}.SaveSyncPoints(ctx, bundles...)
+}
+
 func (g *GCSStorage) SaveFile(ctx context.Context, name string, reader io.Reader) error {
 	w := g.bucket().Object(name).NewWriter(ctx)
 	if _, err := io.Copy(w, reader); err != nil {
 		return fmt.Errorf("failed to save file to GCS: %s", err)
 	}
 	return w.Close()
+}
+
+func (g *GCSStorage) ReadFile(ctx context.Context, name string) (io.Reader, error) {
+	reader, err := g.bucket().Object(name).NewReader(ctx)
+	if err == storage.ErrObjectNotExist {
+		return nil, ErrFileNotFound
+	}
+	return reader, err
 }
 
 func (g *GCSStorage) DeleteFile(ctx context.Context, name string) error {

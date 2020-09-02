@@ -61,14 +61,15 @@ func ValueToString(val interface{}, isTime bool) string {
 	return s
 }
 
-// StorageMixin provides a default implementation for the Syncable interface, but
-// requires overriding the Save/Delete methods.
-type StorageMixin struct{}
+// StorageMixin provides a default implementation for the Syncable interface.
+type StorageMixin struct {
+	storage Storage
+}
 
-var _ Storage = (*StorageMixin)(nil)
+var _ Syncable = (*StorageMixin)(nil)
 
-func (s *StorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
-	r, err := s.ReadFile(ctx, timestampFile)
+func (s StorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
+	r, err := s.storage.ReadFile(ctx, timestampFile)
 	if err != nil {
 		if err == ErrFileNotFound {
 			// This is alright, we just haven't created one yet. Return the zero time value.
@@ -84,27 +85,11 @@ func (s *StorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
 	}
 }
 
-func (s *StorageMixin) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
+func (s StorageMixin) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
 	if len(bundles) == 0 {
 		panic("Zero-length bundle list passed to SaveSyncPoints")
 	}
 	t := bundles[len(bundles)-1].Stop.UTC().Format(time.RFC3339)
 	r := bytes.NewReader([]byte(t))
-	return s.SaveFile(ctx, timestampFile, r)
-}
-
-func (s *StorageMixin) SaveFile(context.Context, string, io.Reader) error {
-	panic("implement me")
-}
-
-func (s *StorageMixin) ReadFile(context.Context, string) (io.Reader, error) {
-	panic("implement me")
-}
-
-func (s *StorageMixin) DeleteFile(context.Context, string) error {
-	panic("implement me")
-}
-
-func (s *StorageMixin) GetFileReference(string) string {
-	panic("implement me")
+	return s.storage.SaveFile(ctx, timestampFile, r)
 }
