@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -58,21 +59,41 @@ func TestHauser(t *testing.T) {
 				GroupFilesByDay: true,
 			},
 		},
+		{
+			name:            "storage only",
+			testdata:        "../testing/testdata/raw.json",
+			outputDir:       "../testing/testdata/json",
+			freqSetting:     48,
+			expectedBundles: 5,
+			config: &config.Config{
+				SaveAsJson:  true,
+				StorageOnly: true,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
 			fsClient := hausertest.NewMockDataExportClient(tc.freqSetting, tc.testdata)
-			wh := hausertest.NewMockWarehouse()
+			storage := hausertest.NewMockStorage()
 
-			hauser := NewHauser(tc.config, fsClient, wh)
-			err := hauser.Init()
+			var db *hausertest.MockDatabase
+			if !tc.config.StorageOnly {
+				db = hausertest.NewMockDatabase()
+			}
+
+			hauser := NewHauser(tc.config, fsClient, storage, db)
+			err := hauser.Init(ctx)
 
 			Ok(t, err, "failed to init")
-			testutils.Assert(t, wh.Initialized, "expected warehouse to be initialized")
+			if db != nil {
+				testutils.Assert(t, db.Initialized, "expected warehouse to be initialized")
+			}
+
 			numBundles := 0
 			for {
-				newBundles, err := hauser.ProcessNext()
+				newBundles, err := hauser.ProcessNext(ctx)
 				Ok(t, err, "failed to process next bundles")
 				if newBundles == 0 {
 					break
@@ -80,14 +101,20 @@ func TestHauser(t *testing.T) {
 				numBundles += newBundles
 			}
 			testutils.Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
-			testutils.Equals(t, tc.expectedBundles, len(wh.UploadedFiles), "unexepected number of upload files")
-			testutils.Equals(t, tc.expectedBundles, len(wh.DeletedFiles), "unexepected number of deleted files")
-			testutils.Equals(t, tc.expectedBundles, len(wh.LoadedFiles), "unexepected number of loaded files")
-			testutils.StrSliceEquals(t, wh.LoadedFiles, wh.DeletedFiles, "file mismatch")
+			testutils.Equals(t, tc.expectedBundles, len(storage.UploadedFiles), "unexpected number of upload files")
+			if db != nil {
+				// Files should only be deleted from storage if they were successfully loaded into the database
+				testutils.Equals(t, tc.expectedBundles, len(storage.DeletedFiles), "unexpected number of deleted files")
+				testutils.Equals(t, tc.expectedBundles, len(db.LoadedFiles), "unexpected number of loaded files")
+				for i, loaded := range db.LoadedFiles {
+					testutils.Equals(t, loaded, fmt.Sprintf("mock://%s", storage.DeletedFiles[i]), "unexpected loaded file")
+				}
+			}
 
-			for name, data := range wh.UploadedFiles {
+			for name, data := range storage.UploadedFiles {
 				fname := path.Join(tc.outputDir, name)
 				if *update {
+					_ = os.MkdirAll(tc.outputDir, os.ModePerm)
 					Ok(t, ioutil.WriteFile(fname, data, os.ModePerm), "failed to write test file")
 				} else {
 					expected, err := ioutil.ReadFile(fname)
@@ -189,8 +216,7 @@ func TestTransformExportJSONRecord(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		wh := StubWarehouse{}
-		result, err := TransformExportJSONRecord(&wh, tc.tableColumns, tc.rec)
+		result, err := TransformExportJSONRecord(warehouse.ValueToString, tc.tableColumns, tc.rec)
 		if err != nil {
 			t.Errorf("Unexpected err %s on test case %d", err, i)
 			continue
@@ -237,17 +263,4 @@ func compareJSONStrings(t *testing.T, str1, str2 string) bool {
 		}
 	}
 	return true
-}
-
-type StubWarehouse struct {
-	warehouse.Warehouse
-}
-
-func (sw *StubWarehouse) ValueToString(val interface{}, isTime bool) string {
-	s := fmt.Sprintf("%v", val)
-	if isTime {
-		t, _ := time.Parse(time.RFC3339Nano, s)
-		return t.Format(warehouse.RFC3339Micro)
-	}
-	return s
 }

@@ -6,8 +6,6 @@ import (
 	"cloud.google.com/go/bigquery"
 )
 
-var _ Warehouse = &BigQuery{}
-
 func TestGetMissingFields(t *testing.T) {
 	wh := &BigQuery{}
 
