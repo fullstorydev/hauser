@@ -112,17 +112,20 @@ func Load(filename string) (*Config, error) {
 		return nil, err
 	}
 
+	if err := Validate(&conf); err != nil {
+		return nil, err
+	}
+	return &conf, nil
+}
+
+func Validate(conf *Config) error {
 	// Set any defaults.
 	if conf.ExportURL == "" {
 		conf.ExportURL = DefaultExportURL
 	}
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
-		return nil, errors.New("BigQuery expiration value must be positive")
-	}
-	// Redshift needs to know which region the storage is in. Make sure they match
-	if conf.S3.Region != "" {
-		conf.Redshift.S3Region = conf.S3.Region
+		return errors.New("BigQuery expiration value must be positive")
 	}
 
 	if conf.Provider == "" {
@@ -135,16 +138,17 @@ func Load(filename string) (*Config, error) {
 			conf.Provider = "gcp"
 		default:
 			if len(conf.Warehouse) == 0 {
-				return nil, fmt.Errorf("warehouse type must be specified in configuration")
+				return fmt.Errorf("warehouse type must be specified in configuration")
 			} else {
-				return nil, fmt.Errorf("warehouse type '%s' unrecognized", conf.Warehouse)
+				return fmt.Errorf("warehouse type '%s' unrecognized", conf.Warehouse)
 			}
 		}
-		log.Println(`WARNING: The "Warehouse" option is deprecated. Please use "Provider" instead."`)
+		log.Println(`WARNING: The "Warehouse" option is deprecated. Please use "Provider" instead.`)
+		conf.Warehouse = ""
 	}
 
 	if conf.SaveAsJson && conf.Provider != "local" {
-		return nil, fmt.Errorf("hauser doesn't currently support loading JSON into a database. Ensure SaveAsJson = false in .toml file")
+		return fmt.Errorf("hauser doesn't currently support loading JSON into a database. Ensure SaveAsJson = false in .toml file")
 	}
 
 	switch conf.Provider {
@@ -156,9 +160,15 @@ func Load(filename string) (*Config, error) {
 		conf.SaveAsJson = true
 	case "aws":
 		conf.StorageOnly = conf.StorageOnly || conf.S3.S3Only
+		conf.S3.S3Only = false
 	case "gcp":
 		conf.StorageOnly = conf.StorageOnly || conf.GCS.GCSOnly
+		conf.GCS.GCSOnly = false
 	}
 
-	return &conf, nil
+	// Redshift needs to know which region the storage is in. Make sure they match
+	if conf.Provider == "aws" && !conf.StorageOnly && conf.S3.Region != "" {
+		conf.Redshift.S3Region = conf.S3.Region
+	}
+	return nil
 }
