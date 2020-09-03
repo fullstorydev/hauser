@@ -43,13 +43,13 @@ func (m *MockStorage) SaveSyncPoints(_ context.Context, bundles ...client.Export
 	return nil
 }
 
-func (m *MockStorage) SaveFile(_ context.Context, name string, reader io.Reader) error {
+func (m *MockStorage) SaveFile(_ context.Context, name string, reader io.Reader) (string, error) {
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return err
+		return "", err
 	}
 	m.UploadedFiles[name] = data
-	return nil
+	return m.GetFileReference(name), nil
 }
 
 func (m *MockStorage) ReadFile(_ context.Context, name string) (io.Reader, error) {

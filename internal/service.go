@@ -226,17 +226,17 @@ func (h *HauserService) LoadBundles(ctx context.Context, filename string, bundle
 		return err
 	}
 	_, objName := path.Split(filename)
-	if err = h.storage.SaveFile(ctx, objName, f); err != nil {
-		log.Println(err)
-		return err
+	objRef, err := h.storage.SaveFile(ctx, objName, f)
+	if err != nil {
+		return fmt.Errorf("failed to save file: %s", err)
 	}
+
 	if h.config.StorageOnly {
 		return h.storage.SaveSyncPoints(ctx, bundles...)
 	}
 
 	defer h.storage.DeleteFile(ctx, objName)
 
-	objRef := h.storage.GetFileReference(objName)
 	if err := h.database.LoadToWarehouse(objRef, bundles...); err != nil {
 		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
 		return err

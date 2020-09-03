@@ -28,7 +28,7 @@ type Syncable interface {
 
 type Storage interface {
 	Syncable
-	SaveFile(ctx context.Context, name string, reader io.Reader) error
+	SaveFile(ctx context.Context, name string, reader io.Reader) (string, error)
 	ReadFile(ctx context.Context, name string) (io.Reader, error)
 	DeleteFile(ctx context.Context, name string) error
 	GetFileReference(name string) string
@@ -91,5 +91,6 @@ func (s StorageMixin) SaveSyncPoints(ctx context.Context, bundles ...client.Expo
 	}
 	t := bundles[len(bundles)-1].Stop.UTC().Format(time.RFC3339)
 	r := bytes.NewReader([]byte(t))
-	return s.storage.SaveFile(ctx, timestampFile, r)
+	_, err := s.storage.SaveFile(ctx, timestampFile, r)
+	return err
 }

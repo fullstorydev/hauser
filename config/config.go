@@ -13,10 +13,18 @@ import (
 // DefaultExportURL is the standard base URL for the fullstory.com API.
 const DefaultExportURL = "https://export.fullstory.com/api/v1"
 
+type Provider string
+
+const (
+	LocalProvider Provider = "local"
+	AWSProvider   Provider = "aws"
+	GCProvider    Provider = "gcp"
+)
+
 type Config struct {
 	// Deprecated: Use Provider instead
 	Warehouse            string
-	Provider             string
+	Provider             Provider
 	FsApiToken           string
 	AdditionalHttpHeader []Header
 	Backoff              duration
@@ -131,11 +139,11 @@ func Validate(conf *Config) error {
 	if conf.Provider == "" {
 		switch conf.Warehouse {
 		case "local":
-			conf.Provider = "local"
+			conf.Provider = LocalProvider
 		case "redshift":
-			conf.Provider = "aws"
+			conf.Provider = AWSProvider
 		case "bigquery":
-			conf.Provider = "gcp"
+			conf.Provider = GCProvider
 		default:
 			if len(conf.Warehouse) == 0 {
 				return fmt.Errorf("warehouse type must be specified in configuration")
@@ -152,23 +160,23 @@ func Validate(conf *Config) error {
 	}
 
 	switch conf.Provider {
-	case "local":
+	case LocalProvider:
 		// The local provider only supports storage
 		log.Println(`WARNING: The "local" provider only supports "StorageOnly = true" and "SaveAsJson = true".
           These values will be ignored in your configuration file.`)
 		conf.StorageOnly = true
 		conf.SaveAsJson = true
-	case "aws":
+	case AWSProvider:
 		conf.StorageOnly = conf.StorageOnly || conf.S3.S3Only
+
+		if !conf.StorageOnly {
+			// Redshift needs to know which region the storage is in. Make sure they match
+			conf.Redshift.S3Region = conf.S3.Region
+		}
 		conf.S3.S3Only = false
-	case "gcp":
+	case GCProvider:
 		conf.StorageOnly = conf.StorageOnly || conf.GCS.GCSOnly
 		conf.GCS.GCSOnly = false
-	}
-
-	// Redshift needs to know which region the storage is in. Make sure they match
-	if conf.Provider == "aws" && !conf.StorageOnly && conf.S3.Region != "" {
-		conf.Redshift.S3Region = conf.S3.Region
 	}
 	return nil
 }

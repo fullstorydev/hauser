@@ -33,12 +33,12 @@ func (g *GCSStorage) SaveSyncPoints(ctx context.Context, bundles ...client.Expor
 	return StorageMixin{g}.SaveSyncPoints(ctx, bundles...)
 }
 
-func (g *GCSStorage) SaveFile(ctx context.Context, name string, reader io.Reader) error {
+func (g *GCSStorage) SaveFile(ctx context.Context, name string, reader io.Reader) (string, error) {
 	w := g.bucket().Object(name).NewWriter(ctx)
 	if _, err := io.Copy(w, reader); err != nil {
-		return fmt.Errorf("failed to save file to GCS: %s", err)
+		return "", fmt.Errorf("failed to save file to GCS: %s", err)
 	}
-	return w.Close()
+	return g.GetFileReference(name), w.Close()
 }
 
 func (g *GCSStorage) ReadFile(ctx context.Context, name string) (io.Reader, error) {

@@ -19,11 +19,11 @@ var version = "dev build <no version set>"
 
 func MakeStorage(ctx context.Context, conf *config.Config) warehouse.Storage {
 	switch conf.Provider {
-	case "local":
+	case config.LocalProvider:
 		return warehouse.NewLocalDisk(&conf.Local)
-	case "aws":
+	case config.AWSProvider:
 		return warehouse.NewS3Storage(&conf.S3)
-	case "gcp":
+	case config.GCProvider:
 		gcsClient, err := storage.NewClient(ctx)
 		if err != nil {
 			log.Fatalf("Failed to create GCS client")
@@ -40,11 +40,11 @@ func MakeDatabase(_ context.Context, conf *config.Config) warehouse.Database {
 		return nil
 	}
 	switch conf.Provider {
-	case "local":
+	case config.LocalProvider:
 		log.Fatalf("cannot initialize database for local provider")
-	case "aws":
+	case config.AWSProvider:
 		return warehouse.NewRedshift(&conf.Redshift)
-	case "gcp":
+	case config.GCProvider:
 		return warehouse.NewBigQuery(&conf.BigQuery)
 	default:
 		log.Fatalf("unknown provider type: %s", conf.Provider)

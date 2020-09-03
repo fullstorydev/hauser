@@ -38,7 +38,7 @@ func (s *S3Storage) SaveSyncPoints(ctx context.Context, bundles ...client.Export
 	return StorageMixin{s}.SaveSyncPoints(ctx, bundles...)
 }
 
-func (s *S3Storage) SaveFile(ctx context.Context, name string, reader io.Reader) error {
+func (s *S3Storage) SaveFile(ctx context.Context, name string, reader io.Reader) (string, error) {
 	ctx, cancelFn := context.WithTimeout(ctx, s.conf.Timeout.Duration)
 	defer cancelFn()
 
@@ -49,7 +49,7 @@ func (s *S3Storage) SaveFile(ctx context.Context, name string, reader io.Reader)
 		Key:    aws.String(key),
 		Body:   reader,
 	})
-	return err
+	return s.GetFileReference(name), err
 }
 
 func (s *S3Storage) ReadFile(ctx context.Context, name string) (io.Reader, error) {

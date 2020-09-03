@@ -48,17 +48,16 @@ func (w *LocalDisk) SaveSyncPoints(ctx context.Context, bundles ...client.Export
 	return StorageMixin{w}.SaveSyncPoints(ctx, bundles...)
 }
 
-func (w *LocalDisk) SaveFile(_ context.Context, name string, reader io.Reader) error {
+func (w *LocalDisk) SaveFile(_ context.Context, name string, reader io.Reader) (string, error) {
 	filename := filepath.Join(w.conf.SaveDir, name)
 	f, err := os.Create(filename)
 	if err != nil {
-		return err
+		return "", err
 	}
-	defer f.Close()
 	if _, err = io.Copy(f, reader); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return w.GetFileReference(name), f.Close()
 }
 
 // DeleteFile should do nothing for local disk
