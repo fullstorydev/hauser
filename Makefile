@@ -15,7 +15,7 @@ all_to_check=$(files_to_check) $(dirs_to_check)
 .PHONY: ci
 ci: deps checkgofmt vet staticcheck ineffassign predeclared test
 
-INSTALLTOOL = GO111MODULE=on go get
+INSTALLTOOL = GO111MODULE=on go install
 
 .PHONY: deps
 deps:
@@ -31,7 +31,7 @@ install:
 
 .PHONY: release
 release:
-	$(INSTALLTOOL) get github.com/goreleaser/goreleaser
+	$(INSTALLTOOL) github.com/goreleaser/goreleaser
 	goreleaser --rm-dist
 
 .PHONY: checkgofmt
