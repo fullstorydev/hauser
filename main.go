@@ -2,7 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
@@ -10,9 +13,17 @@ import (
 	"github.com/fullstorydev/hauser/warehouse"
 )
 
+var version = "dev build <no version set>"
+
 func main() {
 	conffile := flag.String("c", "config.toml", "configuration file")
+	printVersion := flag.Bool("version", false, "print version")
 	flag.Parse()
+
+	if *printVersion {
+		fmt.Printf("%s %s\n", filepath.Base(os.Args[0]), version)
+		os.Exit(0)
+	}
 
 	conf, err := config.Load(*conffile)
 	if err != nil {
