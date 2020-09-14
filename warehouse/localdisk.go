@@ -41,11 +41,11 @@ func NewLocalDisk(c *config.LocalConfig) *LocalDisk {
 }
 
 func (w *LocalDisk) LastSyncPoint(ctx context.Context) (time.Time, error) {
-	return StorageMixin{w}.LastSyncPoint(ctx)
+	return SyncViaStorageMixin{w}.LastSyncPoint(ctx)
 }
 
 func (w *LocalDisk) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
-	return StorageMixin{w}.SaveSyncPoints(ctx, bundles...)
+	return SyncViaStorageMixin{w}.SaveSyncPoints(ctx, bundles...)
 }
 
 func (w *LocalDisk) SaveFile(_ context.Context, name string, reader io.Reader) (string, error) {

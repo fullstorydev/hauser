@@ -222,6 +222,7 @@ func (h *HauserService) ProcessFilesByDay(ctx context.Context, exports []client.
 
 func (h *HauserService) LoadBundles(ctx context.Context, filename string, bundles ...client.ExportMeta) error {
 	f, err := os.Open(filename)
+	defer f.Close()
 	if err != nil {
 		return err
 	}

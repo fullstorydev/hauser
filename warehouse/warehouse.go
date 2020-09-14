@@ -61,14 +61,14 @@ func ValueToString(val interface{}, isTime bool) string {
 	return s
 }
 
-// StorageMixin provides a default implementation for the Syncable interface.
-type StorageMixin struct {
+// SyncViaStorageMixin provides a default implementation for the Syncable interface.
+type SyncViaStorageMixin struct {
 	storage Storage
 }
 
-var _ Syncable = (*StorageMixin)(nil)
+var _ Syncable = (*SyncViaStorageMixin)(nil)
 
-func (s StorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
+func (s SyncViaStorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
 	r, err := s.storage.ReadFile(ctx, timestampFile)
 	if err != nil {
 		if err == ErrFileNotFound {
@@ -85,7 +85,7 @@ func (s StorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
 	}
 }
 
-func (s StorageMixin) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
+func (s SyncViaStorageMixin) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
 	if len(bundles) == 0 {
 		panic("Zero-length bundle list passed to SaveSyncPoints")
 	}

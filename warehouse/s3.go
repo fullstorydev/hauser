@@ -18,7 +18,6 @@ import (
 )
 
 type S3Storage struct {
-	StorageMixin
 	conf *config.S3Config
 }
 
@@ -31,11 +30,11 @@ func NewS3Storage(conf *config.S3Config) *S3Storage {
 }
 
 func (s *S3Storage) LastSyncPoint(ctx context.Context) (time.Time, error) {
-	return StorageMixin{s}.LastSyncPoint(ctx)
+	return SyncViaStorageMixin{s}.LastSyncPoint(ctx)
 }
 
 func (s *S3Storage) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
-	return StorageMixin{s}.SaveSyncPoints(ctx, bundles...)
+	return SyncViaStorageMixin{s}.SaveSyncPoints(ctx, bundles...)
 }
 
 func (s *S3Storage) SaveFile(ctx context.Context, name string, reader io.Reader) (string, error) {

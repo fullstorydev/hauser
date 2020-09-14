@@ -26,11 +26,11 @@ func NewGCSStorage(conf *config.GCSConfig, gcsClient *storage.Client) *GCSStorag
 }
 
 func (g *GCSStorage) LastSyncPoint(ctx context.Context) (time.Time, error) {
-	return StorageMixin{g}.LastSyncPoint(ctx)
+	return SyncViaStorageMixin{g}.LastSyncPoint(ctx)
 }
 
 func (g *GCSStorage) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
-	return StorageMixin{g}.SaveSyncPoints(ctx, bundles...)
+	return SyncViaStorageMixin{g}.SaveSyncPoints(ctx, bundles...)
 }
 
 func (g *GCSStorage) SaveFile(ctx context.Context, name string, reader io.Reader) (string, error) {
