@@ -2,7 +2,9 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -11,8 +13,18 @@ import (
 // DefaultExportURL is the standard base URL for the fullstory.com API.
 const DefaultExportURL = "https://export.fullstory.com/api/v1"
 
+type Provider string
+
+const (
+	LocalProvider Provider = "local"
+	AWSProvider   Provider = "aws"
+	GCProvider    Provider = "gcp"
+)
+
 type Config struct {
+	// Deprecated: Use Provider instead
 	Warehouse            string
+	Provider             Provider
 	FsApiToken           string
 	AdditionalHttpHeader []Header
 	Backoff              duration
@@ -22,6 +34,7 @@ type Config struct {
 	ListExportLimit      int
 	GroupFilesByDay      bool
 	SaveAsJson           bool
+	StorageOnly          bool
 
 	// for debug only; can point to localhost
 	ExportURL string
@@ -47,7 +60,8 @@ type S3Config struct {
 	Bucket  string
 	Region  string
 	Timeout duration
-	S3Only  bool
+	// Deprecated: Use `StorageOnly` option instead
+	S3Only bool
 }
 
 type RedshiftConfig struct {
@@ -61,10 +75,12 @@ type RedshiftConfig struct {
 	DatabaseSchema string
 	Credentials    string
 	VarCharMax     int
+	S3Region       string `toml:"-"`
 }
 
 type GCSConfig struct {
-	Bucket  string
+	Bucket string
+	// Deprecated: Use `StorageOnly` option at the main level
 	GCSOnly bool
 }
 
@@ -104,14 +120,63 @@ func Load(filename string) (*Config, error) {
 		return nil, err
 	}
 
+	if err := Validate(&conf); err != nil {
+		return nil, err
+	}
+	return &conf, nil
+}
+
+func Validate(conf *Config) error {
 	// Set any defaults.
 	if conf.ExportURL == "" {
 		conf.ExportURL = DefaultExportURL
 	}
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
-		return nil, errors.New("BigQuery expiration value must be positive")
+		return errors.New("BigQuery expiration value must be positive")
 	}
 
-	return &conf, nil
+	if conf.Provider == "" {
+		switch conf.Warehouse {
+		case "local":
+			conf.Provider = LocalProvider
+		case "redshift":
+			conf.Provider = AWSProvider
+		case "bigquery":
+			conf.Provider = GCProvider
+		default:
+			if len(conf.Warehouse) == 0 {
+				return fmt.Errorf("warehouse type must be specified in configuration")
+			} else {
+				return fmt.Errorf("warehouse type '%s' unrecognized", conf.Warehouse)
+			}
+		}
+		log.Println(`WARNING: The "Warehouse" option is deprecated. Please use "Provider" instead.`)
+		conf.Warehouse = ""
+	}
+
+	if conf.SaveAsJson && conf.Provider != "local" {
+		return fmt.Errorf("hauser doesn't currently support loading JSON into a database. Ensure SaveAsJson = false in .toml file")
+	}
+
+	switch conf.Provider {
+	case LocalProvider:
+		// The local provider only supports storage
+		log.Println(`WARNING: The "local" provider only supports "StorageOnly = true" and "SaveAsJson = true".
+          These values will be ignored in your configuration file.`)
+		conf.StorageOnly = true
+		conf.SaveAsJson = true
+	case AWSProvider:
+		conf.StorageOnly = conf.StorageOnly || conf.S3.S3Only
+
+		if !conf.StorageOnly {
+			// Redshift needs to know which region the storage is in. Make sure they match
+			conf.Redshift.S3Region = conf.S3.Region
+		}
+		conf.S3.S3Only = false
+	case GCProvider:
+		conf.StorageOnly = conf.StorageOnly || conf.GCS.GCSOnly
+		conf.GCS.GCSOnly = false
+	}
+	return nil
 }

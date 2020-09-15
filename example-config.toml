@@ -3,8 +3,14 @@ Backoff = "30s"
 BackoffStepsMax = 8
 CheckInterval = "30m"
 TmpDir = "/tmp"
-Warehouse="local"
+# Valid provider values:
+#  * local: Used for downloading files to the local machine.
+#  * gcp: Google Cloud Provider (GCS and BigQuery)
+#  * aws: Amazon Web Services (S3 and Redshift)
+Provider="local"
 GroupFilesByDay = false
+# If true, data will only be uploaded to the corresponding Provider's storage mechanism.
+StorageOnly = false
 SaveAsJson = false
 
 [s3]
@@ -14,8 +20,6 @@ Bucket = ""
 Region = "us-east-2"
 # timeout for copying export files from the local machine to S3
 Timeout = "5m"
-# upload data file only (i.e. skip load to Redshift)
-S3Only = true
 
 [redshift]
 User = "<your user>"
@@ -34,8 +38,6 @@ DatabaseSchema = "public"
 
 [gcs]
 Bucket = "<your bucket>"
-# upload data file only (i.e. skip load to BigQuery)
-GCSOnly = true
 
 [bigquery]
 Project = "<your project>"

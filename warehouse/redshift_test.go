@@ -6,18 +6,13 @@ import (
 	"github.com/fullstorydev/hauser/config"
 )
 
-var _ Warehouse = &Redshift{}
-
-func makeConf(databaseSchema string) *config.Config {
-	conf := &config.Config{
-		Redshift: config.RedshiftConfig{
-			DatabaseSchema: databaseSchema,
-			VarCharMax:     20,
-			ExportTable:    "exportTable",
-			SyncTable:      "syncTable",
-		},
+func makeConf(databaseSchema string) *config.RedshiftConfig {
+	return &config.RedshiftConfig{
+		DatabaseSchema: databaseSchema,
+		VarCharMax:     20,
+		ExportTable:    "exportTable",
+		SyncTable:      "syncTable",
 	}
-	return conf
 }
 
 func TestRedshiftValueToString(t *testing.T) {
@@ -126,7 +121,7 @@ func TestGetBucketAndKey(t *testing.T) {
 func TestValidateSchemaConfig(t *testing.T) {
 
 	testCases := []struct {
-		conf       *config.Config
+		conf       *config.RedshiftConfig
 		hasError   bool
 		errMessage string
 	}{
@@ -157,14 +152,14 @@ func TestValidateSchemaConfig(t *testing.T) {
 			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.DatabaseSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
 		}
 		if !tc.hasError && err != nil {
-			t.Errorf("unexpected error thrown for DatabaseSchema %s: %s", tc.conf.Redshift.DatabaseSchema, err)
+			t.Errorf("unexpected error thrown for DatabaseSchema %s: %s", tc.conf.DatabaseSchema, err)
 		}
 	}
 }
 
 func TestGetExportTableName(t *testing.T) {
 	testCases := []struct {
-		conf     *config.Config
+		conf     *config.RedshiftConfig
 		expected string
 	}{
 		{
@@ -187,7 +182,7 @@ func TestGetExportTableName(t *testing.T) {
 
 func TestGetSyncTableName(t *testing.T) {
 	testCases := []struct {
-		conf     *config.Config
+		conf     *config.RedshiftConfig
 		expected string
 	}{
 		{
@@ -210,7 +205,7 @@ func TestGetSyncTableName(t *testing.T) {
 
 func TestGetSchemaParameter(t *testing.T) {
 	testCases := []struct {
-		conf     *config.Config
+		conf     *config.RedshiftConfig
 		expected string
 	}{
 		{

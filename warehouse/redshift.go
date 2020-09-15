@@ -6,23 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/lib/pq"
-
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
+	"github.com/lib/pq"
 )
 
 type Redshift struct {
 	conn         *sql.DB
-	conf         *config.Config
+	conf         *config.RedshiftConfig
 	exportSchema Schema
 	syncSchema   Schema
 }
@@ -36,10 +30,9 @@ var (
 	beginningOfTime = time.Date(2015, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
-func NewRedshift(c *config.Config) *Redshift {
-	if c.S3.S3Only {
-		log.Printf("Config flag S3Only is on, data will not be loaded to Redshift")
-	}
+var _ Database = (*Redshift)(nil)
+
+func NewRedshift(c *config.RedshiftConfig) *Redshift {
 	return &Redshift{
 		conf:         c,
 		exportSchema: ExportTableSchema(RedshiftTypeMap),
@@ -48,31 +41,31 @@ func NewRedshift(c *config.Config) *Redshift {
 }
 
 func (rs *Redshift) qualifiedExportTableName() string {
-	if rs.conf.Redshift.DatabaseSchema == "search_path" {
-		return rs.conf.Redshift.ExportTable
+	if rs.conf.DatabaseSchema == "search_path" {
+		return rs.conf.ExportTable
 	}
-	return fmt.Sprintf("%s.%s", rs.conf.Redshift.DatabaseSchema, rs.conf.Redshift.ExportTable)
+	return fmt.Sprintf("%s.%s", rs.conf.DatabaseSchema, rs.conf.ExportTable)
 }
 
 func (rs *Redshift) qualifiedSyncTableName() string {
-	if rs.conf.Redshift.DatabaseSchema == "search_path" {
-		return rs.conf.Redshift.SyncTable
+	if rs.conf.DatabaseSchema == "search_path" {
+		return rs.conf.SyncTable
 	}
-	return fmt.Sprintf("%s.%s", rs.conf.Redshift.DatabaseSchema, rs.conf.Redshift.SyncTable)
+	return fmt.Sprintf("%s.%s", rs.conf.DatabaseSchema, rs.conf.SyncTable)
 }
 
 func (rs *Redshift) getSchemaParameter() string {
 	// the built-in current_schema() function will walk the Postgres search_path to get a schema name
 	// more info: https://www.postgresql.org/docs/9.4/functions-info.html
-	if rs.conf.Redshift.DatabaseSchema == "search_path" {
+	if rs.conf.DatabaseSchema == "search_path" {
 		return "current_schema()"
 	}
 
-	return fmt.Sprintf("'%s'", rs.conf.Redshift.DatabaseSchema)
+	return fmt.Sprintf("'%s'", rs.conf.DatabaseSchema)
 }
 
 func (rs *Redshift) validateSchemaConfig() error {
-	if rs.conf.Redshift.DatabaseSchema == "" {
+	if rs.conf.DatabaseSchema == "" {
 		return errors.New("DatabaseSchema definition missing from Redshift configuration. More information: https://github.com/fullstorydev/hauser/blob/master/Redshift.md#database-schema-configuration")
 	}
 	return nil
@@ -88,7 +81,7 @@ func (rs *Redshift) GetExportTableColumns() []string {
 	}
 	defer rs.conn.Close()
 
-	return rs.getTableColumns(rs.conf.Redshift.ExportTable)
+	return rs.getTableColumns(rs.conf.ExportTable)
 }
 
 func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
@@ -102,8 +95,8 @@ func (rs *Redshift) ValueToString(val interface{}, isTime bool) string {
 	s = strings.Replace(s, "\r", " ", -1)
 	s = strings.Replace(s, "\x00", "", -1)
 
-	if len(s) >= rs.conf.Redshift.VarCharMax {
-		s = s[:rs.conf.Redshift.VarCharMax-1]
+	if len(s) >= rs.conf.VarCharMax {
+		s = s[:rs.conf.VarCharMax-1]
 	}
 	return s
 }
@@ -113,11 +106,11 @@ func (rs *Redshift) MakeRedshiftConnection() (*sql.DB, error) {
 		log.Fatal(err)
 	}
 	url := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v",
-		rs.conf.Redshift.User,
-		rs.conf.Redshift.Password,
-		rs.conf.Redshift.Host,
-		rs.conf.Redshift.Port,
-		rs.conf.Redshift.DB)
+		rs.conf.User,
+		rs.conf.Password,
+		rs.conf.Host,
+		rs.conf.Port,
+		rs.conf.DB)
 
 	var err error
 	var db *sql.DB
@@ -131,33 +124,6 @@ func (rs *Redshift) MakeRedshiftConnection() (*sql.DB, error) {
 	return db, nil
 }
 
-func (rs *Redshift) UploadFile(name string) (string, error) {
-	file, err := os.Open(name)
-	if err != nil {
-		return "", err
-	}
-
-	sess := session.Must(session.NewSession())
-	svc := s3.New(sess, aws.NewConfig().WithRegion(rs.conf.S3.Region))
-
-	ctx := context.Background()
-	ctx, cancelFn := context.WithTimeout(ctx, rs.conf.S3.Timeout.Duration)
-	defer cancelFn()
-
-	_, objName := filepath.Split(name)
-
-	bucketName, key := getBucketAndKey(rs.conf.S3.Bucket, objName)
-
-	_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(key),
-		Body:   file,
-	})
-
-	s3path := fmt.Sprintf("s3://%s/%s", bucketName, key)
-	return s3path, err
-}
-
 func getBucketAndKey(bucketConfig, objName string) (string, string) {
 	bucketParts := strings.Split(bucketConfig, "/")
 	bucketName := bucketParts[0]
@@ -165,26 +131,6 @@ func getBucketAndKey(bucketConfig, objName string) (string, string) {
 	key := strings.Trim(fmt.Sprintf("%s/%s", keyPath, objName), "/")
 
 	return bucketName, key
-}
-
-func (rs *Redshift) DeleteFile(s3obj string) {
-	sess := session.Must(session.NewSession())
-	svc := s3.New(sess, aws.NewConfig().WithRegion(rs.conf.S3.Region))
-
-	ctx := context.Background()
-	ctx, cancelFn := context.WithTimeout(ctx, rs.conf.S3.Timeout.Duration)
-	defer cancelFn()
-
-	_, objName := filepath.Split(s3obj)
-	_, err := svc.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
-		Bucket: aws.String(rs.conf.S3.Bucket),
-		Key:    aws.String(objName),
-	})
-
-	if err != nil {
-		log.Printf("failed to delete S3 object %s: %s", s3obj, err)
-		// just return - object will remain in S3
-	}
 }
 
 func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...client.ExportMeta) error {
@@ -211,7 +157,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 	}
 	defer rs.conn.Close()
 
-	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+	if !rs.DoesTableExist(rs.conf.ExportTable) {
 		// if the export table does not exist we create one with all the columns we expect!
 		log.Printf("Export table %s does not exist! Creating one!", rs.qualifiedExportTableName())
 		if err = rs.CreateExportTable(); err != nil {
@@ -221,7 +167,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 	}
 
 	// make sure all the columns in the csv export exist in the Export table
-	exportTableColumns := rs.getTableColumns(rs.conf.Redshift.ExportTable)
+	exportTableColumns := rs.getTableColumns(rs.conf.ExportTable)
 	missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
 
 	// If some fields are missing from the fsexport table, either we added new fields
@@ -243,7 +189,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 // CopyInData copies data from the given s3File to the export table
 func (rs *Redshift) CopyInData(s3file string) error {
 	copyStatement := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
-		rs.qualifiedExportTableName(), s3file, rs.conf.Redshift.Credentials, rs.conf.S3.Region)
+		rs.qualifiedExportTableName(), s3file, rs.conf.Credentials, rs.conf.S3Region)
 	_, err := rs.conn.Exec(copyStatement)
 	return err
 }
@@ -266,7 +212,7 @@ func (rs *Redshift) CreateSyncTable() error {
 	return err
 }
 
-func (rs *Redshift) SaveSyncPoints(bundles ...client.ExportMeta) error {
+func (rs *Redshift) SaveSyncPoints(_ context.Context, bundles ...client.ExportMeta) error {
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
@@ -298,7 +244,7 @@ func (rs *Redshift) DeleteExportRecordsAfter(end time.Time) error {
 	return nil
 }
 
-func (rs *Redshift) LastSyncPoint() (time.Time, error) {
+func (rs *Redshift) LastSyncPoint(_ context.Context) (time.Time, error) {
 	t := beginningOfTime
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
@@ -308,7 +254,7 @@ func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 	}
 	defer rs.conn.Close()
 
-	if rs.DoesTableExist(rs.conf.Redshift.SyncTable) {
+	if rs.DoesTableExist(rs.conf.SyncTable) {
 		var syncTime pq.NullTime
 		q := fmt.Sprintf("SELECT max(BundleEndTime) FROM %s;", rs.qualifiedSyncTableName())
 		if err := rs.conn.QueryRow(q).Scan(&syncTime); err != nil {
@@ -333,12 +279,7 @@ func (rs *Redshift) LastSyncPoint() (time.Time, error) {
 }
 
 func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
-	if rs.conf.S3.S3Only {
-		// no need to check for orphaned records, as we're not loading to the export table
-		return nil
-	}
-
-	if !rs.DoesTableExist(rs.conf.Redshift.ExportTable) {
+	if !rs.DoesTableExist(rs.conf.ExportTable) {
 		if err := rs.CreateExportTable(); err != nil {
 			log.Printf("Couldn't create export table: %s", err)
 			return err
@@ -420,12 +361,4 @@ func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []War
 	}
 
 	return missingFields
-}
-
-func (rs *Redshift) GetUploadFailedMsg(filename string, err error) string {
-	return fmt.Sprintf("Failed to upload file %s to s3: %s", filename, err)
-}
-
-func (rs *Redshift) IsUploadOnly() bool {
-	return rs.conf.S3.S3Only
 }

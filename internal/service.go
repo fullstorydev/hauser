@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -37,22 +39,24 @@ type Record map[string]interface{}
 type HauserService struct {
 	config       *config.Config
 	fsClient     client.DataExportClient
-	warehouse    warehouse.Warehouse
+	storage      warehouse.Storage
+	database     warehouse.Database
 	tableColumns []string
 }
 
-func NewHauser(config *config.Config, fsClient client.DataExportClient, warehouse warehouse.Warehouse) *HauserService {
+func NewHauser(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *HauserService {
 	return &HauserService{
-		config:    config,
-		fsClient:  fsClient,
-		warehouse: warehouse,
+		config:   config,
+		fsClient: fsClient,
+		storage:  storage,
+		database: db,
 	}
 }
 
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
 // For existing export table fields that do not exist in the json record, an empty string is populated.
-func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, rec map[string]interface{}) ([]string, error) {
+func TransformExportJSONRecord(convert warehouse.ValueToStringFn, tableColumns []string, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	lowerRec := make(map[string]interface{})
 	customVarsMap := make(map[string]interface{})
@@ -87,7 +91,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, re
 			line = append(line, string(customVars))
 		} else {
 			if val, valExists := lowerRec[col]; valExists {
-				line = append(line, wh.ValueToString(val, field.IsTime))
+				line = append(line, convert(val, field.IsTime))
 			} else {
 				line = append(line, "")
 			}
@@ -96,7 +100,7 @@ func TransformExportJSONRecord(wh warehouse.Warehouse, tableColumns []string, re
 	return line, nil
 }
 
-func (h *HauserService) ProcessExportsSince(since time.Time) (int, error) {
+func (h *HauserService) ProcessExportsSince(ctx context.Context, since time.Time) (int, error) {
 	log.Printf("Checking for new export files since %s", since)
 
 	exports, err := h.fsClient.ExportList(since)
@@ -106,14 +110,14 @@ func (h *HauserService) ProcessExportsSince(since time.Time) (int, error) {
 	}
 
 	if h.config.GroupFilesByDay {
-		return h.ProcessFilesByDay(exports)
+		return h.ProcessFilesByDay(ctx, exports)
 	}
-	return h.ProcessFilesIndividually(exports)
+	return h.ProcessFilesIndividually(ctx, exports)
 }
 
 // ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
 // occurs, or until they are all processed.
-func (h *HauserService) ProcessFilesIndividually(exports []client.ExportMeta) (int, error) {
+func (h *HauserService) ProcessFilesIndividually(ctx context.Context, exports []client.ExportMeta) (int, error) {
 	for _, e := range exports {
 		err := func() error {
 			log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
@@ -147,7 +151,7 @@ func (h *HauserService) ProcessFilesIndividually(exports []client.ExportMeta) (i
 				statusMessage = fmt.Sprintf("Processing of bundle %d (%d records)", e.ID, recordCount)
 			}
 
-			if err := h.LoadBundles(filename, e); err != nil {
+			if err := h.LoadBundles(ctx, filename, e); err != nil {
 				return err
 			}
 
@@ -167,7 +171,7 @@ func (h *HauserService) ProcessFilesIndividually(exports []client.ExportMeta) (i
 // day to be processed is the day from the first export bundle's Start value.  When all the bundles with that same day
 // have been written to the CSV file, it is loaded to the warehouse, and the function quits without attempting to
 // process remaining bundles (they'll get picked up on the next call to ProcessExportsSince)
-func (h *HauserService) ProcessFilesByDay(exports []client.ExportMeta) (int, error) {
+func (h *HauserService) ProcessFilesByDay(ctx context.Context, exports []client.ExportMeta) (int, error) {
 	if len(exports) == 0 {
 		return 0, nil
 	}
@@ -205,7 +209,7 @@ func (h *HauserService) ProcessFilesByDay(exports []client.ExportMeta) (int, err
 		processedBundles = append(processedBundles, e)
 	}
 
-	if err := h.LoadBundles(filename, processedBundles...); err != nil {
+	if err := h.LoadBundles(ctx, filename, processedBundles...); err != nil {
 		return 0, err
 	}
 
@@ -216,21 +220,26 @@ func (h *HauserService) ProcessFilesByDay(exports []client.ExportMeta) (int, err
 	return len(processedBundles), nil
 }
 
-func (h *HauserService) LoadBundles(filename string, bundles ...client.ExportMeta) error {
-	var objPath string
-	var err error
-	if objPath, err = h.warehouse.UploadFile(filename); err != nil {
-		log.Printf("%s", h.warehouse.GetUploadFailedMsg(filename, err))
+func (h *HauserService) LoadBundles(ctx context.Context, filename string, bundles ...client.ExportMeta) error {
+	f, err := os.Open(filename)
+	if err != nil {
 		return err
 	}
+	defer f.Close()
 
-	if h.warehouse.IsUploadOnly() {
-		return nil
+	_, objName := path.Split(filename)
+	objRef, err := h.storage.SaveFile(ctx, objName, f)
+	if err != nil {
+		return fmt.Errorf("failed to save file: %s", err)
 	}
 
-	defer h.warehouse.DeleteFile(objPath)
+	if h.config.StorageOnly {
+		return h.storage.SaveSyncPoints(ctx, bundles...)
+	}
 
-	if err := h.warehouse.LoadToWarehouse(objPath, bundles...); err != nil {
+	defer h.storage.DeleteFile(ctx, objName)
+
+	if err := h.database.LoadToWarehouse(objRef, bundles...); err != nil {
 		log.Printf("Failed to load file '%s' to warehouse: %s", filename, err)
 		return err
 	}
@@ -239,7 +248,7 @@ func (h *HauserService) LoadBundles(filename string, bundles ...client.ExportMet
 	// still okay - the next call to LastSyncPoint() will see that there are export
 	// records beyond the sync point and remove them - ie, we will reprocess the
 	// current export file
-	if err := h.warehouse.SaveSyncPoints(bundles...); err != nil {
+	if err := h.database.SaveSyncPoints(ctx, bundles...); err != nil {
 		log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
 		return err
 	}
@@ -309,7 +318,7 @@ func (h *HauserService) WriteBundleToCSV(bundleID int, tableColumns []string, cs
 			log.Printf("failed json decode of record: %s", err)
 			return recordCount, err
 		}
-		line, err := TransformExportJSONRecord(h.warehouse, tableColumns, r)
+		line, err := TransformExportJSONRecord(h.getValueConverter(), tableColumns, r)
 		if err != nil {
 			log.Printf("Failed object transform, bundle %d; skipping record. %s", bundleID, err)
 			continue
@@ -352,8 +361,23 @@ func (h *HauserService) WriteBundleToJson(bundleID int, filename string) (bytesW
 	return written, nil
 }
 
+func (h *HauserService) getValueConverter() warehouse.ValueToStringFn {
+	if h.config.StorageOnly {
+		return warehouse.ValueToString
+	}
+	return h.database.ValueToString
+}
+
+func (h *HauserService) lastSyncPoint(ctx context.Context) (time.Time, error) {
+	if h.config.StorageOnly {
+		return h.storage.LastSyncPoint(ctx)
+	}
+	return h.database.LastSyncPoint(ctx)
+}
+
 func (h *HauserService) BackoffOnError(err error) bool {
 	if err != nil {
+		log.Printf("failed to process exports: %s", err)
 		if currentBackoffStep == uint(h.config.BackoffStepsMax) {
 			log.Fatalf("Reached max retries; exiting")
 		}
@@ -367,34 +391,38 @@ func (h *HauserService) BackoffOnError(err error) bool {
 	return false
 }
 
-func (h *HauserService) Init() error {
+func (h *HauserService) Init(_ context.Context) error {
 	// Initialize the warehouse's schema
-	if err := h.warehouse.EnsureCompatibleExportTable(); err != nil {
-		return err
+	if !h.config.StorageOnly {
+		if err := h.database.EnsureCompatibleExportTable(); err != nil {
+			return err
+		}
+		// NB: We SHOULD fetch the table columns ONLY after the call to EnsureCompatibleExportTable.
+		// The EnsureCompatibleExportTable function potentially alters the schema of the export table in the client warehouse.
+		h.tableColumns = h.database.GetExportTableColumns()
+		for i, col := range h.tableColumns {
+			h.tableColumns[i] = strings.ToLower(col)
+		}
 	}
-	// NB: We SHOULD fetch the table columns ONLY after the call to EnsureCompatibleExportTable.
-	// The EnsureCompatibleExportTable function potentially alters the schema of the export table in the client warehouse.
-	h.tableColumns = h.warehouse.GetExportTableColumns()
-	for i, col := range h.tableColumns {
-		h.tableColumns[i] = strings.ToLower(col)
-	}
+	// TODO(cam): enable storage only with CSV format by saving the fields locally
+	//  (like we do with the sync file)
 	return nil
 }
 
-func (h *HauserService) ProcessNext() (int, error) {
-	lastSyncedRecord, err := h.warehouse.LastSyncPoint()
+func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
+	lastSyncedRecord, err := h.lastSyncPoint(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return h.ProcessExportsSince(lastSyncedRecord)
+	return h.ProcessExportsSince(ctx, lastSyncedRecord)
 }
 
-func (h *HauserService) Run() {
-	if err := h.Init(); err != nil {
+func (h *HauserService) Run(ctx context.Context) {
+	if err := h.Init(ctx); err != nil {
 		log.Fatal(err)
 	}
 	for {
-		numBundles, err := h.ProcessNext()
+		numBundles, err := h.ProcessNext(ctx)
 		if h.BackoffOnError(err) {
 			continue
 		}

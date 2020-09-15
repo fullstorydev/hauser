@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"cloud.google.com/go/storage"
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 	"github.com/fullstorydev/hauser/internal"
@@ -14,6 +16,41 @@ import (
 )
 
 var version = "dev build <no version set>"
+
+func MakeStorage(ctx context.Context, conf *config.Config) warehouse.Storage {
+	switch conf.Provider {
+	case config.LocalProvider:
+		return warehouse.NewLocalDisk(&conf.Local)
+	case config.AWSProvider:
+		return warehouse.NewS3Storage(&conf.S3)
+	case config.GCProvider:
+		gcsClient, err := storage.NewClient(ctx)
+		if err != nil {
+			log.Fatalf("Failed to create GCS client")
+		}
+		return warehouse.NewGCSStorage(&conf.GCS, gcsClient)
+	default:
+		log.Fatalf("unknown provider type: %s", conf.Provider)
+	}
+	return nil
+}
+
+func MakeDatabase(_ context.Context, conf *config.Config) warehouse.Database {
+	if conf.StorageOnly {
+		return nil
+	}
+	switch conf.Provider {
+	case config.LocalProvider:
+		log.Fatalf("cannot initialize database for local provider")
+	case config.AWSProvider:
+		return warehouse.NewRedshift(&conf.Redshift)
+	case config.GCProvider:
+		return warehouse.NewBigQuery(&conf.BigQuery)
+	default:
+		log.Fatalf("unknown provider type: %s", conf.Provider)
+	}
+	return nil
+}
 
 func main() {
 	conffile := flag.String("c", "config.toml", "configuration file")
@@ -30,32 +67,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var wh warehouse.Warehouse
-	switch conf.Warehouse {
-	case "local":
-		wh = warehouse.NewLocalDisk(conf)
-	case "redshift":
-		wh = warehouse.NewRedshift(conf)
-		if conf.SaveAsJson {
-			if !conf.S3.S3Only {
-				log.Fatalf("Hauser doesn't currently support loading JSON into Redshift.  Ensure SaveAsJson = false in .toml file.")
-			}
-		}
-	case "bigquery":
-		wh = warehouse.NewBigQuery(conf)
-		if conf.SaveAsJson {
-			if !conf.GCS.GCSOnly {
-				log.Fatalf("Hauser doesn't currently support loading JSON into BigQuery.  Ensure SaveAsJson = false in .toml file.")
-			}
-		}
-	default:
-		if len(conf.Warehouse) == 0 {
-			log.Fatal("Warehouse type must be specified in configuration")
-		} else {
-			log.Fatalf("Warehouse type '%s' unrecognized", conf.Warehouse)
-		}
-	}
-
-	hauser := internal.NewHauser(conf, client.NewClient(conf), wh)
-	hauser.Run()
+	ctx := context.Background()
+	store := MakeStorage(ctx, conf)
+	database := MakeDatabase(ctx, conf)
+	hauser := internal.NewHauser(conf, client.NewClient(conf), store, database)
+	hauser.Run(ctx)
 }
