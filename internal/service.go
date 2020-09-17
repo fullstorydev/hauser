@@ -44,7 +44,7 @@ type HauserService struct {
 	tableColumns []string
 }
 
-func NewHauser(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *HauserService {
+func NewHauserService(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *HauserService {
 	return &HauserService{
 		config:   config,
 		fsClient: fsClient,

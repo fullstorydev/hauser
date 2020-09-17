@@ -40,6 +40,7 @@ type DataExportClient interface {
 type Client struct {
 	HTTPClient *http.Client
 	Config     *config.Config
+	AuthFunc   func(*http.Request)
 }
 
 var _ DataExportClient = (*Client)(nil)

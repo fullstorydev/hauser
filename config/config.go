@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -179,4 +181,10 @@ func Validate(conf *Config) error {
 		conf.GCS.GCSOnly = false
 	}
 	return nil
+}
+var version = "dev build <no version set>"
+
+func PrintVersion() {
+	fmt.Printf("%s %s\n", filepath.Base(os.Args[0]), version)
+	os.Exit(0)
 }

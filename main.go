@@ -3,54 +3,10 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-	"log"
-	"os"
-	"path/filepath"
-
-	"cloud.google.com/go/storage"
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
-	"github.com/fullstorydev/hauser/internal"
-	"github.com/fullstorydev/hauser/warehouse"
+	"github.com/fullstorydev/hauser/resources"
+	"log"
 )
-
-var version = "dev build <no version set>"
-
-func MakeStorage(ctx context.Context, conf *config.Config) warehouse.Storage {
-	switch conf.Provider {
-	case config.LocalProvider:
-		return warehouse.NewLocalDisk(&conf.Local)
-	case config.AWSProvider:
-		return warehouse.NewS3Storage(&conf.S3)
-	case config.GCProvider:
-		gcsClient, err := storage.NewClient(ctx)
-		if err != nil {
-			log.Fatalf("Failed to create GCS client")
-		}
-		return warehouse.NewGCSStorage(&conf.GCS, gcsClient)
-	default:
-		log.Fatalf("unknown provider type: %s", conf.Provider)
-	}
-	return nil
-}
-
-func MakeDatabase(_ context.Context, conf *config.Config) warehouse.Database {
-	if conf.StorageOnly {
-		return nil
-	}
-	switch conf.Provider {
-	case config.LocalProvider:
-		log.Fatalf("cannot initialize database for local provider")
-	case config.AWSProvider:
-		return warehouse.NewRedshift(&conf.Redshift)
-	case config.GCProvider:
-		return warehouse.NewBigQuery(&conf.BigQuery)
-	default:
-		log.Fatalf("unknown provider type: %s", conf.Provider)
-	}
-	return nil
-}
 
 func main() {
 	conffile := flag.String("c", "config.toml", "configuration file")
@@ -58,8 +14,7 @@ func main() {
 	flag.Parse()
 
 	if *printVersion {
-		fmt.Printf("%s %s\n", filepath.Base(os.Args[0]), version)
-		os.Exit(0)
+		config.PrintVersion()
 	}
 
 	conf, err := config.Load(*conffile)
@@ -68,8 +23,9 @@ func main() {
 	}
 
 	ctx := context.Background()
-	store := MakeStorage(ctx, conf)
-	database := MakeDatabase(ctx, conf)
-	hauser := internal.NewHauser(conf, client.NewClient(conf), store, database)
+	store := resources.MakeStorage(ctx, conf)
+	database := resources.MakeDatabase(ctx, conf)
+	client := resources.MakeClient(ctx, conf)
+	hauser := resources.NewHauser(conf, client, store, database)
 	hauser.Run(ctx)
 }
