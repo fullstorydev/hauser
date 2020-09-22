@@ -49,7 +49,7 @@ var _ DataExportClient = (*Client)(nil)
 func NewClient(config *config.Config) *Client {
 	return &Client{
 		HTTPClient: &http.Client{
-			Transport: &FullStory{
+			Transport: &APIKeyRoundTripper{
 				Key:               config.FsApiToken,
 				AdditionalHeaders: config.AdditionalHttpHeader,
 			},

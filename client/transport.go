@@ -6,9 +6,9 @@ import (
 	"github.com/fullstorydev/hauser/config"
 )
 
-// FullStory is an HTTP transport which wraps the underlying transport and
+// APIKeyRoundTripper is an HTTP transport which wraps the underlying transport and
 // sets the Authorization header
-type FullStory struct {
+type APIKeyRoundTripper struct {
 	Key               string
 	AdditionalHeaders []config.Header
 
@@ -17,15 +17,14 @@ type FullStory struct {
 	Transport http.RoundTripper
 }
 
-func (t *FullStory) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *APIKeyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	rt := t.Transport
 	if rt == nil {
 		rt = http.DefaultTransport
 	}
-	newReq := *req
-	newReq.Header.Set("Authorization", "Basic "+t.Key)
+	req.Header.Set("Authorization", "Basic "+t.Key)
 	for _, header := range t.AdditionalHeaders {
-		newReq.Header.Set(header.Key, header.Value)
+		req.Header.Set(header.Key, header.Value)
 	}
-	return rt.RoundTrip(&newReq)
+	return rt.RoundTrip(req)
 }
