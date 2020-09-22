@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"sort"
@@ -25,6 +27,12 @@ type MockDataExportClient struct {
 	// Determines the time range for the requested bundle ID.
 	freqSetting int32
 	data        []map[string]interface{}
+	creates     map[string]struct {
+		start    time.Time
+		end      time.Time
+		progress int
+		exportId string
+	}
 }
 
 var _ client.DataExportClient = (*MockDataExportClient)(nil)
@@ -81,15 +89,69 @@ func (m *MockDataExportClient) ExportData(id int, _ ...func(r *http.Request)) (c
 		return nil, errors.New("bad export id")
 	}
 	bundleEnd := bundleStart.Add(time.Duration(bucketSize) * 30 * time.Minute)
+	raw := m.collectJsonData(bundleStart, bundleEnd)
+	return ioutil.NopCloser(bytes.NewReader(raw)), nil
+}
+
+func (m *MockDataExportClient) collectJsonData(start, end time.Time) []byte {
 	exportData := make([]map[string]interface{}, 0, 100)
 	for i, record := range m.data {
 		t := mustParseEventStartTime(record)
-		if (t.Equal(bundleStart) || t.After(bundleStart)) && (t.Before(bundleEnd)) {
+		if (t.Equal(start) || t.After(start)) && (t.Before(end)) {
 			exportData = append(exportData, m.data[i])
 		}
 	}
 	raw, _ := json.Marshal(exportData)
-	return ioutil.NopCloser(bytes.NewReader(raw)), nil
+	return raw
+}
+
+func (m *MockDataExportClient) CreateExport(start, end time.Time) (string, error) {
+	id := fmt.Sprintf("%d", rand.Int())
+	m.creates[id] = struct {
+		start    time.Time
+		end      time.Time
+		progress int
+		exportId string
+	}{start, end, 0, fmt.Sprintf("%d", rand.Int())}
+	return id, nil
+}
+
+func (m *MockDataExportClient) GetExportProgress(operationId string) (int, bool, error) {
+	if created, ok := m.creates[operationId]; !ok {
+		return 0, false, client.StatusError{
+			Status:     "Not Found",
+			StatusCode: 404,
+			RetryAfter: 0,
+			Body:       nil,
+		}
+	} else {
+		prog := created.progress
+
+		if created.progress < 100 {
+			created.progress += int(rand.Float32() * 100)
+			// In lieu of a MaxInt function
+			if created.progress > 100 {
+				created.progress = 100
+			}
+		}
+
+		m.creates[operationId] = created
+		return prog, prog == 100, nil
+	}
+}
+
+func (m *MockDataExportClient) GetExport(operationId string) (io.ReadCloser, error) {
+	if created, ok := m.creates[operationId]; !ok {
+		return nil, client.StatusError{
+			Status:     "Not Found",
+			StatusCode: 404,
+			RetryAfter: 0,
+			Body:       nil,
+		}
+	} else {
+		raw := m.collectJsonData(created.start, created.end)
+		return ioutil.NopCloser(bytes.NewReader(raw)), nil
+	}
 }
 
 func mustParseEventStartTime(record map[string]interface{}) time.Time {

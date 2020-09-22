@@ -12,6 +12,7 @@ import (
 
 // DefaultExportURL is the standard base URL for the fullstory.com API.
 const DefaultExportURL = "https://export.fullstory.com/api/v1"
+const DefaultApiURL = "https://api.fullstory.com"
 
 type Provider string
 
@@ -38,6 +39,7 @@ type Config struct {
 
 	// for debug only; can point to localhost
 	ExportURL string
+	ApiURL    string
 
 	// aws: s3 + redshift
 	S3       S3Config
@@ -130,6 +132,10 @@ func Validate(conf *Config) error {
 	// Set any defaults.
 	if conf.ExportURL == "" {
 		conf.ExportURL = DefaultExportURL
+	}
+
+	if conf.ApiURL == "" {
+		conf.ApiURL = DefaultApiURL
 	}
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {

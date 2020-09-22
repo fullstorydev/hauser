@@ -27,6 +27,7 @@ func TestValidate(t *testing.T) {
 				Provider:    "local",
 				StorageOnly: true,
 				ExportURL:   DefaultExportURL,
+				ApiURL:      DefaultApiURL,
 				Local: LocalConfig{
 					SaveDir: "tmp",
 				},
@@ -46,6 +47,7 @@ func TestValidate(t *testing.T) {
 				SaveAsJson:  true,
 				StorageOnly: true,
 				ExportURL:   DefaultExportURL,
+				ApiURL:      DefaultApiURL,
 				Local: LocalConfig{
 					SaveDir: "tmp",
 				},
@@ -64,6 +66,7 @@ func TestValidate(t *testing.T) {
 			expected: &Config{
 				Provider:  "aws",
 				ExportURL: DefaultExportURL,
+				ApiURL:    DefaultApiURL,
 				S3: S3Config{
 					Bucket:  "bucket",
 					Region:  "us-east-2",
@@ -89,6 +92,7 @@ func TestValidate(t *testing.T) {
 				Provider:    "aws",
 				StorageOnly: true,
 				ExportURL:   DefaultExportURL,
+				ApiURL:      DefaultApiURL,
 				S3: S3Config{
 					Bucket:  "bucket",
 					Region:  "us-east-2",
@@ -108,6 +112,7 @@ func TestValidate(t *testing.T) {
 			expected: &Config{
 				Provider:  "gcp",
 				ExportURL: DefaultExportURL,
+				ApiURL:    DefaultApiURL,
 				GCS: GCSConfig{
 					Bucket: "bucket",
 				},
@@ -127,6 +132,7 @@ func TestValidate(t *testing.T) {
 				Provider:    "gcp",
 				StorageOnly: true,
 				ExportURL:   DefaultExportURL,
+				ApiURL:      DefaultApiURL,
 				GCS: GCSConfig{
 					Bucket: "bucket",
 				},
