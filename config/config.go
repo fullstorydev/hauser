@@ -162,10 +162,9 @@ func Validate(conf *Config) error {
 	switch conf.Provider {
 	case LocalProvider:
 		// The local provider only supports storage
-		log.Println(`WARNING: The "local" provider only supports "StorageOnly = true" and "SaveAsJson = true".
-          These values will be ignored in your configuration file.`)
+		log.Println(`WARNING: The "local" provider only supports "StorageOnly = true".
+          This value will be ignored in your configuration file.`)
 		conf.StorageOnly = true
-		conf.SaveAsJson = true
 	case AWSProvider:
 		conf.StorageOnly = conf.StorageOnly || conf.S3.S3Only
 

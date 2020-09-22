@@ -53,6 +53,14 @@ func NewHauserService(config *config.Config, fsClient client.DataExportClient, s
 	}
 }
 
+func headerName(columnName string) string {
+	if bundleField, ok := bundleFieldsMap[columnName]; !ok {
+		return columnName
+	} else {
+		return bundleField.Name
+	}
+}
+
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
 // For existing export table fields that do not exist in the json record, an empty string is populated.
@@ -304,6 +312,14 @@ func (h *HauserService) WriteBundleToCSV(bundleID int, tableColumns []string, cs
 	}
 	defer stream.Close()
 
+	headers := make([]string, len(tableColumns))
+	for i, column := range tableColumns {
+		headers[i] = headerName(column)
+	}
+	if err := csvOut.Write(headers); err != nil {
+		return 0, err
+	}
+
 	decoder := json.NewDecoder(stream)
 	decoder.UseNumber()
 
@@ -405,9 +421,9 @@ func (h *HauserService) Init(_ context.Context) error {
 		for i, col := range h.tableColumns {
 			h.tableColumns[i] = strings.ToLower(col)
 		}
+	} else {
+		h.tableColumns = warehouse.DefaultBundleColumns()
 	}
-	// TODO(cam): enable storage only with CSV format by saving the fields locally
-	//  (like we do with the sync file)
 	return nil
 }
 
