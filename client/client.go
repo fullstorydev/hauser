@@ -48,8 +48,13 @@ var _ DataExportClient = (*Client)(nil)
 // supplied apiToken.
 func NewClient(config *config.Config) *Client {
 	return &Client{
-		HTTPClient: http.DefaultClient,
-		Config:     config,
+		HTTPClient: &http.Client{
+			Transport: &APIKeyRoundTripper{
+				Key:               config.FsApiToken,
+				AdditionalHeaders: config.AdditionalHttpHeader,
+			},
+		},
+		Config: config,
 	}
 }
 
@@ -58,11 +63,6 @@ func NewClient(config *config.Config) *Client {
 //
 // If the error is nil, the caller is responsible for closing the returned data.
 func (c *Client) doReq(req *http.Request) (io.ReadCloser, error) {
-	req.Header.Set("Authorization", "Basic "+c.Config.FsApiToken)
-	for _, header := range c.Config.AdditionalHttpHeader {
-		req.Header.Set(header.Key, header.Value)
-	}
-
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
