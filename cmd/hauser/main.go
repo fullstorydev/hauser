@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
-	"github.com/fullstorydev/hauser/resources"
+	"github.com/fullstorydev/hauser/hauser"
 	"log"
 	"os"
 	"path/filepath"
@@ -30,9 +30,9 @@ func main() {
 	}
 
 	ctx := context.Background()
-	store := resources.MakeStorage(ctx, conf)
-	database := resources.MakeDatabase(ctx, conf)
-	client := client.NewClient(conf)
-	hauser := resources.NewHauser(conf, client, store, database)
-	hauser.Run(ctx)
+	store := hauser.MakeStorage(ctx, conf)
+	database := hauser.MakeDatabase(ctx, conf)
+	cl := client.NewClient(conf)
+	h := hauser.NewHauser(conf, cl, store, database)
+	h.Run(ctx)
 }

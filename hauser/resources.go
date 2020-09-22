@@ -1,4 +1,4 @@
-package resources
+package hauser
 
 import (
 	"cloud.google.com/go/storage"
