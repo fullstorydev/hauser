@@ -8,12 +8,11 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/warehouse"
 )
 
 type MockStorage struct {
-	Syncs         []client.ExportMeta
+	Syncs         []time.Time
 	UploadedFiles map[string][]byte
 	DeletedFiles  []string
 }
@@ -31,15 +30,15 @@ func NewMockStorage() *MockStorage {
 func (m *MockStorage) LastSyncPoint(_ context.Context) (time.Time, error) {
 	var max time.Time
 	for i, s := range m.Syncs {
-		if i == 0 || s.Stop.After(max) {
-			max = s.Stop
+		if i == 0 || s.After(max) {
+			max = s
 		}
 	}
 	return max, nil
 }
 
-func (m *MockStorage) SaveSyncPoints(_ context.Context, bundles ...client.ExportMeta) error {
-	m.Syncs = append(m.Syncs, bundles...)
+func (m *MockStorage) SaveSyncPoint(ctx context.Context, endTime time.Time) error {
+	m.Syncs = append(m.Syncs, endTime)
 	return nil
 }
 

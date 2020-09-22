@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
@@ -44,8 +43,8 @@ func (w *LocalDisk) LastSyncPoint(ctx context.Context) (time.Time, error) {
 	return SyncViaStorageMixin{w}.LastSyncPoint(ctx)
 }
 
-func (w *LocalDisk) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
-	return SyncViaStorageMixin{w}.SaveSyncPoints(ctx, bundles...)
+func (w *LocalDisk) SaveSyncPoint(ctx context.Context, endTime time.Time) error {
+	return SyncViaStorageMixin{w}.SaveSyncPoint(ctx, endTime)
 }
 
 func (w *LocalDisk) SaveFile(_ context.Context, name string, reader io.Reader) (string, error) {

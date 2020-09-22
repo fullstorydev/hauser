@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"strings"
 	"time"
-
-	"github.com/fullstorydev/hauser/client"
 )
 
 const (
@@ -23,7 +21,7 @@ var (
 
 type Syncable interface {
 	LastSyncPoint(ctx context.Context) (time.Time, error)
-	SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error
+	SaveSyncPoint(ctx context.Context, endTime time.Time) error
 }
 
 type Storage interface {
@@ -36,7 +34,7 @@ type Storage interface {
 
 type Database interface {
 	Syncable
-	LoadToWarehouse(storageRef string, bundles ...client.ExportMeta) error
+	LoadToWarehouse(storageRef string, start time.Time) error
 	ValueToString(val interface{}, isTime bool) string
 	GetExportTableColumns() []string
 	EnsureCompatibleExportTable() error
@@ -85,11 +83,11 @@ func (s SyncViaStorageMixin) LastSyncPoint(ctx context.Context) (time.Time, erro
 	}
 }
 
-func (s SyncViaStorageMixin) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
-	if len(bundles) == 0 {
-		panic("Zero-length bundle list passed to SaveSyncPoints")
+func (s SyncViaStorageMixin) SaveSyncPoint(ctx context.Context, endTime time.Time) error {
+	if endTime.IsZero() {
+		panic("An end time of zero is not a valid sync point SaveSyncPoints")
 	}
-	t := bundles[len(bundles)-1].Stop.UTC().Format(time.RFC3339)
+	t := endTime.UTC().Format(time.RFC3339)
 	r := bytes.NewReader([]byte(t))
 	_, err := s.storage.SaveFile(ctx, timestampFile, r)
 	return err
