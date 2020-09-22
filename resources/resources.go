@@ -8,21 +8,10 @@ import (
 	"github.com/fullstorydev/hauser/internal"
 	"github.com/fullstorydev/hauser/warehouse"
 	"log"
-	"net/http"
 )
 
 func NewHauser(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *internal.HauserService {
 	return internal.NewHauserService(config,fsClient,storage,db)
-}
-
-func MakeClient(_ context.Context, config *config.Config) *client.Client {
-	return &client.Client{
-		HTTPClient: http.DefaultClient,
-		Config:     config,
-		AuthFunc:   func(req *http.Request) {
-			// all the work is done by oauth2Cl via the impl of oauth2.Client
-		},
-	}
 }
 
 func MakeStorage(ctx context.Context, conf *config.Config) warehouse.Storage {

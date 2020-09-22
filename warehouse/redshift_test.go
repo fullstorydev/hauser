@@ -146,10 +146,10 @@ func TestValidateSchemaConfig(t *testing.T) {
 		wh := NewRedshift(tc.conf)
 		err := wh.validateSchemaConfig()
 		if tc.hasError && err == nil {
-			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.Config.Redshift.DatabaseSchema is empty")
+			t.Errorf("expected Redshift.validateSchemaConfig() to return an error when config.configuration.Redshift.DatabaseSchema is empty")
 		}
 		if tc.hasError && err.Error() != tc.errMessage {
-			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.Config.Redshift.DatabaseSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
+			t.Errorf("expected Redshift.validateSchemaConfig() to return \n%s \nwhen config.configuration.Redshift.DatabaseSchema is empty, returned \n%s \ninstead", tc.errMessage, err)
 		}
 		if !tc.hasError && err != nil {
 			t.Errorf("unexpected error thrown for DatabaseSchema %s: %s", tc.conf.DatabaseSchema, err)

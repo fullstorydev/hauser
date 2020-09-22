@@ -38,9 +38,8 @@ type DataExportClient interface {
 
 // Client represents a HTTP client for making requests to the FullStory API.
 type Client struct {
-	HTTPClient *http.Client
-	Config     *config.Config
-	AuthFunc   func(*http.Request)
+	HTTPClient    *http.Client
+	Config *config.Config
 }
 
 var _ DataExportClient = (*Client)(nil)
@@ -99,3 +98,4 @@ func getRetryAfter(resp *http.Response) int {
 
 	return 0
 }
+

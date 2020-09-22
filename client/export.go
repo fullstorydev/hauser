@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptrace"
 	"net/url"
 	"strconv"
 	"time"
@@ -38,7 +37,7 @@ func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
 	v := make(url.Values)
 	v.Add("start", fmt.Sprintf("%d", start.Unix()))
 
-	req, err := http.NewRequest("GET", c.Config.ExportURL+"/export/list"+"?"+v.Encode(), nil)
+	req, err := http.NewRequest("GET", c.configuration.ExportURL+"/export/list"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func (c *Client) ExportData(id int, modifyReq ...func(r *http.Request)) (ExportD
 	v := make(url.Values)
 	v.Add("id", strconv.Itoa(id))
 
-	req, err := http.NewRequest("GET", c.Config.ExportURL+"/export/get"+"?"+v.Encode(), nil)
+	req, err := http.NewRequest("GET", c.configuration.ExportURL+"/export/get"+"?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
