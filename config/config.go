@@ -27,15 +27,18 @@ type Config struct {
 	Warehouse            string
 	Provider             Provider
 	FsApiToken           string
+	ExportDuration       duration
+	ExportDelay          duration
 	AdditionalHttpHeader []Header
 	Backoff              duration
 	BackoffStepsMax      int
 	CheckInterval        duration
 	TmpDir               string
 	ListExportLimit      int
-	GroupFilesByDay      bool
-	SaveAsJson           bool
-	StorageOnly          bool
+	// Deprecated
+	GroupFilesByDay bool
+	SaveAsJson      bool
+	StorageOnly     bool
 
 	// for debug only; can point to localhost
 	ExportURL string
@@ -136,6 +139,22 @@ func Validate(conf *Config) error {
 
 	if conf.ApiURL == "" {
 		conf.ApiURL = DefaultApiURL
+	}
+
+	// TODO: enforce lower limit?
+	if conf.ExportDuration.Duration == 0 {
+		if conf.GroupFilesByDay {
+			log.Println(`WARNING: The "GroupFilesByDay" option is deprecated. Please use "ExportDuration" instead.`)
+			conf.ExportDuration.Duration = 24 * time.Hour
+		}
+		log.Println(`INFO: "ExportDuration" not set in config. Defaulting to 1 hour`)
+		conf.ExportDuration.Duration = time.Hour
+	}
+
+	if conf.ExportDelay.Duration == 0 {
+		conf.ExportDelay.Duration = 24 * time.Hour
+	} else if conf.ExportDelay.Duration < time.Hour {
+		return errors.New(`"ExportDelay" configuration value is too small. Minimum value is 1 hour`)
 	}
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
