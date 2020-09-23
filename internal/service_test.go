@@ -83,7 +83,7 @@ func TestHauser(t *testing.T) {
 				db = hausertest.NewMockDatabase()
 			}
 
-			hauser := NewHauser(tc.config, fsClient, storage, db)
+			hauser := NewHauserService(tc.config, fsClient, storage, db)
 			err := hauser.Init(ctx)
 
 			Ok(t, err, "failed to init")
