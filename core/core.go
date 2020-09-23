@@ -1,13 +1,14 @@
-package hauser
+package core
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
+	"log"
+
+	"cloud.google.com/go/storage"
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 	"github.com/fullstorydev/hauser/internal"
 	"github.com/fullstorydev/hauser/warehouse"
-	"log"
 )
 
 func NewHauser(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *internal.HauserService {

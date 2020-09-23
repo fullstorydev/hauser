@@ -4,12 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/fullstorydev/hauser/client"
-	"github.com/fullstorydev/hauser/config"
-	"github.com/fullstorydev/hauser/hauser"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/fullstorydev/hauser/client"
+	"github.com/fullstorydev/hauser/config"
+	"github.com/fullstorydev/hauser/core"
 )
 
 var version = "dev build <no version set>"
@@ -30,9 +31,9 @@ func main() {
 	}
 
 	ctx := context.Background()
-	store := hauser.MakeStorage(ctx, conf)
-	database := hauser.MakeDatabase(ctx, conf)
+	store := core.MakeStorage(ctx, conf)
+	database := core.MakeDatabase(ctx, conf)
 	cl := client.NewClient(conf)
-	h := hauser.NewHauser(conf, cl, store, database)
+	h := core.NewHauser(conf, cl, store, database)
 	h.Run(ctx)
 }
