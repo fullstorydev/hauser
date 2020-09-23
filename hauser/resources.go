@@ -11,7 +11,7 @@ import (
 )
 
 func NewHauser(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *internal.HauserService {
-	return internal.NewHauserService(config,fsClient,storage,db)
+	return internal.NewHauserService(config, fsClient, storage, db)
 }
 
 func MakeStorage(ctx context.Context, conf *config.Config) warehouse.Storage {
@@ -48,4 +48,3 @@ func MakeDatabase(_ context.Context, conf *config.Config) warehouse.Database {
 	}
 	return nil
 }
-
