@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
@@ -29,8 +28,8 @@ func (g *GCSStorage) LastSyncPoint(ctx context.Context) (time.Time, error) {
 	return SyncViaStorageMixin{g}.LastSyncPoint(ctx)
 }
 
-func (g *GCSStorage) SaveSyncPoints(ctx context.Context, bundles ...client.ExportMeta) error {
-	return SyncViaStorageMixin{g}.SaveSyncPoints(ctx, bundles...)
+func (g *GCSStorage) SaveSyncPoint(ctx context.Context, endTime time.Time) error {
+	return SyncViaStorageMixin{g}.SaveSyncPoint(ctx, endTime)
 }
 
 func (g *GCSStorage) SaveFile(ctx context.Context, name string, reader io.Reader) (string, error) {

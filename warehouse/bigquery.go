@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 )
 
@@ -102,19 +101,16 @@ func (bq *BigQuery) LastSyncPoint(_ context.Context) (time.Time, error) {
 	return t, nil
 }
 
-func (bq *BigQuery) SaveSyncPoints(_ context.Context, bundles ...client.ExportMeta) error {
+func (bq *BigQuery) SaveSyncPoint(_ context.Context, endTime time.Time) error {
 	if err := bq.connectToBQ(); err != nil {
 		return err
 	}
 	defer bq.bqClient.Close()
 
-	values := make([]string, len(bundles))
-	for i, p := range bundles {
-		values[i] = fmt.Sprintf("(%d, TIMESTAMP(\"%s\"), TIMESTAMP(\"%s\"))", p.ID, time.Now().UTC().Format(time.RFC3339), p.Stop.UTC().Format(time.RFC3339))
-	}
+	value := fmt.Sprintf("(%d, TIMESTAMP(\"%s\"), TIMESTAMP(\"%s\"))", -1, time.Now().UTC().Format(time.RFC3339), endTime.UTC().Format(time.RFC3339))
 
 	// BQ supports inserting multiple records at once
-	q := fmt.Sprintf("INSERT INTO %s.%s (ID, Processed, BundleEndtime) VALUES %s;", bq.conf.Dataset, bq.conf.SyncTable, strings.Join(values, ","))
+	q := fmt.Sprintf("INSERT INTO %s.%s (ID, Processed, BundleEndtime) VALUES %s;", bq.conf.Dataset, bq.conf.SyncTable, value)
 	log.Printf("Save SQL: %s", q)
 	query := bq.bqClient.Query(q)
 	query.QueryConfig.UseStandardSQL = true
@@ -128,7 +124,7 @@ func (bq *BigQuery) SaveSyncPoints(_ context.Context, bundles ...client.ExportMe
 	return bq.waitForJob(job)
 }
 
-func (bq *BigQuery) LoadToWarehouse(storageRef string, bundles ...client.ExportMeta) error {
+func (bq *BigQuery) LoadToWarehouse(storageRef string, startTime time.Time) error {
 	if err := bq.connectToBQ(); err != nil {
 		return err
 	}
@@ -138,15 +134,14 @@ func (bq *BigQuery) LoadToWarehouse(storageRef string, bundles ...client.ExportM
 	gcsRef := bigquery.NewGCSReference(storageRef) // defaults to CSV
 	gcsRef.FileConfig.IgnoreUnknownValues = true
 	gcsRef.AllowJaggedRows = true
-	start := bundles[0].Start.UTC()
-	partitionTable := bq.conf.ExportTable + "$" + start.Format("20060102")
+	partitionTable := bq.conf.ExportTable + "$" + startTime.Format("20060102")
 	log.Printf("Loading GCS file: %s into table %s", storageRef, partitionTable)
 
 	loader := bq.bqClient.Dataset(bq.conf.Dataset).Table(partitionTable).LoaderFrom(gcsRef)
 	loader.CreateDisposition = bigquery.CreateNever
-	if start.Equal(start.Truncate(24 * time.Hour)) {
+	if startTime.Equal(startTime.Truncate(24 * time.Hour)) {
 		// this is the first file of the partition, truncate the partition in case there is leftover data from previous failed loads
-		log.Printf("Detected first bundle of the day (start: %s), using WriteTruncate to replace any existing data in partition", start)
+		log.Printf("Detected first bundle of the day (start: %s), using WriteTruncate to replace any existing data in partition", startTime)
 		loader.WriteDisposition = bigquery.WriteTruncate
 	}
 

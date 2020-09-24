@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/warehouse"
 )
 
@@ -20,7 +19,7 @@ var (
 type MockDatabase struct {
 	schema      warehouse.Schema
 	Initialized bool
-	Syncs       []client.ExportMeta
+	Syncs       []time.Time
 	LoadedFiles []string
 }
 
@@ -38,19 +37,19 @@ func NewMockDatabase() *MockDatabase {
 func (m *MockDatabase) LastSyncPoint(_ context.Context) (time.Time, error) {
 	var max time.Time
 	for i, s := range m.Syncs {
-		if i == 0 || s.Stop.After(max) {
-			max = s.Stop
+		if i == 0 || s.After(max) {
+			max = s
 		}
 	}
 	return max, nil
 }
 
-func (m *MockDatabase) SaveSyncPoints(_ context.Context, bundles ...client.ExportMeta) error {
-	m.Syncs = append(m.Syncs, bundles...)
+func (m *MockDatabase) SaveSyncPoint(_ context.Context, endTime time.Time) error {
+	m.Syncs = append(m.Syncs, endTime)
 	return nil
 }
 
-func (m *MockDatabase) LoadToWarehouse(filename string, _ ...client.ExportMeta) error {
+func (m *MockDatabase) LoadToWarehouse(filename string, _ time.Time) error {
 	m.LoadedFiles = append(m.LoadedFiles, filename)
 	return nil
 }

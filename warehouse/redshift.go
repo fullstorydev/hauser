@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 	"github.com/lib/pq"
 )
@@ -133,7 +132,7 @@ func getBucketAndKey(bucketConfig, objName string) (string, string) {
 	return bucketName, key
 }
 
-func (rs *Redshift) LoadToWarehouse(s3obj string, _ ...client.ExportMeta) error {
+func (rs *Redshift) LoadToWarehouse(s3obj string, _ time.Time) error {
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
@@ -212,7 +211,7 @@ func (rs *Redshift) CreateSyncTable() error {
 	return err
 }
 
-func (rs *Redshift) SaveSyncPoints(_ context.Context, bundles ...client.ExportMeta) error {
+func (rs *Redshift) SaveSyncPoint(_ context.Context, endTime time.Time) error {
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
@@ -221,12 +220,10 @@ func (rs *Redshift) SaveSyncPoints(_ context.Context, bundles ...client.ExportMe
 	}
 	defer rs.conn.Close()
 
-	for _, e := range bundles {
-		insert := fmt.Sprintf("insert into %s values (%d, '%s', '%s')",
-			rs.qualifiedSyncTableName(), e.ID, time.Now().UTC().Format(time.RFC3339), e.Stop.UTC().Format(time.RFC3339))
-		if _, err := rs.conn.Exec(insert); err != nil {
-			return err
-		}
+	insert := fmt.Sprintf("insert into %s values (%d, '%s', '%s')",
+		rs.qualifiedSyncTableName(), -1, time.Now().UTC().Format(time.RFC3339), endTime.UTC().Format(time.RFC3339))
+	if _, err := rs.conn.Exec(insert); err != nil {
+		return err
 	}
 
 	return nil
