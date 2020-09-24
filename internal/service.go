@@ -233,9 +233,9 @@ func (h *HauserService) LoadBundles(ctx context.Context, filename string, bundle
 		return fmt.Errorf("failed to save file: %s", err)
 	}
 
+	bundleEndTime := bundles[len(bundles)-1].Stop
 	if h.config.StorageOnly {
-
-		return h.storage.SaveSyncPoint(ctx, bundles[len(bundles)-1].Stop)
+		return h.storage.SaveSyncPoint(ctx, bundleEndTime)
 	}
 
 	defer h.storage.DeleteFile(ctx, objName)
@@ -250,7 +250,7 @@ func (h *HauserService) LoadBundles(ctx context.Context, filename string, bundle
 	// still okay - the next call to LastSyncPoint() will see that there are export
 	// records beyond the sync point and remove them - ie, we will reprocess the
 	// current export file
-	if err := h.database.SaveSyncPoint(ctx, bundles[len(bundles)-1].Stop); err != nil {
+	if err := h.database.SaveSyncPoint(ctx, bundleEndTime); err != nil {
 		log.Printf("Failed to save sync points for bundles ending with %d: %s", bundles[len(bundles)].ID, err)
 		return err
 	}
