@@ -187,7 +187,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 
 // CopyInData copies data from the given s3File to the export table
 func (rs *Redshift) CopyInData(s3file string) error {
-	copyStatement := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV ACCEPTINVCHARS;",
+	copyStatement := fmt.Sprintf("COPY %s FROM '%s' CREDENTIALS '%s' DELIMITER ',' REGION '%s' FORMAT AS CSV IGNOREHEADER 1 ACCEPTINVCHARS;",
 		rs.qualifiedExportTableName(), s3file, rs.conf.Credentials, rs.conf.S3Region)
 	_, err := rs.conn.Exec(copyStatement)
 	return err

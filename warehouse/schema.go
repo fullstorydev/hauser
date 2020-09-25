@@ -109,6 +109,15 @@ func SyncTableSchema(ftm FieldTypeMapper) Schema {
 	return structToSchema(syncTable{}, ftm)
 }
 
+func DefaultBundleColumns() []string {
+	t := reflect.TypeOf(BundleEvent{})
+	cols := make([]string, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		cols[i] = t.Field(i).Name
+	}
+	return cols
+}
+
 func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
 	t := reflect.TypeOf(i)
 	result := make(Schema, t.NumField())

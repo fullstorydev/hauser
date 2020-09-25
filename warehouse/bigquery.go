@@ -134,6 +134,8 @@ func (bq *BigQuery) LoadToWarehouse(storageRef string, startTime time.Time) erro
 	gcsRef := bigquery.NewGCSReference(storageRef) // defaults to CSV
 	gcsRef.FileConfig.IgnoreUnknownValues = true
 	gcsRef.AllowJaggedRows = true
+	// Ignore the header
+	gcsRef.SkipLeadingRows = 1
 	partitionTable := bq.conf.ExportTable + "$" + startTime.Format("20060102")
 	log.Printf("Loading GCS file: %s into table %s", storageRef, partitionTable)
 

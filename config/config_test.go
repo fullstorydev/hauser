@@ -25,7 +25,6 @@ func TestValidate(t *testing.T) {
 			},
 			expected: &Config{
 				Provider:    "local",
-				SaveAsJson:  true,
 				StorageOnly: true,
 				ExportURL:   DefaultExportURL,
 				Local: LocalConfig{
@@ -36,7 +35,8 @@ func TestValidate(t *testing.T) {
 		{
 			name: "local backwards compat",
 			conf: &Config{
-				Warehouse: "local",
+				Warehouse:  "local",
+				SaveAsJson: true,
 				Local: LocalConfig{
 					SaveDir: "tmp",
 				},
