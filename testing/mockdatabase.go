@@ -66,7 +66,7 @@ func (m *MockDatabase) ValueToString(val interface{}, isTime bool) string {
 func (m *MockDatabase) GetExportTableColumns() []string {
 	cols := make([]string, 0, len(m.schema))
 	for _, f := range m.schema {
-		cols = append(cols, f.Name)
+		cols = append(cols, f.DBName)
 	}
 	return cols
 }

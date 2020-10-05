@@ -20,6 +20,14 @@ type Redshift struct {
 	syncSchema   Schema
 }
 
+func (rs *Redshift) InitExportTable(Schema) (bool, error) {
+	panic("implement me")
+}
+
+func (rs *Redshift) ApplyExportSchema(Schema) error {
+	panic("implement me")
+}
+
 var (
 	RedshiftTypeMap = FieldTypeMapper{
 		"int64":     "BIGINT",
@@ -176,7 +184,7 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 		log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
 		for _, f := range missingFields {
 			// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
-			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.qualifiedExportTableName(), f.Name, f.DBType)
+			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.qualifiedExportTableName(), f.DBName, f.DBType)
 			if _, err = rs.conn.Exec(alterStmt); err != nil {
 				return err
 			}
@@ -352,7 +360,7 @@ func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []War
 
 	var missingFields []WarehouseField
 	for _, f := range schema {
-		if _, ok := existingColumns[strings.ToLower(f.Name)]; !ok {
+		if _, ok := existingColumns[strings.ToLower(f.DBName)]; !ok {
 			missingFields = append(missingFields, f)
 		}
 	}

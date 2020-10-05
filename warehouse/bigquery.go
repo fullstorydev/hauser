@@ -2,8 +2,10 @@ package warehouse
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
@@ -12,10 +14,10 @@ import (
 )
 
 var (
-	BigQueryTypeMap = FieldTypeMapper{
-		"int64":     "BIGINT",
-		"string":    "VARCHAR(max)",
-		"time.Time": "TIMESTAMP",
+	bigQueryTypeMap = map[reflect.Type]bigquery.FieldType{
+		reflect.TypeOf(int64(0)):    bigquery.IntegerFieldType,
+		reflect.TypeOf(""):          bigquery.StringFieldType,
+		reflect.TypeOf(time.Time{}): bigquery.TimestampFieldType,
 	}
 )
 
@@ -155,6 +157,105 @@ func (bq *BigQuery) LoadToWarehouse(storageRef string, startTime time.Time) erro
 	}
 
 	return bq.waitForJob(job)
+}
+
+func convertSchema(s Schema, existing bigquery.Schema) (bigquery.Schema, error) {
+	bqs := make([]*bigquery.FieldSchema, len(s))
+	for i, field := range s {
+		// Not checking ok here because we may not need it
+		bqType, ok := bigQueryTypeMap[field.FieldType]
+
+		if i < len(existing) {
+			// Make sure the existing schema is compatible with the provided hauser schema
+			if strings.ToLower(field.DBName) != strings.ToLower(existing[i].Name) {
+				return nil, errors.New(fmt.Sprintf(
+					"columns names don't match at index %d: expected %s, got %s", i, existing[i].Name, field.DBName))
+			} else if field.FullStoryFieldName != "" && bqType != existing[i].Type {
+				return nil, errors.New(fmt.Sprintf("field types don't match at index %d: expected %s, got %s", i, existing[i].Type, bqType))
+			}
+		}
+
+		if field.FullStoryFieldName == "" {
+			// We need to pull the type from the existing schema
+			bqType = existing[i].Type
+		} else if !ok {
+			return nil, errors.New("field type not found")
+		}
+		bqs[i] = &bigquery.FieldSchema{
+			Name: field.DBName,
+			Type: bqType,
+		}
+	}
+	return bqs, nil
+}
+
+func (bq *BigQuery) InitExportTable(s Schema) (bool, error) {
+	bqSchema, err := convertSchema(s, bigquery.Schema{})
+	if err != nil {
+		return false, err
+	}
+
+	if err := bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+
+	if bq.doesTableExist(bq.conf.ExportTable) {
+		// Ensure that the expiration is set
+		table := bq.bqClient.Dataset(bq.conf.Dataset).Table(bq.conf.ExportTable)
+		md, err := table.Metadata(bq.ctx)
+		if err != nil {
+			return false, err
+		}
+		if md.TimePartitioning.Expiration != bq.conf.PartitionExpiration.Duration {
+			update := bigquery.TableMetadataToUpdate{
+				TimePartitioning: &bigquery.TimePartitioning{
+					Expiration: bq.conf.PartitionExpiration.Duration,
+					Field:      md.TimePartitioning.Field,
+				},
+			}
+			_, err := table.Update(bq.ctx, update, md.ETag)
+			if err != nil {
+				return false, nil
+			}
+			return true, nil
+		}
+		return false, nil
+	}
+
+	err = bq.createExportTable(bqSchema)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (bq *BigQuery) ApplyExportSchema(s Schema) error {
+	if err := bq.connectToBQ(); err != nil {
+		log.Fatal(err)
+	}
+
+	// get current table schema in BigQuery
+	table := bq.bqClient.Dataset(bq.conf.Dataset).Table(bq.conf.ExportTable)
+	md, err := table.Metadata(context.Background())
+	if err != nil {
+		return err
+	}
+
+	newSchema, err := convertSchema(s, md.Schema)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed to convert to bigquery schema: %s", err))
+	}
+
+	newColumns := newSchema[len(md.Schema):]
+	if len(newColumns) > 0 {
+		update := bigquery.TableMetadataToUpdate{
+			Schema: append(md.Schema, newColumns...),
+		}
+		if _, err := table.Update(bq.ctx, update, md.ETag); err != nil {
+			return nil
+		}
+	}
+	return nil
 }
 
 // EnsureCompatibleExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema

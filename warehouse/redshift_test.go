@@ -47,7 +47,7 @@ func TestGetMissingFieldsRedshift(t *testing.T) {
 
 	var schemaHeaders []string
 	for _, f := range wh.exportSchema {
-		schemaHeaders = append(schemaHeaders, f.Name)
+		schemaHeaders = append(schemaHeaders, f.DBName)
 	}
 
 	var noHeaders []string
