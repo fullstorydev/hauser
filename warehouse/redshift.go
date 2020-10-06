@@ -34,7 +34,6 @@ var (
 		"string":    "VARCHAR(max)",
 		"time.Time": "TIMESTAMP",
 	}
-	beginningOfTime = time.Date(2015, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
 var _ Database = (*Redshift)(nil)
@@ -250,7 +249,7 @@ func (rs *Redshift) DeleteExportRecordsAfter(end time.Time) error {
 }
 
 func (rs *Redshift) LastSyncPoint(_ context.Context) (time.Time, error) {
-	t := beginningOfTime
+	t := time.Time{}
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {

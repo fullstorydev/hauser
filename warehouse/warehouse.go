@@ -36,8 +36,6 @@ type Database interface {
 	Syncable
 	LoadToWarehouse(storageRef string, start time.Time) error
 	ValueToString(val interface{}, isTime bool) string
-
-	// Deprecated
 	GetExportTableColumns() []string
 
 	// Deprecated

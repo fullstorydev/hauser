@@ -56,7 +56,7 @@ func (bq *BigQuery) GetExportTableColumns() []string {
 }
 
 func (bq *BigQuery) LastSyncPoint(_ context.Context) (time.Time, error) {
-	t := beginningOfTime
+	t := time.Time{}
 
 	if err := bq.connectToBQ(); err != nil {
 		return t, err

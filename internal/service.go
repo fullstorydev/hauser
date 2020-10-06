@@ -24,7 +24,6 @@ import (
 
 var (
 	currentBackoffStep = uint(0)
-	bundleFieldsMap    = make(map[string]warehouse.BundleField)
 )
 
 const (
@@ -39,13 +38,13 @@ const (
 type Record map[string]interface{}
 
 type HauserService struct {
-	config       *config.Config
-	fsClient     client.DataExportClient
-	storage      warehouse.Storage
-	database     warehouse.Database
-	tableColumns []string
-	schema       warehouse.Schema
-	schemaMap    map[string]bool
+	config   *config.Config
+	fsClient client.DataExportClient
+	storage  warehouse.Storage
+	database warehouse.Database
+	schema   warehouse.Schema
+	// cached map of the schema for translating json records
+	schemaMap map[string]bool
 }
 
 func NewHauserService(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *HauserService {
@@ -55,14 +54,6 @@ func NewHauserService(config *config.Config, fsClient client.DataExportClient, s
 		storage:  storage,
 		database: db,
 		schema:   warehouse.MakeSchema(warehouse.BaseExportFields{}),
-	}
-}
-
-func headerName(columnName string) string {
-	if bundleField, ok := bundleFieldsMap[columnName]; !ok {
-		return columnName
-	} else {
-		return bundleField.Name
 	}
 }
 
@@ -116,152 +107,6 @@ func (h *HauserService) transformExportJSONRecord(convert warehouse.ValueToStrin
 		}
 	}
 	return line, nil
-}
-
-func (h *HauserService) ProcessExportsSince(ctx context.Context, since time.Time) (int, error) {
-	log.Printf("Checking for new export files since %s", since)
-
-	exports, err := h.fsClient.ExportList(since)
-	if err != nil {
-		log.Printf("Failed to fetch export list: %s", err)
-		return 0, err
-	}
-
-	if h.config.GroupFilesByDay {
-		return h.ProcessFilesByDay(ctx, exports)
-	}
-	return h.ProcessFilesIndividually(ctx, exports)
-}
-
-// ProcessFilesIndividually iterates over the list of available export files and processes them one by one, until an error
-// occurs, or until they are all processed.
-func (h *HauserService) ProcessFilesIndividually(ctx context.Context, exports []client.ExportMeta) (int, error) {
-	for _, e := range exports {
-		err := func() error {
-			log.Printf("Processing bundle %d (start: %s, end: %s)", e.ID, e.Start.UTC(), e.Stop.UTC())
-			mark := time.Now()
-
-			stream, err := h.getExportData(e.ID)
-			if err != nil {
-				log.Printf("Failed to fetch bundle %d: %s", e.ID, err)
-				return err
-			}
-			defer stream.Close()
-
-			var filename string
-			var statusMessage string
-			if h.config.SaveAsJson {
-				filename = filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.json", e.ID))
-				defer os.Remove(filename)
-				writtenCount, err := h.WriteBundleToJson(stream, filename)
-				if err != nil {
-					log.Printf("Failed to create tmp json file: %s", err)
-					return err
-				}
-				statusMessage = fmt.Sprintf("Processing of bundle %d (%d bytes)", e.ID, writtenCount)
-			} else {
-				filename = filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", e.ID))
-				outfile, err := os.Create(filename)
-				if err != nil {
-					log.Printf("Failed to create tmp csv file: %s", err)
-					return err
-				}
-				defer os.Remove(filename)
-				defer outfile.Close()
-				csvOut := csv.NewWriter(outfile)
-
-				recordCount, err := h.WriteBundleToCSV(stream, h.tableColumns, csvOut)
-				if err != nil {
-					return err
-				}
-				statusMessage = fmt.Sprintf("Processing of bundle %d (%d records)", e.ID, recordCount)
-			}
-
-			if err := h.LoadBundles(ctx, filename, e.Start, e.Stop); err != nil {
-				return err
-			}
-
-			log.Printf("%s took %s", statusMessage, time.Since(mark))
-			return nil
-		}()
-		if err != nil {
-			return 0, errors.Errorf("Failed to process bundle: %s", err)
-		}
-	}
-
-	// return how many files were processed
-	return len(exports), nil
-}
-
-// ProcessFilesByDay creates a single intermediate CSV file for all the export bundles on a given day.  It assumes the
-// day to be processed is the day from the first export bundle's Start value.  When all the bundles with that same day
-// have been written to the CSV file, it is loaded to the warehouse, and the function quits without attempting to
-// process remaining bundles (they'll get picked up on the next call to ProcessExportsSince)
-// TODO: deprecate
-func (h *HauserService) ProcessFilesByDay(ctx context.Context, exports []client.ExportMeta) (int, error) {
-	if len(exports) == 0 {
-		return 0, nil
-	}
-	if h.config.SaveAsJson {
-		log.Fatalf("The option to process files by day is only supported for CSV format.")
-	}
-
-	log.Printf("Creating group file starting with bundle %d (start: %s)", exports[0].ID, exports[0].Start.UTC())
-	filename := filepath.Join(h.config.TmpDir, fmt.Sprintf("%d-%s.csv", exports[0].ID, exports[0].Start.UTC().Format("20060102")))
-	mark := time.Now()
-	outfile, err := os.Create(filename)
-	if err != nil {
-		log.Printf("Failed to create tmp file: %s", err)
-		return 0, err
-	}
-	defer os.Remove(filename)
-	defer outfile.Close()
-	csvOut := csv.NewWriter(outfile)
-
-	var processedBundles []client.ExportMeta
-	var totalRecords int
-	groupDay := exports[0].Start.UTC().Truncate(24 * time.Hour)
-	for _, e := range exports {
-		if !groupDay.Equal(e.Start.UTC().Truncate(24 * time.Hour)) {
-			break
-		}
-
-		err := func() error {
-			stream, err := h.getExportData(e.ID)
-			if err != nil {
-				log.Printf("Failed to fetch bundle %d: %s", e.ID, err)
-				return err
-			}
-			defer stream.Close()
-
-			recordCount, err := h.WriteBundleToCSV(stream, h.tableColumns, csvOut)
-			if err != nil {
-				return err
-			}
-
-			log.Printf("Wrote bundle %d (%d records, start: %s, stop: %s)", e.ID, recordCount, e.Start.UTC(), e.Stop.UTC())
-			totalRecords += recordCount
-			processedBundles = append(processedBundles, e)
-			return nil
-		}()
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if len(processedBundles) > 0 {
-		startTime := processedBundles[0].Start
-		stopTime := processedBundles[len(processedBundles)-1].Stop
-		if err := h.LoadBundles(ctx, filename, startTime, stopTime); err != nil {
-			return 0, err
-		}
-	}
-
-	log.Printf("Processing of %d bundles (%d records) took %s", len(processedBundles), totalRecords,
-		time.Since(mark))
-
-	// return how many files were processed
-	return len(processedBundles), nil
 }
 
 func (h *HauserService) LoadBundles(ctx context.Context, filename string, startTime, endTime time.Time) error {
@@ -338,10 +183,10 @@ func getRetryInfo(err error) (bool, time.Duration) {
 }
 
 // WriteBundleToCSV writes the bundle corresponding to the given bundleID to the csv Writer
-func (h *HauserService) WriteBundleToCSV(stream io.Reader, tableColumns []string, csvOut *csv.Writer) (numRecords int, err error) {
-	headers := make([]string, len(tableColumns))
-	for i, column := range tableColumns {
-		headers[i] = headerName(column)
+func (h *HauserService) WriteBundleToCSV(stream io.Reader, csvOut *csv.Writer) (numRecords int, err error) {
+	headers := make([]string, len(h.schema))
+	for i, field := range h.schema {
+		headers[i] = field.DBName
 	}
 	if err := csvOut.Write(headers); err != nil {
 		return 0, err
@@ -433,8 +278,6 @@ func (h *HauserService) Init(ctx context.Context) error {
 	// Initialize the warehouse's schema
 	if !h.config.StorageOnly {
 		return h.InitDatabase(ctx)
-	} else {
-		h.tableColumns = warehouse.DefaultBundleColumns()
 	}
 	return nil
 }
@@ -450,10 +293,6 @@ func (h *HauserService) InitDatabase(_ context.Context) error {
 		}
 		h.schema = newSchema
 	}
-	h.tableColumns = h.database.GetExportTableColumns()
-	for i, col := range h.tableColumns {
-		h.tableColumns[i] = strings.ToLower(col)
-	}
 	return nil
 }
 
@@ -463,13 +302,13 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
-	if lastSyncedRecord.IsZero() || lastSyncedRecord.Before(time.Date(2016, 01, 01, 0, 0, 0, 0, time.UTC)) {
-		lastSyncedRecord = time.Now().Add(-1 * 24 * 30 * time.Hour)
+	if lastSyncedRecord.IsZero() {
+		// If starting fresh, use the start time provided in the config
+		lastSyncedRecord = h.config.StartTime
 	}
-	// We need to ensure that the sync is aligned with the export duration
-	lastSyncedRecord = lastSyncedRecord.Truncate(h.config.ExportDuration.Duration)
 
-	nextEndTime := lastSyncedRecord.Add(h.config.ExportDuration.Duration)
+	// We need to ensure that the end time for the export is aligned with the export duration
+	nextEndTime := lastSyncedRecord.Add(h.config.ExportDuration.Duration).Truncate(h.config.ExportDuration.Duration)
 	for {
 		lastAvailableEndTime := time.Now().Add(-1 * h.config.ExportDelay.Duration)
 		if nextEndTime.After(lastAvailableEndTime) {
@@ -519,7 +358,7 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 	defer os.Remove(filename)
 	defer outfile.Close()
 	csvOut := csv.NewWriter(outfile)
-	_, err = h.WriteBundleToCSV(unzipped, h.tableColumns, csvOut)
+	_, err = h.WriteBundleToCSV(unzipped, csvOut)
 	if err != nil {
 		return 0, err
 	}

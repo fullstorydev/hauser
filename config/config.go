@@ -32,13 +32,16 @@ type Config struct {
 	AdditionalHttpHeader []Header
 	Backoff              duration
 	BackoffStepsMax      int
-	CheckInterval        duration
-	TmpDir               string
-	ListExportLimit      int
 	// Deprecated
+	CheckInterval duration
+	TmpDir        string
+	// Deprecated
+	ListExportLimit int
+	// Deprecated: use ExportDuration
 	GroupFilesByDay bool
 	SaveAsJson      bool
 	StorageOnly     bool
+	StartTime       time.Time
 
 	// for debug only; can point to localhost
 	ExportURL string
@@ -149,12 +152,21 @@ func Validate(conf *Config) error {
 		}
 		log.Println(`INFO: "ExportDuration" not set in config. Defaulting to 1 hour`)
 		conf.ExportDuration.Duration = time.Hour
+	} else if (24*time.Hour)%conf.ExportDuration.Duration != 0 {
+		// The duration needs to fit evenly within a day so that database partitioning by day
+		// works correctly
+		return errors.New("ExportDuration must be an even fraction of 24 hours")
 	}
 
 	if conf.ExportDelay.Duration == 0 {
 		conf.ExportDelay.Duration = 24 * time.Hour
 	} else if conf.ExportDelay.Duration < time.Hour {
 		return errors.New(`"ExportDelay" configuration value is too small. Minimum value is 1 hour`)
+	}
+
+	if conf.StartTime.IsZero() {
+		log.Println(`INFO: "StartTime" not set in config. Defaulting to 30 days in the past`)
+		conf.StartTime = time.Now().Add(-1 * 24 * 30 * time.Hour)
 	}
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
