@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -31,6 +32,7 @@ type createParams struct {
 	Format           string    `json:"format"`
 	SegmentTimeRange timeRange `json:"segmentTimeRange"`
 	TimeRange        timeRange `json:"timeRange"`
+	Fields           []string  `json:"fields"`
 }
 
 type createSegmentResponse struct {
@@ -41,7 +43,7 @@ type getExportResultsResponse struct {
 	Location string `json:"location"`
 }
 
-func (c *Client) CreateExport(start time.Time, end time.Time) (string, error) {
+func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (string, error) {
 	params := createParams{
 		SegmentId: "everyone",
 		Type:      "TYPE_EVENT",
@@ -53,11 +55,13 @@ func (c *Client) CreateExport(start time.Time, end time.Time) (string, error) {
 			Start: start.UTC().Format(time.RFC3339),
 			End:   end.UTC().Format(time.RFC3339),
 		},
+		Fields: fields,
 	}
 	reqBody, err := json.Marshal(params)
 	if err != nil {
 		return "", err
 	}
+	log.Printf("JSON BODY: %s", reqBody)
 
 	url := fmt.Sprintf("%s/segments/v1/exports", c.Config.ApiURL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
@@ -103,16 +107,24 @@ func (c *Client) GetExport(operationId string) (io.ReadCloser, error) {
 
 func (c *Client) getExportStream(exportId string) (io.ReadCloser, error) {
 	url := fmt.Sprintf("%s/search/v1/exports/%s/results", c.Config.ApiURL, exportId)
-	req, err := http.Get(url)
+	log.Printf("getting export steam at %s", url)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer req.Body.Close()
+	body, err := c.doReq(req)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
 	rsp := &getExportResultsResponse{}
-	if err := json.NewDecoder(req.Body).Decode(&rsp); err != nil {
+	if err := json.NewDecoder(body).Decode(&rsp); err != nil {
 		return nil, err
 	}
 
+	// Use a vanilla http client for downloading the stream since auth
+	// is built into the URL itself.
 	streamRsp, err := http.Get(rsp.Location)
 	if err != nil {
 		return nil, err

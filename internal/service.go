@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/csv"
 	"encoding/json"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -22,7 +24,7 @@ import (
 
 var (
 	currentBackoffStep = uint(0)
-	bundleFieldsMap    = warehouse.BundleFields()
+	bundleFieldsMap    = make(map[string]warehouse.BundleField)
 )
 
 const (
@@ -42,6 +44,8 @@ type HauserService struct {
 	storage      warehouse.Storage
 	database     warehouse.Database
 	tableColumns []string
+	schema       warehouse.Schema
+	schemaMap    map[string]bool
 }
 
 func NewHauserService(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *HauserService {
@@ -50,6 +54,7 @@ func NewHauserService(config *config.Config, fsClient client.DataExportClient, s
 		fsClient: fsClient,
 		storage:  storage,
 		database: db,
+		schema:   warehouse.MakeSchema(warehouse.BaseExportFields{}),
 	}
 }
 
@@ -64,42 +69,47 @@ func headerName(columnName string) string {
 // TransformExportJSONRecord transforms the record map (extracted from the API response json) to a
 // slice of strings. The slice of strings contains values in the same order as the existing export table.
 // For existing export table fields that do not exist in the json record, an empty string is populated.
-func TransformExportJSONRecord(convert warehouse.ValueToStringFn, tableColumns []string, rec map[string]interface{}) ([]string, error) {
+func (h *HauserService) transformExportJSONRecord(convert warehouse.ValueToStringFn, rec map[string]interface{}) ([]string, error) {
 	var line []string
 	lowerRec := make(map[string]interface{})
 	customVarsMap := make(map[string]interface{})
+
+	if len(h.schemaMap) == 0 {
+		h.schemaMap = make(map[string]bool, len(h.schema))
+		for _, field := range h.schema {
+			if field.FullStoryFieldName != "" {
+				h.schemaMap[strings.ToLower(field.FullStoryFieldName)] = true
+			}
+		}
+	}
 
 	// Do a single pass over the data record to:
 	// a) extract all custom variables
 	// b) change standard/non-custom field names to lowercase for case-insensitive column name matching
 	for key, val := range rec {
 		lowerKey := strings.ToLower(key)
-		if _, ok := bundleFieldsMap[lowerKey]; !ok {
+		if _, ok := h.schemaMap[lowerKey]; !ok {
 			customVarsMap[key] = val
 		} else {
 			lowerRec[lowerKey] = val
 		}
 	}
 
-	// Fetch the table columns so can build the csv with a column order that matches the export table
-	for _, col := range tableColumns {
-		field, isPartOfExportBundle := bundleFieldsMap[col]
-
-		// These are columns in the export table that we are not going to populate
-		if !isPartOfExportBundle {
+	for _, field := range h.schema {
+		if field.FullStoryFieldName == "" {
+			// This is a column in the export table that doesn't come from the export
 			line = append(line, "")
 			continue
 		}
-
-		if field.IsCustomVar {
+		if field.DBName == "CustomVars" {
 			customVars, err := json.Marshal(customVarsMap)
 			if err != nil {
 				return nil, err
 			}
 			line = append(line, string(customVars))
 		} else {
-			if val, valExists := lowerRec[col]; valExists {
-				line = append(line, convert(val, field.IsTime))
+			if val, valExists := lowerRec[strings.ToLower(field.FullStoryFieldName)]; valExists {
+				line = append(line, convert(val, field.FieldType == reflect.TypeOf(time.Time{})))
 			} else {
 				line = append(line, "")
 			}
@@ -353,7 +363,7 @@ func (h *HauserService) WriteBundleToCSV(stream io.Reader, tableColumns []string
 			log.Printf("failed json decode of record: %s", err)
 			return recordCount, err
 		}
-		line, err := TransformExportJSONRecord(h.getValueConverter(), tableColumns, r)
+		line, err := h.transformExportJSONRecord(h.getValueConverter(), r)
 		if err != nil {
 			log.Printf("Failed object transform, skipping record. %s", err)
 			continue
@@ -430,15 +440,15 @@ func (h *HauserService) Init(ctx context.Context) error {
 }
 
 func (h *HauserService) InitDatabase(_ context.Context) error {
-	schema := warehouse.MakeSchema(warehouse.BaseExportFields{})
-	if created, err := h.database.InitExportTable(schema); err != nil {
+	if created, err := h.database.InitExportTable(h.schema); err != nil {
 		return err
 	} else if !created {
 		existingCols := h.database.GetExportTableColumns()
-		newSchema := schema.ReconcileWithExisting(existingCols)
+		newSchema := h.schema.ReconcileWithExisting(existingCols)
 		if err := h.database.ApplyExportSchema(newSchema); err != nil {
 			return err
 		}
+		h.schema = newSchema
 	}
 	h.tableColumns = h.database.GetExportTableColumns()
 	for i, col := range h.tableColumns {
@@ -453,18 +463,26 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
+	if lastSyncedRecord.IsZero() || lastSyncedRecord.Before(time.Date(2016, 01, 01, 0, 0, 0, 0, time.UTC)) {
+		lastSyncedRecord = time.Now().Add(-1 * 24 * 30 * time.Hour)
+	}
+	// We need to ensure that the sync is aligned with the export duration
+	lastSyncedRecord = lastSyncedRecord.Truncate(h.config.ExportDuration.Duration)
+
 	nextEndTime := lastSyncedRecord.Add(h.config.ExportDuration.Duration)
 	for {
 		lastAvailableEndTime := time.Now().Add(-1 * h.config.ExportDelay.Duration)
 		if nextEndTime.After(lastAvailableEndTime) {
-			log.Printf("Waiting until %s to start next export\n", lastAvailableEndTime)
-			time.Sleep(nextEndTime.Sub(lastAvailableEndTime))
+			waitUntil := nextEndTime.Add(h.config.ExportDelay.Duration)
+			log.Printf("Waiting until %s to start next export\n", waitUntil)
+			time.Sleep(waitUntil.Sub(time.Now()))
 		} else {
 			break
 		}
 	}
 
-	id, err := h.fsClient.CreateExport(lastSyncedRecord, nextEndTime)
+	log.Printf("Creating export for %s to %s", lastSyncedRecord, nextEndTime)
+	id, err := h.fsClient.CreateExport(lastSyncedRecord, nextEndTime, h.schema.GetFullStoryFields())
 	if err != nil {
 		return 0, err
 	}
@@ -473,16 +491,23 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 		if err != nil {
 			return 0, err
 		}
+		log.Printf("Export progress: %d%%", prog)
 		if ready {
 			break
 		}
-		log.Printf("Export progress: %d%", prog)
 		time.Sleep(5 * time.Second)
 	}
 
+	log.Printf("Fetching export for operation id %s", id)
 	body, err := h.fsClient.GetExport(id)
 	if err != nil {
 		return 0, err
+	}
+	defer body.Close()
+
+	unzipped, err := gzip.NewReader(body)
+	if err != nil {
+		return 0, nil
 	}
 
 	filename := filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", lastSyncedRecord.Unix()))
@@ -494,7 +519,7 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 	defer os.Remove(filename)
 	defer outfile.Close()
 	csvOut := csv.NewWriter(outfile)
-	_, err = h.WriteBundleToCSV(body, h.tableColumns, csvOut)
+	_, err = h.WriteBundleToCSV(unzipped, h.tableColumns, csvOut)
 	if err != nil {
 		return 0, err
 	}

@@ -30,6 +30,7 @@ type MockDataExportClient struct {
 	creates     map[string]struct {
 		start    time.Time
 		end      time.Time
+		fields   []string
 		progress int
 		exportId string
 	}
@@ -105,14 +106,15 @@ func (m *MockDataExportClient) collectJsonData(start, end time.Time) []byte {
 	return raw
 }
 
-func (m *MockDataExportClient) CreateExport(start, end time.Time) (string, error) {
+func (m *MockDataExportClient) CreateExport(start, end time.Time, fields []string) (string, error) {
 	id := fmt.Sprintf("%d", rand.Int())
 	m.creates[id] = struct {
 		start    time.Time
 		end      time.Time
+		fields   []string
 		progress int
 		exportId string
-	}{start, end, 0, fmt.Sprintf("%d", rand.Int())}
+	}{start, end, fields, 0, fmt.Sprintf("%d", rand.Int())}
 	return id, nil
 }
 

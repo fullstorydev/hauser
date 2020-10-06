@@ -97,6 +97,11 @@ type MobileFields struct {
 	AppPackageName string
 }
 
+var wildcardFields = []string{
+	"user_*",
+	"evt_*",
+}
+
 // syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
 type syncTable struct {
 	ID            int64
@@ -184,6 +189,20 @@ func (s Schema) GetFieldForName(col string) WarehouseField {
 	return WarehouseField{
 		DBName: col,
 	}
+}
+
+func (s Schema) GetFullStoryFields() []string {
+	fsFields := make([]string, 0, len(s))
+	for _, field := range s {
+		if field.FullStoryFieldName == "CustomVars" {
+			// We have to special case custom vars since they are combined into a single column
+			// Add the wildcards for each type of exportable custom var.
+			fsFields = append(fsFields, wildcardFields...)
+		} else {
+			fsFields = append(fsFields, field.FullStoryFieldName)
+		}
+	}
+	return fsFields
 }
 
 func IndexField(needle WarehouseField, haystack Schema) int {

@@ -14,7 +14,7 @@ const operationSearchExport operationType = "SEARCH_EXPORT"
 type operationState string
 
 const operationFailed operationState = "FAILED"
-const operationComplete operationState = "COMPLETE"
+const operationComplete operationState = "COMPLETED"
 const operationPending operationState = "PENDING"
 
 type exportOperationResults struct {

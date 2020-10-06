@@ -23,6 +23,14 @@ type MockDatabase struct {
 	LoadedFiles []string
 }
 
+func (m *MockDatabase) InitExportTable(warehouse.Schema) (bool, error) {
+	panic("implement me")
+}
+
+func (m *MockDatabase) ApplyExportSchema(warehouse.Schema) error {
+	panic("implement me")
+}
+
 var _ warehouse.Database = (*MockDatabase)(nil)
 
 func NewMockDatabase() *MockDatabase {

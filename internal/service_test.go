@@ -171,14 +171,19 @@ func TestGetRetryInfo(t *testing.T) {
 }
 
 func TestTransformExportJSONRecord(t *testing.T) {
+	defaultSchema := warehouse.MakeSchema(struct {
+		EventTargetText string
+		PageDuration    int64
+		CustomVars      string
+	}{})
 	testCases := []struct {
-		tableColumns []string
-		rec          map[string]interface{}
-		expResult    []string
+		schema    warehouse.Schema
+		rec       map[string]interface{}
+		expResult []string
 	}{
 		// no custom vars
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
+			schema: defaultSchema,
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
@@ -187,7 +192,7 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		},
 		// two custom vars
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
+			schema: defaultSchema,
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
@@ -198,7 +203,7 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		},
 		// missing column value for pageduration
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
+			schema: defaultSchema,
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 			},
@@ -206,7 +211,10 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		},
 		// additional columns in target table that are not in the export
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars", "randomcolumnnotinexport"},
+			schema: append(defaultSchema, warehouse.WarehouseField{
+				DBName:             "RandomColumnNotInExport",
+				FullStoryFieldName: "",
+			}),
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
@@ -216,20 +224,22 @@ func TestTransformExportJSONRecord(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		result, err := TransformExportJSONRecord(warehouse.ValueToString, tc.tableColumns, tc.rec)
-		if err != nil {
-			t.Errorf("Unexpected err %s on test case %d", err, i)
-			continue
-		}
-		if len(result) != len(tc.expResult) {
-			t.Errorf("Incorrect length of result; expected %d, got %d on test case %d", len(result), len(tc.expResult), i)
-			continue
-		}
-		for j := range tc.expResult {
-			if !compareTransformedStrings(t, tc.expResult[j], result[j]) {
-				t.Errorf("Result mismatch; expected %s, got %s on test case %d, item %d", tc.expResult[j], result[j], i, j)
+		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
+
+			h := &HauserService{schema: tc.schema}
+			result, err := h.transformExportJSONRecord(warehouse.ValueToString, tc.rec)
+			if err != nil {
+				t.Errorf("Unexpected err %s on test case %d", err, i)
 			}
-		}
+			if len(result) != len(tc.expResult) {
+				t.Errorf("Incorrect length of result; expected %d, got %d on test case %d", len(result), len(tc.expResult), i)
+			}
+			for j := range tc.expResult {
+				if !compareTransformedStrings(t, tc.expResult[j], result[j]) {
+					t.Errorf("Result mismatch; expected %s, got %s on test case %d, item %d", tc.expResult[j], result[j], i, j)
+				}
+			}
+		})
 	}
 }
 

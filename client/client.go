@@ -40,7 +40,7 @@ type DataExportClient interface {
 	// CreateExport starts an asynchronous export of the "Everyone" segment for the specified time range.
 	// The time bounds for start and stop are inclusive and exclusive, respectively.
 	// If successful, returns the id for the created export which can be used to check the progress.
-	CreateExport(start time.Time, end time.Time) (string, error)
+	CreateExport(start time.Time, end time.Time, fields []string) (string, error)
 
 	// GetExportProgress returns the estimated progress of the export for the provided and whether
 	// the export is ready for download. The progress value is an integer between 1 and 100
