@@ -370,7 +370,7 @@ func (h *HauserService) Run(ctx context.Context) {
 			continue
 		}
 
-		if timeToWait > 0 {
+		if timeToWait == 0 {
 			continue
 		}
 		log.Printf("Waiting until %s to start next export\n", time.Now().Add(timeToWait))

@@ -59,7 +59,6 @@ func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (
 	if err != nil {
 		return "", err
 	}
-	log.Printf("JSON BODY: %s", reqBody)
 
 	url := fmt.Sprintf("%s/segments/v1/exports", c.Config.ApiURL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
