@@ -34,7 +34,7 @@ func Ok(t *testing.T, err error, format string, a ...interface{}) {
 func TestHauser(t *testing.T) {
 
 	getNow = func() time.Time {
-		return time.Date(2020, 9, 2, 0, 0, 0, 0, time.UTC)
+		return time.Date(2020, 9, 1, 0, 0, 0, 0, time.UTC)
 	}
 	progressPollDuration = time.Millisecond
 	testCases := []struct {
@@ -85,7 +85,7 @@ func TestHauser(t *testing.T) {
 				"LoadFirstPaintTime",
 				"LoadEventTime",
 			},
-			expectedBundles: 6,
+			expectedBundles: 5,
 			config: &config.Config{
 				Provider:       "gcp",
 				ExportDuration: config.Duration{Duration: 24 * time.Hour},
@@ -96,7 +96,7 @@ func TestHauser(t *testing.T) {
 			name:            "group by day case, fresh",
 			testdata:        "../testing/testdata/raw.json",
 			outputDir:       "../testing/testdata/groupByDay",
-			expectedBundles: 6,
+			expectedBundles: 5,
 			config: &config.Config{
 				Provider:        "gcp",
 				GroupFilesByDay: true,
@@ -107,7 +107,7 @@ func TestHauser(t *testing.T) {
 			name:            "storage only",
 			testdata:        "../testing/testdata/raw.json",
 			outputDir:       "../testing/testdata/json",
-			expectedBundles: 6,
+			expectedBundles: 5,
 			config: &config.Config{
 				Provider:       "local",
 				SaveAsJson:     true,
@@ -126,7 +126,7 @@ func TestHauser(t *testing.T) {
 				"EventTargetSelectorTok",
 				"CustomColumn",
 			},
-			expectedBundles: 6,
+			expectedBundles: 5,
 			config: &config.Config{
 				Provider:       "gcp",
 				ExportDuration: config.Duration{Duration: 24 * time.Hour},
