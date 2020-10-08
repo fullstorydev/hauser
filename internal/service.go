@@ -331,6 +331,14 @@ func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) 
 		return 0, err
 	}
 
+	if h.config.SaveAsJson {
+		// Short circuit since we don't support loading json into the database
+		if _, err := h.storage.SaveFile(ctx, fmt.Sprintf("%d.json", lastSyncedRecord.Unix()), unzipped); err != nil {
+			return 0, err
+		}
+		return 0, h.storage.SaveSyncPoint(ctx, nextEndTime)
+	}
+
 	filename := filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", lastSyncedRecord.Unix()))
 	outfile, err := os.Create(filename)
 	if err != nil {
@@ -339,6 +347,7 @@ func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) 
 	}
 	defer os.Remove(filename)
 	defer outfile.Close()
+
 	csvOut := csv.NewWriter(outfile)
 	_, err = h.WriteBundleToCSV(unzipped, csvOut)
 	if err != nil {

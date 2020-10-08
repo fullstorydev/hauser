@@ -139,9 +139,10 @@ func (m *MockDataExportClient) GetExport(exportId string) (io.ReadCloser, error)
 			raw := m.collectJsonData(created.start, created.end, created.fields)
 			var b bytes.Buffer
 			gw := gzip.NewWriter(&b)
-			io.Copy(gw, bytes.NewReader(raw))
-			gw.Flush()
-			return ioutil.NopCloser(&b), nil
+			if _, err := io.Copy(gw, bytes.NewReader(raw)); err != nil {
+				return nil, err
+			}
+			return ioutil.NopCloser(&b), gw.Close()
 		}
 	}
 	return nil, client.StatusError{

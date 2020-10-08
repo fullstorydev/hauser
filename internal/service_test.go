@@ -27,7 +27,7 @@ func Ok(t *testing.T, err error, format string, a ...interface{}) {
 	if err != nil {
 		format += ": unexpected error: %s"
 		a = append(a, err)
-		t.Errorf(format, a...)
+		t.Fatalf(format, a...)
 	}
 }
 
@@ -93,7 +93,7 @@ func TestHauser(t *testing.T) {
 			},
 		},
 		{
-			name:            "group by day case",
+			name:            "group by day case, fresh",
 			testdata:        "../testing/testdata/raw.json",
 			outputDir:       "../testing/testdata/groupByDay",
 			expectedBundles: 6,
@@ -117,7 +117,7 @@ func TestHauser(t *testing.T) {
 			},
 		},
 		{
-			name:      "with new columns",
+			name:      "with weird columns",
 			testdata:  "../testing/testdata/raw.json",
 			outputDir: "../testing/testdata/existing",
 			initialColumns: []string{
