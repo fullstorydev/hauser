@@ -148,7 +148,7 @@ func (s Schema) IsCompatibleWith(other Schema) bool {
 		return false
 	}
 	for i, field := range s {
-		if strings.ToLower(field.DBName) != strings.ToLower(other[i].DBName) {
+		if !strings.EqualFold(field.DBName, other[i].DBName) {
 			return false
 		}
 	}

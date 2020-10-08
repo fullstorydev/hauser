@@ -15,7 +15,6 @@ type operationState string
 
 const operationFailed operationState = "FAILED"
 const operationComplete operationState = "COMPLETED"
-const operationPending operationState = "PENDING"
 
 type exportOperationResults struct {
 	Expires        string `json:"expires"`

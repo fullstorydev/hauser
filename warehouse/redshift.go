@@ -162,7 +162,7 @@ func (rs *Redshift) LoadToWarehouse(s3obj string, _ time.Time) error {
 
 func getColumnsToAdd(s Schema, existing []string) ([]columnConfig, error) {
 	if len(s) < len(existing) {
-		return nil, errors.New(fmt.Sprintf("incompatible schema: have %v, got %v", existing, s))
+		return nil, fmt.Errorf("incompatible schema: have %v, got %v", existing, s)
 	}
 	missing := make([]columnConfig, len(s)-len(existing))
 	for i := 0; i < len(missing); i++ {

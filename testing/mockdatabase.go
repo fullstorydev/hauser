@@ -2,7 +2,6 @@ package testing
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -33,7 +32,7 @@ func (m *MockDatabase) ApplyExportSchema(newSchema warehouse.Schema) error {
 		m.Initialized = true
 		return nil
 	}
-	return errors.New(fmt.Sprintf("incompatible schema: have %v, got %v", m.schema, newSchema))
+	return fmt.Errorf("incompatible schema: have %v, got %v", m.schema, newSchema)
 }
 
 var _ warehouse.Database = (*MockDatabase)(nil)

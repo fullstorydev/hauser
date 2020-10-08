@@ -2,7 +2,6 @@ package warehouse
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -167,11 +166,11 @@ func convertSchema(s Schema, existing bigquery.Schema) (bigquery.Schema, error) 
 
 		if i < len(existing) {
 			// Make sure the existing schema is compatible with the provided hauser schema
-			if strings.ToLower(field.DBName) != strings.ToLower(existing[i].Name) {
-				return nil, errors.New(fmt.Sprintf(
-					"columns names don't match at index %d: expected %s, got %s", i, existing[i].Name, field.DBName))
+			if !strings.EqualFold(field.DBName, existing[i].Name) {
+				return nil, fmt.Errorf(
+					"columns names don't match at index %d: expected %s, got %s", i, existing[i].Name, field.DBName)
 			} else if field.FullStoryFieldName != "" && bqType != existing[i].Type {
-				return nil, errors.New(fmt.Sprintf("field types don't match at index %d: expected %s, got %s", i, existing[i].Type, bqType))
+				return nil, fmt.Errorf("field types don't match at index %d: expected %s, got %s", i, existing[i].Type, bqType)
 			}
 		}
 
@@ -179,7 +178,7 @@ func convertSchema(s Schema, existing bigquery.Schema) (bigquery.Schema, error) 
 			// We need to pull the type from the existing schema
 			bqType = existing[i].Type
 		} else if !ok {
-			return nil, errors.New("field type not found")
+			return nil, fmt.Errorf("field type not found")
 		}
 		bqs[i] = &bigquery.FieldSchema{
 			Name: field.DBName,
@@ -243,7 +242,7 @@ func (bq *BigQuery) ApplyExportSchema(s Schema) error {
 
 	newSchema, err := convertSchema(s, md.Schema)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to convert to bigquery schema: %s", err))
+		return fmt.Errorf("failed to convert to bigquery schema: %s", err)
 	}
 
 	newColumns := newSchema[len(md.Schema):]
