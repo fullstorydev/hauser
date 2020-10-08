@@ -19,7 +19,6 @@ import (
 	"github.com/fullstorydev/hauser/client"
 	"github.com/fullstorydev/hauser/config"
 	"github.com/fullstorydev/hauser/warehouse"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -27,11 +26,14 @@ var (
 )
 
 const (
-	// Maximum number of times Hauser will attempt to retry each request made to FullStory
-	maxAttempts int = 3
-
 	// Default duration Hauser will wait before retrying a 429 or 5xx response. If Retry-After is specified, uses that instead. Default arbitrarily set to 10s.
 	defaultRetryAfterDuration time.Duration = time.Duration(10) * time.Second
+)
+
+var (
+	// Provided as global variable for mocking
+	getNow               = time.Now
+	progressPollDuration = 5 * time.Second
 )
 
 // Record represents a single export row in the export file
@@ -142,29 +144,6 @@ func (h *HauserService) LoadBundles(ctx context.Context, filename string, startT
 		return err
 	}
 	return nil
-}
-
-func (h *HauserService) getExportData(bundleID int) (client.ExportData, error) {
-	log.Printf("Getting Export Data for bundle %d\n", bundleID)
-	var fsErr error
-	for r := 1; r <= maxAttempts; r++ {
-		stream, err := h.fsClient.ExportData(bundleID)
-		if err == nil {
-			return stream, nil
-		}
-		log.Printf("Failed to fetch export data for Bundle %d: %s", bundleID, err)
-
-		fsErr = err
-		doRetry, retryAfterDuration := getRetryInfo(err)
-		if !doRetry {
-			break
-		}
-
-		log.Printf("Attempt #%d failed. Retrying after %s\n", r, retryAfterDuration)
-		time.Sleep(retryAfterDuration)
-	}
-
-	return nil, errors.Wrap(fsErr, fmt.Sprintf("Unable to fetch export data. Tried %d times.", maxAttempts))
 }
 
 func getRetryInfo(err error) (bool, time.Duration) {
@@ -296,7 +275,8 @@ func (h *HauserService) InitDatabase(_ context.Context) error {
 	return nil
 }
 
-func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
+// ProcessNext will return the number of
+func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) {
 	lastSyncedRecord, err := h.lastSyncPoint(ctx)
 	if err != nil {
 		return 0, err
@@ -310,11 +290,10 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 	// We need to ensure that the end time for the export is aligned with the export duration
 	nextEndTime := lastSyncedRecord.Add(h.config.ExportDuration.Duration).Truncate(h.config.ExportDuration.Duration)
 	for {
-		lastAvailableEndTime := time.Now().Add(-1 * h.config.ExportDelay.Duration)
+		lastAvailableEndTime := getNow().Add(-1 * h.config.ExportDelay.Duration)
 		if nextEndTime.After(lastAvailableEndTime) {
 			waitUntil := nextEndTime.Add(h.config.ExportDelay.Duration)
-			log.Printf("Waiting until %s to start next export\n", waitUntil)
-			time.Sleep(waitUntil.Sub(time.Now()))
+			return waitUntil.Sub(getNow()), nil
 		} else {
 			break
 		}
@@ -325,20 +304,23 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	exportId := ""
+	var prog int
 	for {
-		prog, ready, err := h.fsClient.GetExportProgress(id)
+		prog, exportId, err = h.fsClient.GetExportProgress(id)
 		if err != nil {
 			return 0, err
 		}
 		log.Printf("Export progress: %d%%", prog)
-		if ready {
+		if exportId != "" {
 			break
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(progressPollDuration)
 	}
 
 	log.Printf("Fetching export for operation id %s", id)
-	body, err := h.fsClient.GetExport(id)
+	body, err := h.fsClient.GetExport(exportId)
 	if err != nil {
 		return 0, err
 	}
@@ -346,7 +328,7 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 
 	unzipped, err := gzip.NewReader(body)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	filename := filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", lastSyncedRecord.Unix()))
@@ -366,7 +348,7 @@ func (h *HauserService) ProcessNext(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return 1, nil
+	return 0, nil
 }
 
 func (h *HauserService) Run(ctx context.Context) {
@@ -374,16 +356,15 @@ func (h *HauserService) Run(ctx context.Context) {
 		log.Fatal(err)
 	}
 	for {
-		numBundles, err := h.ProcessNext(ctx)
+		timeToWait, err := h.ProcessNext(ctx)
 		if h.BackoffOnError(err) {
 			continue
 		}
 
-		if numBundles > 0 {
+		if timeToWait > 0 {
 			continue
 		}
-
-		log.Printf("No exports pending; sleeping %s", h.config.CheckInterval.Duration)
-		time.Sleep(h.config.CheckInterval.Duration)
+		log.Printf("Waiting until %s to start next export\n", time.Now().Add(timeToWait))
+		time.Sleep(timeToWait)
 	}
 }

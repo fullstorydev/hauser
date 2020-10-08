@@ -33,41 +33,104 @@ func Ok(t *testing.T, err error, format string, a ...interface{}) {
 
 func TestHauser(t *testing.T) {
 
+	getNow = func() time.Time {
+		return time.Date(2020, 9, 2, 0, 0, 0, 0, time.UTC)
+	}
+	progressPollDuration = time.Millisecond
 	testCases := []struct {
 		name            string
 		testdata        string
 		outputDir       string
-		freqSetting     int32
+		initialColumns  []string
 		expectedBundles int
 		config          *config.Config
 	}{
 		{
-			name:            "base case",
-			testdata:        "../testing/testdata/raw.json",
-			outputDir:       "../testing/testdata/default",
-			freqSetting:     48,
-			expectedBundles: 5,
-			config:          &config.Config{},
+			name:      "base case",
+			testdata:  "../testing/testdata/raw.json",
+			outputDir: "../testing/testdata/default",
+			initialColumns: []string{
+				"EventCustomName",
+				"EventStart",
+				"EventType",
+				"EventTargetText",
+				"EventTargetSelectorTok",
+				"EventModFrustrated",
+				"EventModDead",
+				"EventModError",
+				"EventModSuspicious",
+				"IndvId",
+				"PageClusterId",
+				"PageUrl",
+				"PageDuration",
+				"PageActiveDuration",
+				"PageRefererUrl",
+				"PageLatLong",
+				"PageAgent",
+				"PageIp",
+				"PageBrowser",
+				"PageDevice",
+				"PageOperatingSystem",
+				"PageNumInfos",
+				"PageNumWarnings",
+				"PageNumErrors",
+				"SessionId",
+				"PageId",
+				"UserAppKey",
+				"UserEmail",
+				"UserDisplayName",
+				"UserId",
+				"CustomVars",
+				"LoadDomContentTime",
+				"LoadFirstPaintTime",
+				"LoadEventTime",
+			},
+			expectedBundles: 6,
+			config: &config.Config{
+				Provider:       "gcp",
+				ExportDuration: config.Duration{Duration: 24 * time.Hour},
+				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
+			},
 		},
 		{
 			name:            "group by day case",
 			testdata:        "../testing/testdata/raw.json",
 			outputDir:       "../testing/testdata/groupByDay",
-			freqSetting:     48,
-			expectedBundles: 5,
+			expectedBundles: 6,
 			config: &config.Config{
+				Provider:        "gcp",
 				GroupFilesByDay: true,
+				StartTime:       time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},
 		},
 		{
 			name:            "storage only",
 			testdata:        "../testing/testdata/raw.json",
 			outputDir:       "../testing/testdata/json",
-			freqSetting:     48,
-			expectedBundles: 5,
+			expectedBundles: 6,
 			config: &config.Config{
-				SaveAsJson:  true,
-				StorageOnly: true,
+				Provider:       "local",
+				SaveAsJson:     true,
+				StorageOnly:    true,
+				ExportDuration: config.Duration{Duration: 24 * time.Hour},
+				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		{
+			name:      "with new columns",
+			testdata:  "../testing/testdata/raw.json",
+			outputDir: "../testing/testdata/existing",
+			initialColumns: []string{
+				"EventStart",
+				"PageAgent",
+				"EventTargetSelectorTok",
+				"CustomColumn",
+			},
+			expectedBundles: 6,
+			config: &config.Config{
+				Provider:       "gcp",
+				ExportDuration: config.Duration{Duration: 24 * time.Hour},
+				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},
 		},
 	}
@@ -75,13 +138,15 @@ func TestHauser(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			fsClient := hausertest.NewMockDataExportClient(tc.freqSetting, tc.testdata)
+			fsClient := hausertest.NewMockDataExportClient(tc.testdata)
 			storage := hausertest.NewMockStorage()
 
 			var db *hausertest.MockDatabase
 			if !tc.config.StorageOnly {
-				db = hausertest.NewMockDatabase()
+				db = hausertest.NewMockDatabase(tc.initialColumns)
 			}
+
+			Ok(t, config.Validate(tc.config, getNow), "invalid config")
 
 			hauser := NewHauserService(tc.config, fsClient, storage, db)
 			err := hauser.Init(ctx)
@@ -93,12 +158,12 @@ func TestHauser(t *testing.T) {
 
 			numBundles := 0
 			for {
-				newBundles, err := hauser.ProcessNext(ctx)
+				timeToWait, err := hauser.ProcessNext(ctx)
 				Ok(t, err, "failed to process next bundles")
-				if newBundles == 0 {
+				if timeToWait > 0 {
 					break
 				}
-				numBundles += newBundles
+				numBundles++
 			}
 			testutils.Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
 			testutils.Equals(t, tc.expectedBundles, len(storage.UploadedFiles), "unexpected number of upload files")

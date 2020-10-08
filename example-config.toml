@@ -1,14 +1,12 @@
 FsApiToken = "<your FullStory API token>"
 Backoff = "30s"
 BackoffStepsMax = 8
-CheckInterval = "30m"
 TmpDir = "/tmp"
 # Valid provider values:
 #  * local: Used for downloading files to the local machine.
 #  * gcp: Google Cloud Provider (GCS and BigQuery)
 #  * aws: Amazon Web Services (S3 and Redshift)
 Provider="local"
-GroupFilesByDay = false
 # If true, data will only be uploaded to the corresponding Provider's storage mechanism.
 StorageOnly = false
 SaveAsJson = false

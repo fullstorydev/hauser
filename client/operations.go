@@ -24,7 +24,6 @@ type exportOperationResults struct {
 
 type operationsResponse struct {
 	Type    operationType          `json:"type"`
-	Details string                 `json:"details"`
 	Results exportOperationResults `json:"results"`
 	State   operationState         `json:"state"`
 	// If state is failed, this will contain the reason why the export failed.

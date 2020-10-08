@@ -258,67 +258,6 @@ func (bq *BigQuery) ApplyExportSchema(s Schema) error {
 	return nil
 }
 
-// EnsureCompatibleExportTable ensures that the all the fields present in the hauser schema are present in the BigQuery table schema
-// If the table exists, it compares the schema of the export table in BigQuery to the schema in hauser and adds any missing fields
-// if the table doesn't exist, it creates a new export table with all the fields specified in hauser
-func (bq *BigQuery) EnsureCompatibleExportTable() error {
-	// Get Hauser Schema
-	// this is required if we create a new table or if we have to compare to the existing table schema
-	hauserSchema, err := bigquery.InferSchema(BundleEvent{})
-	if err != nil {
-		return err
-	}
-
-	if err := bq.connectToBQ(); err != nil {
-		log.Fatal(err)
-	}
-	defer bq.bqClient.Close()
-
-	if !bq.doesTableExist(bq.conf.ExportTable) {
-		// Table does not exist, create new table
-		log.Printf("Export table does not exist, creating one.")
-		if err := bq.createExportTable(hauserSchema); err != nil {
-			return err
-		}
-		return nil
-	}
-
-	log.Printf("Export table exists, making sure the schema in BigQuery is compatible with the schema specified in Hauser")
-
-	// get current table schema in BigQuery
-	table := bq.bqClient.Dataset(bq.conf.Dataset).Table(bq.conf.ExportTable)
-	md, err := table.Metadata(context.Background())
-	if err != nil {
-		return err
-	}
-
-	needsUpdate := false
-	// Find the fields from the hauser schema that are missing from the BiqQuery table
-	missingFields := bq.GetMissingFields(hauserSchema, md.Schema)
-	// If fields are missing, we add them to the table schema
-	update := bigquery.TableMetadataToUpdate{}
-	if len(missingFields) > 0 {
-		// Append missing fields to export table schema
-		update.Schema = append(md.Schema, missingFields...)
-		needsUpdate = true
-	}
-
-	if md.TimePartitioning.Expiration != bq.conf.PartitionExpiration.Duration {
-		update.TimePartitioning = &bigquery.TimePartitioning{
-			Expiration: bq.conf.PartitionExpiration.Duration,
-			Field:      md.TimePartitioning.Field,
-		}
-		needsUpdate = true
-	}
-
-	if needsUpdate {
-		if _, err := table.Update(bq.ctx, update, md.ETag); err != nil {
-			return nil
-		}
-	}
-	return nil
-}
-
 // GetMissingFields returns all fields that are present in the hauserSchema, but not in the bqSchema
 func (bq *BigQuery) GetMissingFields(hauserSchema, bqSchema bigquery.Schema) []*bigquery.FieldSchema {
 	bqSchemaMap := makeSchemaMap(bqSchema)

@@ -1,8 +1,6 @@
 package warehouse
 
 import (
-	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -116,7 +114,6 @@ type WarehouseField struct {
 	// The name of the field from FullStory
 	FullStoryFieldName string
 	FieldType          reflect.Type
-	DBType             string
 }
 
 // BundleField contains metadata for an attribute on an event object in an export bundle JSON document.
@@ -126,26 +123,13 @@ type BundleField struct {
 	IsCustomVar bool
 }
 
-func (f WarehouseField) String() string {
-	return fmt.Sprintf("%s %s", f.DBName, f.DBType)
-}
-
 func (f WarehouseField) Equals(other WarehouseField) bool {
 	return f.FullStoryFieldName == other.FullStoryFieldName &&
 		f.FieldType == other.FieldType &&
-		f.DBType == other.DBType &&
 		f.DBName == other.DBName
 }
 
 type Schema []WarehouseField
-
-func (s Schema) String() string {
-	ss := make([]string, len(s))
-	for i, f := range s {
-		ss[i] = f.String()
-	}
-	return strings.Join(ss, ",")
-}
 
 func (s Schema) Equals(other Schema) bool {
 	if len(s) != len(other) {
@@ -159,6 +143,20 @@ func (s Schema) Equals(other Schema) bool {
 	return true
 }
 
+func (s Schema) IsCompatibleWith(other Schema) bool {
+	if len(s) > len(other) {
+		return false
+	}
+	for i, field := range s {
+		if strings.ToLower(field.DBName) != strings.ToLower(other[i].DBName) {
+			return false
+		}
+	}
+	return true
+}
+
+// GetFieldForName takes an existing column name and returns the matching schema field.
+// It performs some conversions between the legacy field names and the new field names.
 func (s Schema) GetFieldForName(col string) WarehouseField {
 	testCol := strings.ToLower(col)
 	isPageAgent := false
@@ -180,7 +178,6 @@ func (s Schema) GetFieldForName(col string) WarehouseField {
 					DBName:             "PageAgent",
 					FullStoryFieldName: field.FullStoryFieldName,
 					FieldType:          field.FieldType,
-					DBType:             field.DBType,
 				}
 			}
 			return field
@@ -233,31 +230,6 @@ func (s Schema) GetMissingFieldsFor(b Schema) []WarehouseField {
 	return ret
 }
 
-type FieldTypeMapper map[string]string
-
-// BundleFields retrieves information about the data fields in a FullStory export bundle. A bundle is
-// a JSON document that contains an array of event data objects. The fields in the bundle schema
-// reflect the attributes of those event JSON objects.
-func BundleFields() map[string]BundleField {
-	t := reflect.TypeOf(BundleEvent{})
-	result := make(map[string]BundleField, t.NumField())
-	for i := 0; i < t.NumField(); i++ {
-		result[strings.ToLower(t.Field(i).Name)] = BundleField{
-			Name:        t.Field(i).Name,
-			IsTime:      t.Field(i).Type == reflect.TypeOf(time.Time{}),
-			IsCustomVar: t.Field(i).Name == "CustomVars",
-		}
-	}
-	return result
-}
-
-// ExportTableSchema retrieves information about the fields in the warehouse table into which data will
-// finally be loaded.
-func ExportTableSchema(ftm FieldTypeMapper) Schema {
-	// for now, the export table schema contains the same set of fields as the raw bundles
-	return structToSchema(BundleEvent{}, ftm)
-}
-
 func MakeSchema(val interface{}) Schema {
 	t := reflect.TypeOf(val)
 	result := make(Schema, t.NumField())
@@ -269,37 +241,4 @@ func MakeSchema(val interface{}) Schema {
 		}
 	}
 	return result
-}
-
-func SyncTableSchema(ftm FieldTypeMapper) Schema {
-	return structToSchema(syncTable{}, ftm)
-}
-
-func DefaultBundleColumns() []string {
-	t := reflect.TypeOf(BundleEvent{})
-	cols := make([]string, t.NumField())
-	for i := 0; i < t.NumField(); i++ {
-		cols[i] = t.Field(i).Name
-	}
-	return cols
-}
-
-func structToSchema(i interface{}, ftm FieldTypeMapper) Schema {
-	t := reflect.TypeOf(i)
-	result := make(Schema, t.NumField())
-	for i := 0; i < t.NumField(); i++ {
-		result[i] = WarehouseField{
-			DBName: t.Field(i).Name,
-			DBType: convertType(ftm, t.Field(i).Type),
-		}
-	}
-	return result
-}
-
-func convertType(ftm FieldTypeMapper, t reflect.Type) string {
-	dbtype, ok := ftm[t.String()]
-	if !ok {
-		log.Fatalf("Type %v is not present in FieldTypeMapper", t)
-	}
-	return dbtype
 }

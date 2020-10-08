@@ -38,9 +38,6 @@ type Database interface {
 	ValueToString(val interface{}, isTime bool) string
 	GetExportTableColumns() []string
 
-	// Deprecated
-	EnsureCompatibleExportTable() error
-
 	// InitExportTable should attempt to create the table in the database. If the table doesn't exist, the provided
 	// schema should be applied to the table and this function should return `true`, assuming an error didn't occur.
 	// If the table existed, this should return false to signal that follow-up schema validation is necessary.

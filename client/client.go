@@ -28,28 +28,19 @@ func (e StatusError) Error() string {
 
 // DataExportClient represents an interface for interacting with the FullStory Data Export API
 type DataExportClient interface {
-	// ExportList returns a list of exports that contain data from the provided start time.
-	// This list can then be used to request the actual data from `ExportData()` below.
-	// DEPRECATED
-	ExportList(start time.Time) ([]ExportMeta, error)
-	// ExportData retrieves the data for a corresponding export ID and returns a reader for
-	// the data.
-	// DEPRECATED
-	ExportData(id int, modifyReq ...func(r *http.Request)) (ExportData, error)
-
 	// CreateExport starts an asynchronous export of the "Everyone" segment for the specified time range.
 	// The time bounds for start and stop are inclusive and exclusive, respectively.
 	// If successful, returns the id for the created export which can be used to check the progress.
 	CreateExport(start time.Time, end time.Time, fields []string) (string, error)
 
-	// GetExportProgress returns the estimated progress of the export for the provided and whether
-	// the export is ready for download. The progress value is an integer between 1 and 100
+	// GetExportProgress returns the estimated progress of the export for the provided and the id
+	// of the export if ready for download. The progress value is an integer between 1 and 100
 	// and represents and estimated completion percentage.
-	GetExportProgress(operationId string) (progress int, ready bool, err error)
+	GetExportProgress(operationId string) (progress int, exportId string, err error)
 
 	// GetExport returns a stream for the provided export ID. If the export is not ready, this
 	// will fail with ErrExportNotReady.
-	GetExport(operationId string) (io.ReadCloser, error)
+	GetExport(exportId string) (io.ReadCloser, error)
 }
 
 // Client represents a HTTP client for making requests to the FullStory API.
