@@ -87,7 +87,7 @@ func TestHauser(t *testing.T) {
 			},
 			expectedBundles: 5,
 			config: &config.Config{
-				Provider:       "gcp",
+				Provider:       config.GCProvider,
 				ExportDuration: config.Duration{Duration: 24 * time.Hour},
 				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},
@@ -98,7 +98,7 @@ func TestHauser(t *testing.T) {
 			outputDir:       "../testing/testdata/groupByDay",
 			expectedBundles: 5,
 			config: &config.Config{
-				Provider:        "gcp",
+				Provider:        config.GCProvider,
 				GroupFilesByDay: true,
 				StartTime:       time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},
@@ -109,7 +109,7 @@ func TestHauser(t *testing.T) {
 			outputDir:       "../testing/testdata/json",
 			expectedBundles: 5,
 			config: &config.Config{
-				Provider:       "local",
+				Provider:       config.LocalProvider,
 				SaveAsJson:     true,
 				StorageOnly:    true,
 				ExportDuration: config.Duration{Duration: 24 * time.Hour},
@@ -128,7 +128,7 @@ func TestHauser(t *testing.T) {
 			},
 			expectedBundles: 5,
 			config: &config.Config{
-				Provider:       "gcp",
+				Provider:       config.GCProvider,
 				ExportDuration: config.Duration{Duration: 24 * time.Hour},
 				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},

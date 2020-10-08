@@ -10,8 +10,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// DefaultExportURL is the standard base URL for the fullstory.com API.
-const DefaultExportURL = "https://export.fullstory.com/api/v1"
+// DefaultApiURL is the standard base URL for the fullstory.com API.
 const DefaultApiURL = "https://api.fullstory.com"
 
 type Provider string
@@ -43,9 +42,7 @@ type Config struct {
 	StorageOnly     bool
 	StartTime       time.Time
 
-	// for debug only; can point to localhost
-	ExportURL string
-	ApiURL    string
+	ApiURL string
 
 	// aws: s3 + redshift
 	S3       S3Config
@@ -136,10 +133,6 @@ func Load(filename string) (*Config, error) {
 
 func Validate(conf *Config, getNow func() time.Time) error {
 	// Set any defaults.
-	if conf.ExportURL == "" {
-		conf.ExportURL = DefaultExportURL
-	}
-
 	if conf.ApiURL == "" {
 		conf.ApiURL = DefaultApiURL
 	}

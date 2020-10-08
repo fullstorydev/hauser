@@ -34,7 +34,6 @@ func TestValidate(t *testing.T) {
 			expected: &Config{
 				Provider:       "local",
 				StorageOnly:    true,
-				ExportURL:      DefaultExportURL,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},
@@ -57,7 +56,6 @@ func TestValidate(t *testing.T) {
 				Provider:       "local",
 				SaveAsJson:     true,
 				StorageOnly:    true,
-				ExportURL:      DefaultExportURL,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},
@@ -79,7 +77,6 @@ func TestValidate(t *testing.T) {
 			},
 			expected: &Config{
 				Provider:       "aws",
-				ExportURL:      DefaultExportURL,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},
@@ -108,7 +105,6 @@ func TestValidate(t *testing.T) {
 			expected: &Config{
 				Provider:       "aws",
 				StorageOnly:    true,
-				ExportURL:      DefaultExportURL,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},
@@ -131,7 +127,6 @@ func TestValidate(t *testing.T) {
 			},
 			expected: &Config{
 				Provider:       "gcp",
-				ExportURL:      DefaultExportURL,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},
@@ -154,7 +149,6 @@ func TestValidate(t *testing.T) {
 			expected: &Config{
 				Provider:       "gcp",
 				StorageOnly:    true,
-				ExportURL:      DefaultExportURL,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},
