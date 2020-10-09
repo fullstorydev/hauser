@@ -31,13 +31,10 @@ type operationsResponse struct {
 }
 
 func (o *operationsResponse) Err() error {
-	if o == nil {
+	if o == nil || o.State != operationFailed {
 		return nil
 	}
-	if o.State == operationFailed {
-		return ExportError{Details: o.ErrorDetails}
-	}
-	return nil
+	return ExportError{Details: o.ErrorDetails}
 }
 
 func (c *Client) getExportOperation(operationId string) (*operationsResponse, error) {

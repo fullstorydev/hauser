@@ -43,8 +43,8 @@ type Database interface {
 	// If the table existed, this should return false to signal that follow-up schema validation is necessary.
 	InitExportTable(Schema) (bool, error)
 
-	// UpdateExportSchema will attempt to update the schema in the database to the provided schema.
-	// The provided schema must be compatible, or this will fail. Compatible schemas can will have existing columns
+	// ApplyExportSchema will attempt to update the schema in the database to the provided schema.
+	// The provided schema must be compatible, or this will fail. Compatible schemas will have existing columns
 	// in the same order as they are currently ordered in the table and can also add new columns to the end.
 	ApplyExportSchema(Schema) error
 }

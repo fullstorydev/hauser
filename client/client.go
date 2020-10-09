@@ -33,7 +33,7 @@ type DataExportClient interface {
 	// If successful, returns the id for the created export which can be used to check the progress.
 	CreateExport(start time.Time, end time.Time, fields []string) (string, error)
 
-	// GetExportProgress returns the estimated progress of the export for the provided and the id
+	// GetExportProgress returns the estimated progress of the export for the provided operation and the id
 	// of the export if ready for download. The progress value is an integer between 1 and 100
 	// and represents and estimated completion percentage.
 	GetExportProgress(operationId string) (progress int, exportId string, err error)

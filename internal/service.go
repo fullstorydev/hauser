@@ -305,7 +305,7 @@ func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) 
 		return 0, err
 	}
 
-	exportId := ""
+	var exportId string
 	var prog int
 	for {
 		prog, exportId, err = h.fsClient.GetExportProgress(id)
