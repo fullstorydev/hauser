@@ -51,12 +51,18 @@ type HauserService struct {
 }
 
 func NewHauserService(config *config.Config, fsClient client.DataExportClient, storage warehouse.Storage, db warehouse.Database) *HauserService {
+	fields := []interface{}{
+		warehouse.BaseExportFields{},
+	}
+	if config.IncludeMobileAppsFields {
+		fields = append(fields, warehouse.MobileFields{})
+	}
 	return &HauserService{
 		config:   config,
 		fsClient: fsClient,
 		storage:  storage,
 		database: db,
-		schema:   warehouse.MakeSchema(warehouse.BaseExportFields{}),
+		schema:   warehouse.MakeSchema(fields...),
 	}
 }
 

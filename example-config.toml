@@ -31,6 +31,9 @@ Provider="local"
 StorageOnly = false
 SaveAsJson = false
 
+# By default, these are not included since not every account has this feature.
+# IncludeMobileAppsFields = true
+
 [s3]
 # bucket that will be used to stage files into Redshift
 Bucket = ""

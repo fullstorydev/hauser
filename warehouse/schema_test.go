@@ -55,11 +55,13 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 	testCases := []struct {
 		name   string
 		cols   []string
+		fields []interface{}
 		expect Schema
 	}{
 		{
-			name: "Legacy with new columns",
-			cols: legacyColumns,
+			name:   "Legacy with new columns",
+			cols:   legacyColumns,
+			fields: []interface{}{BaseExportFields{}},
 			expect: []WarehouseField{
 				{"EventCustomName", "EventCustomName", stringType},
 				{"EventStart", "EventStart", timeType},
@@ -107,8 +109,9 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 			},
 		},
 		{
-			name: "brand new schema",
-			cols: []string{},
+			name:   "brand new schema, with mobile apps",
+			cols:   []string{},
+			fields: []interface{}{BaseExportFields{}, MobileFields{}},
 			expect: []WarehouseField{
 				{"IndvId", "IndvId", int64Type},
 				{"UserId", "UserId", int64Type},
@@ -152,11 +155,14 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"LoadEventTime", "LoadEventTime", int64Type},
 				{"LoadFirstPaintTime", "LoadFirstPaintTime", int64Type},
 				{"CustomVars", "CustomVars", stringType},
+				{"AppName", "AppName", stringType},
+				{"AppPackageName", "AppPackageName", stringType},
 			},
 		},
 		{
-			name: "someone added some columns",
-			cols: []string{"preexisting", "columns", "userid"},
+			name:   "someone added some columns",
+			fields: []interface{}{BaseExportFields{}},
+			cols:   []string{"preexisting", "columns", "userid"},
 			expect: []WarehouseField{
 				{"preexisting", "", nil},
 				{"columns", "", nil},
@@ -207,7 +213,7 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			baseSchema := MakeSchema(BaseExportFields{})
+			baseSchema := MakeSchema(tc.fields...)
 			updatedSchema := baseSchema.ReconcileWithExisting(tc.cols)
 			testutils.Assert(t, tc.expect.Equals(updatedSchema), "wrong schema:\nwant %#v,\ngot  %#v", tc.expect, updatedSchema)
 		})

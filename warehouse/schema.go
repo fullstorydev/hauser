@@ -52,9 +52,8 @@ type BaseExportFields struct {
 }
 
 // Mobile Apps fields will not be available for accounts that do not have
-// the feature, These are a superset of the base fields.
+// the feature.
 type MobileFields struct {
-	BaseExportFields
 	AppName        string
 	AppPackageName string
 }
@@ -196,14 +195,16 @@ func (s Schema) GetMissingFieldsFor(b Schema) []WarehouseField {
 	return ret
 }
 
-func MakeSchema(val interface{}) Schema {
-	t := reflect.TypeOf(val)
-	result := make(Schema, t.NumField())
-	for i := 0; i < t.NumField(); i++ {
-		result[i] = WarehouseField{
-			DBName:             t.Field(i).Name,
-			FullStoryFieldName: t.Field(i).Name, // Default to the same name
-			FieldType:          t.Field(i).Type,
+func MakeSchema(vals ...interface{}) Schema {
+	var result Schema
+	for _, val := range vals {
+		t := reflect.TypeOf(val)
+		for i := 0; i < t.NumField(); i++ {
+			result = append(result, WarehouseField{
+				DBName:             t.Field(i).Name,
+				FullStoryFieldName: t.Field(i).Name, // Default to the same name
+				FieldType:          t.Field(i).Type,
+			})
 		}
 	}
 	return result

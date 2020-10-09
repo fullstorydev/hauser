@@ -48,6 +48,8 @@ type Config struct {
 	StorageOnly     bool
 	StartTime       time.Time
 
+	IncludeMobileAppsFields bool
+
 	ApiURL string
 
 	// aws: s3 + redshift
@@ -149,7 +151,7 @@ func Validate(conf *Config, getNow func() time.Time) error {
 			conf.ExportDuration.Duration = 24 * time.Hour
 		} else {
 			log.Println(`INFO: "ExportDuration" not set in config. Defaulting to 1 hour`)
-			conf.ExportDuration.Duration = time.Hour
+			conf.ExportDuration.Duration = DefaultExportDuration
 		}
 	} else if conf.ExportDuration.Duration < MinExportDuration || conf.ExportDuration.Duration > MaxExportDuration {
 		return fmt.Errorf("ExportDuration '%s' out of range. The range of valid values is from %s to %s", conf.ExportDuration.Duration, MinExportDuration, MaxExportDuration)
@@ -160,7 +162,7 @@ func Validate(conf *Config, getNow func() time.Time) error {
 	}
 
 	if conf.ExportDelay.Duration == 0 {
-		conf.ExportDelay.Duration = 24 * time.Hour
+		conf.ExportDelay.Duration = DefaultExportDelay
 	} else if conf.ExportDelay.Duration < time.Hour {
 		return errors.New(`"ExportDelay" configuration value is too small. Minimum value is 1 hour`)
 	}
