@@ -10,8 +10,14 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// DefaultApiURL is the standard base URL for the fullstory.com API.
-const DefaultApiURL = "https://api.fullstory.com"
+const (
+	// DefaultApiURL is the standard base URL for the fullstory.com API.
+	DefaultApiURL         = "https://api.fullstory.com"
+	DefaultExportDelay    = 24 * time.Hour
+	DefaultExportDuration = 1 * time.Hour
+	MinExportDuration     = 15 * time.Minute
+	MaxExportDuration     = 24 * time.Hour
+)
 
 type Provider string
 
@@ -137,7 +143,6 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		conf.ApiURL = DefaultApiURL
 	}
 
-	// TODO: enforce lower limit?
 	if conf.ExportDuration.Duration == 0 {
 		if conf.GroupFilesByDay {
 			log.Println(`WARNING: The "GroupFilesByDay" option is deprecated. Please use "ExportDuration" instead.`)
@@ -146,6 +151,8 @@ func Validate(conf *Config, getNow func() time.Time) error {
 			log.Println(`INFO: "ExportDuration" not set in config. Defaulting to 1 hour`)
 			conf.ExportDuration.Duration = time.Hour
 		}
+	} else if conf.ExportDuration.Duration < MinExportDuration || conf.ExportDuration.Duration > MaxExportDuration {
+		return fmt.Errorf("ExportDuration '%s' out of range. The range of valid values is from %s to %s", conf.ExportDuration.Duration, MinExportDuration, MaxExportDuration)
 	} else if (24*time.Hour)%conf.ExportDuration.Duration != 0 {
 		// The Duration needs to fit evenly within a day so that database partitioning by day
 		// works correctly
@@ -158,10 +165,12 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		return errors.New(`"ExportDelay" configuration value is too small. Minimum value is 1 hour`)
 	}
 
+	// Ensure a sane start time and make sure it's in UTC
 	if conf.StartTime.IsZero() {
 		log.Println(`INFO: "StartTime" not set in config. Defaulting to 30 days in the past`)
-		conf.StartTime = getNow().Add(-1 * 24 * 30 * time.Hour)
+		conf.StartTime = getNow().UTC().Add(-1 * 24 * 30 * time.Hour)
 	}
+	conf.StartTime = conf.StartTime.UTC()
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
 		return errors.New("BigQuery expiration value must be positive")

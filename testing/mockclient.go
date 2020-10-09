@@ -95,13 +95,7 @@ func (m *MockDataExportClient) collectJsonData(start, end time.Time, fields []st
 func (m *MockDataExportClient) CreateExport(start, end time.Time, fields []string) (string, error) {
 	operationId := fmt.Sprintf("%d", rand.Int())
 	exportId := fmt.Sprintf("%d", rand.Int())
-	m.creates[operationId] = struct {
-		start    time.Time
-		end      time.Time
-		fields   []string
-		progress int
-		exportId string
-	}{start, end, fields, 0, exportId}
+	m.creates[operationId] = createdExport{start, end, fields, 0, exportId}
 	return operationId, nil
 }
 

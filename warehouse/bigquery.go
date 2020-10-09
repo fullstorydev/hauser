@@ -162,24 +162,27 @@ func convertSchema(s Schema, existing bigquery.Schema) (bigquery.Schema, error) 
 	bqs := make([]*bigquery.FieldSchema, len(s))
 	for i, field := range s {
 		// Not checking ok here because we may not need it
-		bqType, ok := bigQueryTypeMap[field.FieldType]
+		var bqType bigquery.FieldType
+		if field.FullStoryFieldName == "" {
+			// We need to pull the type from the existing schema
+			bqType = existing[i].Type
+		} else {
+			var ok bool
+			if bqType, ok = bigQueryTypeMap[field.FieldType]; !ok {
+				return nil, fmt.Errorf("bigquery field type not found for schema type %s", field.FieldType)
+			}
+		}
 
 		if i < len(existing) {
 			// Make sure the existing schema is compatible with the provided hauser schema
 			if !strings.EqualFold(field.DBName, existing[i].Name) {
 				return nil, fmt.Errorf(
 					"columns names don't match at index %d: expected %s, got %s", i, existing[i].Name, field.DBName)
-			} else if field.FullStoryFieldName != "" && bqType != existing[i].Type {
+			} else if bqType != existing[i].Type {
 				return nil, fmt.Errorf("field types don't match at index %d: expected %s, got %s", i, existing[i].Type, bqType)
 			}
 		}
 
-		if field.FullStoryFieldName == "" {
-			// We need to pull the type from the existing schema
-			bqType = existing[i].Type
-		} else if !ok {
-			return nil, fmt.Errorf("field type not found")
-		}
 		bqs[i] = &bigquery.FieldSchema{
 			Name: field.DBName,
 			Type: bqType,

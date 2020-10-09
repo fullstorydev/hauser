@@ -12,7 +12,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"time"
 
@@ -32,7 +31,9 @@ const (
 
 var (
 	// Provided as global variable for mocking
-	getNow               = time.Now
+	getNow = func() time.Time {
+		return time.Now().UTC()
+	}
 	progressPollDuration = 5 * time.Second
 )
 
@@ -102,7 +103,7 @@ func (h *HauserService) transformExportJSONRecord(convert warehouse.ValueToStrin
 			line = append(line, string(customVars))
 		} else {
 			if val, valExists := lowerRec[strings.ToLower(field.FullStoryFieldName)]; valExists {
-				line = append(line, convert(val, field.FieldType == reflect.TypeOf(time.Time{})))
+				line = append(line, convert(val, field.IsTime()))
 			} else {
 				line = append(line, "")
 			}
@@ -205,24 +206,6 @@ func (h *HauserService) WriteBundleToCSV(stream io.Reader, csvOut *csv.Writer) (
 	return recordCount, nil
 }
 
-// WriteBundleToJson writes the bundle corresponding to the given bundleID to a Json file
-func (h *HauserService) WriteBundleToJson(stream io.Reader, filename string) (bytesWritten int64, err error) {
-	outfile, err := os.Create(filename)
-	if err != nil {
-		log.Printf("Failed to create json file: %s", err)
-		return 0, err
-	}
-	defer outfile.Close()
-
-	written, err := io.Copy(outfile, stream)
-	if err != nil {
-		log.Printf("Failed to copy input stream to file: %s", err)
-		return 0, err
-	}
-
-	return written, nil
-}
-
 func (h *HauserService) getValueConverter() warehouse.ValueToStringFn {
 	if h.config.StorageOnly {
 		return warehouse.ValueToString
@@ -254,7 +237,6 @@ func (h *HauserService) BackoffOnError(err error) bool {
 }
 
 func (h *HauserService) Init(ctx context.Context) error {
-	// Initialize the warehouse's schema
 	if !h.config.StorageOnly {
 		return h.InitDatabase(ctx)
 	}
@@ -275,7 +257,7 @@ func (h *HauserService) InitDatabase(_ context.Context) error {
 	return nil
 }
 
-// ProcessNext will return the number of
+// ProcessNext will process the next export, or return a duration until the next export is ready.
 func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) {
 	lastSyncedRecord, err := h.lastSyncPoint(ctx)
 	if err != nil {
@@ -288,9 +270,13 @@ func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) 
 	}
 
 	// We need to ensure that the end time for the export is aligned with the export duration
-	nextEndTime := lastSyncedRecord.Add(h.config.ExportDuration.Duration).Truncate(h.config.ExportDuration.Duration)
+	nextEndTime := lastSyncedRecord.
+		Add(h.config.ExportDuration.Duration).
+		Truncate(h.config.ExportDuration.Duration).
+		UTC()
+
 	for {
-		lastAvailableEndTime := getNow().Add(-1 * h.config.ExportDelay.Duration)
+		lastAvailableEndTime := getNow().UTC().Add(-1 * h.config.ExportDelay.Duration)
 		if nextEndTime.After(lastAvailableEndTime) {
 			waitUntil := nextEndTime.Add(h.config.ExportDelay.Duration)
 			return waitUntil.Sub(getNow()), nil

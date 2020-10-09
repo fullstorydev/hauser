@@ -3,10 +3,8 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -19,22 +17,30 @@ func (e ExportError) Error() string {
 	return fmt.Sprintf("failed to complete export: %s", e.Details)
 }
 
+type exportType string
+
+const exportType_Event exportType = "TYPE_EVENT"
+
+type exportFormat string
+
+const exportFormat_Json exportFormat = "FORMAT_JSON"
+
 type timeRange struct {
 	Start string `json:"start"`
 	End   string `json:"end"`
 }
 
 type createParams struct {
-	SegmentId        string    `json:"segmentId"`
-	Type             string    `json:"type"`
-	Format           string    `json:"format"`
-	SegmentTimeRange timeRange `json:"segmentTimeRange"`
-	TimeRange        timeRange `json:"timeRange"`
-	Fields           []string  `json:"fields"`
+	SegmentId        string       `json:"segmentId"`
+	Type             exportType   `json:"type"`
+	Format           exportFormat `json:"format"`
+	SegmentTimeRange timeRange    `json:"segmentTimeRange"`
+	TimeRange        timeRange    `json:"timeRange"`
+	Fields           []string     `json:"fields"`
 }
 
 type createSegmentResponse struct {
-	Id string `json:"operationId"`
+	OperationId string `json:"operationId"`
 }
 
 type getExportResultsResponse struct {
@@ -44,8 +50,8 @@ type getExportResultsResponse struct {
 func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (string, error) {
 	params := createParams{
 		SegmentId: "everyone",
-		Type:      "TYPE_EVENT",
-		Format:    "FORMAT_JSON",
+		Type:      exportType_Event,
+		Format:    exportFormat_Json,
 		// Specify a segment time range with empty values to indicate "All Time"
 		SegmentTimeRange: timeRange{Start: "", End: ""},
 		// Limit the exported data to the requested time range.
@@ -74,19 +80,13 @@ func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (
 	defer resBody.Close()
 	resp := createSegmentResponse{}
 	err = json.NewDecoder(resBody).Decode(&resp)
-	return resp.Id, err
+	return resp.OperationId, err
 }
 
 func (c *Client) GetExportProgress(operationId string) (int, string, error) {
 	resp, err := c.getExportOperation(operationId)
 	if err != nil {
 		return 0, "", err
-	}
-	if resp.Type != operationSearchExport {
-		return 0, "", errors.New("bad operation id")
-	}
-	if resp.State == operationFailed {
-		return 0, "", ExportError{Details: resp.ErrorDetails}
 	}
 	if resp.State == operationComplete {
 		return resp.EstimatedPctComplete, resp.Results.SearchExportId, nil
@@ -96,7 +96,6 @@ func (c *Client) GetExportProgress(operationId string) (int, string, error) {
 
 func (c *Client) GetExport(exportId string) (io.ReadCloser, error) {
 	url := fmt.Sprintf("%s/search/v1/exports/%s/results", c.Config.ApiURL, exportId)
-	log.Printf("getting export stream at %s", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
