@@ -110,8 +110,11 @@ type Duration struct {
 }
 
 type LocalConfig struct {
-	SaveDir      string
-	StartTime    time.Time
+	SaveDir string
+	// Deprecated: Use `StartTime` in the base config instead
+	StartTime time.Time
+	// This forces the exports to start at the provided StartTime instead of using the
+	// any sync file that might exist.
 	UseStartTime bool
 }
 
