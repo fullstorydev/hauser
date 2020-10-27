@@ -23,9 +23,6 @@ func NewLocalDisk(c *config.LocalConfig) *LocalDisk {
 		errorMessage := fmt.Sprintf("Cannot find folder %s, make sure it exists", c.SaveDir)
 		log.Fatalf(errorMessage)
 	}
-	if c.UseStartTime && c.StartTime.IsZero() {
-		log.Fatalf("Asked to use Start Time, but it is not specified")
-	}
 
 	if c.UseStartTime {
 		filename := filepath.Join(c.SaveDir, timestampFile)
