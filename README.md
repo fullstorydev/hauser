@@ -40,7 +40,7 @@ This delay is necessary because there is some latency between when an event is r
 events from "[swan songs]" may not be available.
 
 #### `StartTime`
-Determines the date-time that should be used a starting point for creating the exports.
+Determines the datetime that should be used a starting point for creating the exports.
 This value is only used when starting with a fresh database/storage instance (i.e. `hauser` hasn't been used with the specified warehouse).
 If you would like to export all the data that is currently within retention, set this to the date of the oldest possible
 session start. For example, if your FullStory account has 3 months of retention, and today is October 20th, 2020, set `StartTime`
