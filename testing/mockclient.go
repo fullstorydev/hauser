@@ -2,34 +2,36 @@ package testing
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"net/http"
+	"math/rand"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/fullstorydev/hauser/client"
 )
 
-var (
-	// In order to keep tests consistent, pretend that now is constant.
-	now = time.Date(2020, 9, 1, 0, 0, 0, 0, time.UTC)
-)
-
-const maxListCount = 20
+type createdExport struct {
+	start    time.Time
+	end      time.Time
+	fields   []string
+	progress int
+	exportId string
+}
 
 type MockDataExportClient struct {
-	// Determines the time range for the requested bundle ID.
-	freqSetting int32
-	data        []map[string]interface{}
+	data    []map[string]interface{}
+	creates map[string]createdExport
 }
 
 var _ client.DataExportClient = (*MockDataExportClient)(nil)
 
-func NewMockDataExportClient(freqSetting int32, datafile string) *MockDataExportClient {
+func NewMockDataExportClient(datafile string) *MockDataExportClient {
 	data := make([]map[string]interface{}, 0, 100)
 	if file, err := os.Open(datafile); err != nil {
 		panic(fmt.Sprintf("failed to open %s: %s", datafile, err))
@@ -47,49 +49,102 @@ func NewMockDataExportClient(freqSetting int32, datafile string) *MockDataExport
 		})
 	}
 	return &MockDataExportClient{
-		freqSetting: freqSetting,
-		data:        data,
+		data:    data,
+		creates: make(map[string]createdExport),
 	}
 }
 
-func (m *MockDataExportClient) ExportList(start time.Time) ([]client.ExportMeta, error) {
-	bundleDuration := time.Duration(m.freqSetting) * (30 * time.Minute)
-	// Let's pretend that it's possible there is data up to a day before there is actually data
-	startToUse := mustParseEventStartTime(m.data[0]).Add(-24 * time.Hour)
-	if start.After(startToUse) {
-		startToUse = start
-	}
-	bundleStart := startToUse.Truncate(bundleDuration)
-	bundleStop := bundleStart.Add(bundleDuration)
-	meta := make([]client.ExportMeta, 0, maxListCount)
-	for bundleStop.Before(now) && len(meta) <= maxListCount {
-		meta = append(meta, client.ExportMeta{
-			Start: bundleStart,
-			Stop:  bundleStop,
-			ID:    int(bundleStart.Unix()*100 + int64(m.freqSetting)),
-		})
-		bundleStart = bundleStop
-		bundleStop = bundleStop.Add(bundleDuration)
-	}
-	return meta, nil
-}
-
-func (m *MockDataExportClient) ExportData(id int, _ ...func(r *http.Request)) (client.ExportData, error) {
-	bundleStart := time.Unix(int64(id/100), 0).UTC()
-	bucketSize := id % 100
-	if bucketSize <= 0 {
-		return nil, errors.New("bad export id")
-	}
-	bundleEnd := bundleStart.Add(time.Duration(bucketSize) * 30 * time.Minute)
+func (m *MockDataExportClient) collectJsonData(start, end time.Time, fields []string) []byte {
 	exportData := make([]map[string]interface{}, 0, 100)
 	for i, record := range m.data {
 		t := mustParseEventStartTime(record)
-		if (t.Equal(bundleStart) || t.After(bundleStart)) && (t.Before(bundleEnd)) {
-			exportData = append(exportData, m.data[i])
+		if (t.Equal(start) || t.After(start)) && (t.Before(end)) {
+			if len(fields) == 0 {
+				exportData = append(exportData, m.data[i])
+			} else {
+				recordToAdd := make(map[string]interface{}, len(m.data[i]))
+				for _, field := range fields {
+					if field == "user_*" {
+						// pick out all user vars
+						for fieldName, dat := range m.data[i] {
+							if strings.Index(fieldName, "user_") == 0 {
+								recordToAdd[fieldName] = dat
+							}
+						}
+					} else if field == "evt_*" {
+						// pick out all event vars
+						for fieldName, dat := range m.data[i] {
+							if strings.Index(fieldName, "evt_") == 0 {
+								recordToAdd[fieldName] = dat
+							}
+						}
+					} else {
+						if dat, ok := m.data[i][field]; ok {
+							recordToAdd[field] = dat
+						}
+					}
+				}
+				exportData = append(exportData, recordToAdd)
+			}
 		}
 	}
 	raw, _ := json.Marshal(exportData)
-	return ioutil.NopCloser(bytes.NewReader(raw)), nil
+	return raw
+}
+
+func (m *MockDataExportClient) CreateExport(start, end time.Time, fields []string) (string, error) {
+	operationId := fmt.Sprintf("%d", rand.Int())
+	exportId := fmt.Sprintf("%d", rand.Int())
+	m.creates[operationId] = createdExport{start, end, fields, 0, exportId}
+	return operationId, nil
+}
+
+func (m *MockDataExportClient) GetExportProgress(operationId string) (int, string, error) {
+	if created, ok := m.creates[operationId]; !ok {
+		return 0, "", client.StatusError{
+			Status:     "Not Found",
+			StatusCode: 404,
+			RetryAfter: 0,
+			Body:       nil,
+		}
+	} else {
+		prog := created.progress
+
+		if created.progress < 100 {
+			created.progress += int(rand.Float32() * 100)
+			// In lieu of a MaxInt function
+			if created.progress > 100 {
+				created.progress = 100
+			}
+		}
+
+		m.creates[operationId] = created
+
+		if prog == 100 {
+			return prog, created.exportId, nil
+		}
+		return prog, "", nil
+	}
+}
+
+func (m *MockDataExportClient) GetExport(exportId string) (io.ReadCloser, error) {
+	for _, created := range m.creates {
+		if created.exportId == exportId {
+			raw := m.collectJsonData(created.start, created.end, created.fields)
+			var b bytes.Buffer
+			gw := gzip.NewWriter(&b)
+			if _, err := io.Copy(gw, bytes.NewReader(raw)); err != nil {
+				return nil, err
+			}
+			return ioutil.NopCloser(&b), gw.Close()
+		}
+	}
+	return nil, client.StatusError{
+		Status:     "Not Found",
+		StatusCode: 404,
+		RetryAfter: 0,
+		Body:       nil,
+	}
 }
 
 func mustParseEventStartTime(record map[string]interface{}) time.Time {

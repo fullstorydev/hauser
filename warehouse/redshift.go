@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
@@ -14,28 +15,40 @@ import (
 )
 
 type Redshift struct {
-	conn         *sql.DB
-	conf         *config.RedshiftConfig
-	exportSchema Schema
-	syncSchema   Schema
+	conn       *sql.DB
+	conf       *config.RedshiftConfig
+	syncSchema Schema
 }
 
 var (
-	RedshiftTypeMap = FieldTypeMapper{
-		"int64":     "BIGINT",
-		"string":    "VARCHAR(max)",
-		"time.Time": "TIMESTAMP",
+	redshiftSchemaMap = map[reflect.Type]string{
+		reflect.TypeOf(int64(0)):    "BIGINT",
+		reflect.TypeOf(""):          "VARCHAR(max)",
+		reflect.TypeOf(time.Time{}): "TIMESTAMP",
 	}
-	beginningOfTime = time.Date(2015, 01, 01, 0, 0, 0, 0, time.UTC)
 )
+
+type columnConfig struct {
+	DBName string
+	DBType string
+}
+
+type redshiftSchema []columnConfig
+
+func (c redshiftSchema) String() string {
+	ss := make([]string, len(c))
+	for i, f := range c {
+		ss[i] = fmt.Sprintf("%s %s", f.DBName, f.DBType)
+	}
+	return strings.Join(ss, ",")
+}
 
 var _ Database = (*Redshift)(nil)
 
 func NewRedshift(c *config.RedshiftConfig) *Redshift {
 	return &Redshift{
-		conf:         c,
-		exportSchema: ExportTableSchema(RedshiftTypeMap),
-		syncSchema:   SyncTableSchema(RedshiftTypeMap),
+		conf:       c,
+		syncSchema: MakeSchema(syncTable{}),
 	}
 }
 
@@ -147,8 +160,56 @@ func (rs *Redshift) LoadToWarehouse(s3obj string, _ time.Time) error {
 	return nil
 }
 
-// EnsureCompatibleExportTable makes sure the export table has all the hauser schema columns
-func (rs *Redshift) EnsureCompatibleExportTable() error {
+func getColumnsToAdd(s Schema, existing []string) ([]columnConfig, error) {
+	if len(s) < len(existing) {
+		return nil, fmt.Errorf("incompatible schema: have %v, got %v", existing, s)
+	}
+	missing := make([]columnConfig, len(s)-len(existing))
+	for i := 0; i < len(missing); i++ {
+		field := s[len(existing)+i]
+		missing[i] = columnConfig{
+			DBName: field.DBName,
+			DBType: redshiftSchemaMap[field.FieldType],
+		}
+	}
+	return missing, nil
+}
+
+func schemaToRedshiftSchema(s Schema) redshiftSchema {
+	columns := make([]columnConfig, len(s))
+	for i, field := range s {
+		dbType, ok := redshiftSchemaMap[field.FieldType]
+		if !ok {
+			panic(fmt.Sprintf("field %s does not have a mapping to a database type for redshift", field.DBName))
+		}
+		columns[i] = columnConfig{
+			DBName: field.DBName,
+			DBType: dbType,
+		}
+	}
+	return columns
+}
+
+func (rs *Redshift) InitExportTable(schema Schema) (bool, error) {
+	var err error
+	rs.conn, err = rs.MakeRedshiftConnection()
+	if err != nil {
+		return false, err
+	}
+	defer rs.conn.Close()
+
+	if !rs.DoesTableExist(rs.conf.ExportTable) {
+		// if the export table does not exist we create one with all the columns we expect!
+		log.Printf("Export table %s does not exist! Creating one!", rs.qualifiedExportTableName())
+		if err = rs.createExportTable(schema); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func (rs *Redshift) ApplyExportSchema(newSchema Schema) error {
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
@@ -156,27 +217,16 @@ func (rs *Redshift) EnsureCompatibleExportTable() error {
 	}
 	defer rs.conn.Close()
 
-	if !rs.DoesTableExist(rs.conf.ExportTable) {
-		// if the export table does not exist we create one with all the columns we expect!
-		log.Printf("Export table %s does not exist! Creating one!", rs.qualifiedExportTableName())
-		if err = rs.CreateExportTable(); err != nil {
-			return err
-		}
-		return nil
+	existingColumns := rs.getTableColumns(rs.conf.ExportTable)
+	missingFields, err := getColumnsToAdd(newSchema, existingColumns)
+	if err != nil {
+		return err
 	}
-
-	// make sure all the columns in the csv export exist in the Export table
-	exportTableColumns := rs.getTableColumns(rs.conf.ExportTable)
-	missingFields := rs.getMissingFields(rs.exportSchema, exportTableColumns)
-
-	// If some fields are missing from the fsexport table, either we added new fields
-	// or existing expected columns were deleted by the user we add the relevant columns.
-	// Alter the table and add the missing columns.
 	if len(missingFields) > 0 {
 		log.Printf("Found %d missing fields. Adding columns for these fields.", len(missingFields))
 		for _, f := range missingFields {
 			// Redshift only allows addition of one column at a time, hence the the alter statements in a loop yuck
-			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.qualifiedExportTableName(), f.Name, f.DBType)
+			alterStmt := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;", rs.qualifiedExportTableName(), f.DBName, f.DBType)
 			if _, err = rs.conn.Exec(alterStmt); err != nil {
 				return err
 			}
@@ -194,10 +244,10 @@ func (rs *Redshift) CopyInData(s3file string) error {
 }
 
 // CreateExportTable creates an export table with the hauser export table schema
-func (rs *Redshift) CreateExportTable() error {
+func (rs *Redshift) createExportTable(schema Schema) error {
 	log.Printf("Creating table %s", rs.qualifiedExportTableName())
 
-	stmt := fmt.Sprintf("create table %s(%s);", rs.qualifiedExportTableName(), rs.exportSchema.String())
+	stmt := fmt.Sprintf("create table %s(%s);", rs.qualifiedExportTableName(), schemaToRedshiftSchema(schema))
 	_, err := rs.conn.Exec(stmt)
 	return err
 }
@@ -206,7 +256,7 @@ func (rs *Redshift) CreateExportTable() error {
 func (rs *Redshift) CreateSyncTable() error {
 	log.Printf("Creating table %s", rs.qualifiedSyncTableName())
 
-	stmt := fmt.Sprintf("create table %s(%s);", rs.qualifiedSyncTableName(), rs.syncSchema.String())
+	stmt := fmt.Sprintf("create table %s(%s);", rs.qualifiedSyncTableName(), schemaToRedshiftSchema(rs.syncSchema))
 	_, err := rs.conn.Exec(stmt)
 	return err
 }
@@ -242,7 +292,7 @@ func (rs *Redshift) DeleteExportRecordsAfter(end time.Time) error {
 }
 
 func (rs *Redshift) LastSyncPoint(_ context.Context) (time.Time, error) {
-	t := beginningOfTime
+	t := time.Time{}
 	var err error
 	rs.conn, err = rs.MakeRedshiftConnection()
 	if err != nil {
@@ -277,10 +327,8 @@ func (rs *Redshift) LastSyncPoint(_ context.Context) (time.Time, error) {
 
 func (rs *Redshift) RemoveOrphanedRecords(lastSync pq.NullTime) error {
 	if !rs.DoesTableExist(rs.conf.ExportTable) {
-		if err := rs.CreateExportTable(); err != nil {
-			log.Printf("Couldn't create export table: %s", err)
-			return err
-		}
+		// This is okay, because the hauser process will ensure that the table exists.
+		return nil
 	}
 
 	// Find the time of the latest export record...if it's after
@@ -341,21 +389,4 @@ func (rs *Redshift) getTableColumns(name string) []string {
 		log.Fatal(err)
 	}
 	return columns
-}
-
-func (rs *Redshift) getMissingFields(schema Schema, tableColumns []string) []WarehouseField {
-	existingColumns := make(map[string]struct{})
-	for _, column := range tableColumns {
-		// Redshift columns are case insensitive
-		existingColumns[strings.ToLower(column)] = struct{}{}
-	}
-
-	var missingFields []WarehouseField
-	for _, f := range schema {
-		if _, ok := existingColumns[strings.ToLower(f.Name)]; !ok {
-			missingFields = append(missingFields, f)
-		}
-	}
-
-	return missingFields
 }

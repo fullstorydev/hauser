@@ -8,29 +8,47 @@ import (
 	"github.com/fullstorydev/hauser/warehouse"
 )
 
-var (
-	MockTypeMap = warehouse.FieldTypeMapper{
-		"int64":     "BIGINT",
-		"string":    "VARCHAR(max)",
-		"time.Time": "TIMESTAMP",
-	}
-)
-
 type MockDatabase struct {
-	schema      warehouse.Schema
-	Initialized bool
-	Syncs       []time.Time
-	LoadedFiles []string
+	schema         warehouse.Schema
+	initialColumns []string
+	Initialized    bool
+	Syncs          []time.Time
+	LoadedFiles    []string
+}
+
+func (m *MockDatabase) InitExportTable(schema warehouse.Schema) (bool, error) {
+	if len(m.schema) == 0 {
+		// We're creating the table
+		m.schema = schema
+		m.Initialized = true
+		return true, nil
+	}
+	return false, nil
+}
+
+func (m *MockDatabase) ApplyExportSchema(newSchema warehouse.Schema) error {
+	if m.schema.IsCompatibleWith(newSchema) {
+		m.schema = newSchema
+		m.Initialized = true
+		return nil
+	}
+	return fmt.Errorf("incompatible schema: have %v, got %v", m.schema, newSchema)
 }
 
 var _ warehouse.Database = (*MockDatabase)(nil)
 
-func NewMockDatabase() *MockDatabase {
+func NewMockDatabase(existingColumns []string) *MockDatabase {
+	defaultSchema := warehouse.MakeSchema(warehouse.BaseExportFields{})
+	initialSchema := make(warehouse.Schema, len(existingColumns))
+	for i, fieldName := range existingColumns {
+		initialSchema[i] = defaultSchema.GetFieldForName(fieldName)
+	}
 	return &MockDatabase{
-		schema:      nil,
-		Initialized: false,
-		Syncs:       nil,
-		LoadedFiles: nil,
+		schema:         initialSchema,
+		initialColumns: existingColumns,
+		Initialized:    false,
+		Syncs:          nil,
+		LoadedFiles:    nil,
 	}
 }
 
@@ -66,13 +84,7 @@ func (m *MockDatabase) ValueToString(val interface{}, isTime bool) string {
 func (m *MockDatabase) GetExportTableColumns() []string {
 	cols := make([]string, 0, len(m.schema))
 	for _, f := range m.schema {
-		cols = append(cols, f.Name)
+		cols = append(cols, f.DBName)
 	}
 	return cols
-}
-
-func (m *MockDatabase) EnsureCompatibleExportTable() error {
-	m.schema = warehouse.ExportTableSchema(MockTypeMap)
-	m.Initialized = true
-	return nil
 }

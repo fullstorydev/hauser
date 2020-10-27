@@ -40,42 +40,6 @@ func TestRedshiftValueToString(t *testing.T) {
 	}
 }
 
-func TestGetMissingFieldsRedshift(t *testing.T) {
-	wh := &Redshift{
-		exportSchema: ExportTableSchema(RedshiftTypeMap),
-	}
-
-	var schemaHeaders []string
-	for _, f := range wh.exportSchema {
-		schemaHeaders = append(schemaHeaders, f.Name)
-	}
-
-	var noHeaders []string
-	var testCases = []struct {
-		schema   Schema
-		columns  []string
-		expected int
-	}{
-		// All columns from the schema are present in the export table columns, so there are 0 missing fields
-		{wh.exportSchema, schemaHeaders, 0},
-		// Only headers are present, therefore all schema fields are missing
-		{wh.exportSchema, noHeaders, len(schemaHeaders)},
-		// Only headers that are not part of the schema are present, therefore all schema fields are missing
-		{wh.exportSchema, []string{"Dummy"}, len(schemaHeaders)},
-		// Only one column common between the table columns, and schema, so there are len(schemaHeaders) - 1 missing field
-		{wh.exportSchema, []string{"PageUrl"}, len(schemaHeaders) - 1},
-		// Same as above, but with additional columns in the export table that we don't care about so still 1 missing field
-		{wh.exportSchema, []string{"Dummy Column1", "PageUrl", "Dummy Column2"}, len(schemaHeaders) - 1},
-	}
-
-	for _, testCase := range testCases {
-		missingFields := wh.getMissingFields(testCase.schema, testCase.columns)
-		if len(missingFields) != testCase.expected {
-			t.Errorf("Expected %d missing fields, got %d", testCase.expected, len(missingFields))
-		}
-	}
-}
-
 func TestGetBucketAndKey(t *testing.T) {
 	testCases := []struct {
 		s3Config  string

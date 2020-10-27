@@ -8,7 +8,7 @@ import (
 func Assert(t *testing.T, condition bool, format string, a ...interface{}) {
 	t.Helper()
 	if !condition {
-		t.Errorf(format, a...)
+		t.Fatalf(format, a...)
 	}
 }
 
@@ -17,7 +17,7 @@ func Equals(t *testing.T, expected, actual interface{}, format string, a ...inte
 	if expected != actual {
 		format += ": want %v (type %v), got %v (type %v)"
 		a = append(a, expected, reflect.TypeOf(expected), actual, reflect.TypeOf(actual))
-		t.Errorf(format, a...)
+		t.Fatalf(format, a...)
 	}
 }
 
@@ -31,7 +31,7 @@ func StrSliceEquals(t *testing.T, expected, actual []string, format string, a ..
 	}
 	for i, e := range expected {
 		if e != actual[i] {
-			t.Errorf(format, a)
+			t.Fatalf(format, a)
 		}
 	}
 }

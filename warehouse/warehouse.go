@@ -37,7 +37,16 @@ type Database interface {
 	LoadToWarehouse(storageRef string, start time.Time) error
 	ValueToString(val interface{}, isTime bool) string
 	GetExportTableColumns() []string
-	EnsureCompatibleExportTable() error
+
+	// InitExportTable should attempt to create the table in the database. If the table doesn't exist, the provided
+	// schema should be applied to the table and this function should return `true`, assuming an error didn't occur.
+	// If the table existed, this should return false to signal that follow-up schema validation is necessary.
+	InitExportTable(Schema) (bool, error)
+
+	// ApplyExportSchema will attempt to update the schema in the database to the provided schema.
+	// The provided schema must be compatible, or this will fail. Compatible schemas will have existing columns
+	// in the same order as they are currently ordered in the table and can also add new columns to the end.
+	ApplyExportSchema(Schema) error
 }
 
 const RFC3339Micro = "2006-01-02T15:04:05.999999Z07:00"

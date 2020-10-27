@@ -1,86 +1,129 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 )
 
-// ExportMeta is metadata about ExportData.
-type ExportMeta struct {
-	Start time.Time
-	Stop  time.Time
-	ID    int
+type ExportError struct {
+	Details string
 }
 
-func (em *ExportMeta) UnmarshalJSON(data []byte) error {
-	aux := struct {
-		Start int64
-		Stop  int64
-		ID    int
-	}{}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
+func (e ExportError) Error() string {
+	return fmt.Sprintf("failed to complete export: %s", e.Details)
+}
+
+type exportType string
+
+const exportType_Event exportType = "TYPE_EVENT"
+
+type exportFormat string
+
+const exportFormat_Json exportFormat = "FORMAT_JSON"
+
+type timeRange struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+}
+
+type createParams struct {
+	SegmentId        string       `json:"segmentId"`
+	Type             exportType   `json:"type"`
+	Format           exportFormat `json:"format"`
+	SegmentTimeRange timeRange    `json:"segmentTimeRange"`
+	TimeRange        timeRange    `json:"timeRange"`
+	Fields           []string     `json:"fields"`
+}
+
+type createSegmentResponse struct {
+	OperationId string `json:"operationId"`
+}
+
+type getExportResultsResponse struct {
+	Location string `json:"location"`
+}
+
+func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (string, error) {
+	params := createParams{
+		SegmentId: "everyone",
+		Type:      exportType_Event,
+		Format:    exportFormat_Json,
+		// Specify a segment time range with empty values to indicate "All Time"
+		SegmentTimeRange: timeRange{Start: "", End: ""},
+		// Limit the exported data to the requested time range.
+		TimeRange: timeRange{
+			Start: start.UTC().Format(time.RFC3339),
+			End:   end.UTC().Format(time.RFC3339),
+		},
+		Fields: fields,
 	}
-	em.Start = time.Unix(aux.Start, 0)
-	em.Stop = time.Unix(aux.Stop, 0)
-	em.ID = aux.ID
-	return nil
+	reqBody, err := json.Marshal(params)
+	if err != nil {
+		return "", err
+	}
+
+	url := fmt.Sprintf("%s/segments/v1/exports", c.Config.ApiURL)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", err
+	}
+	resBody, err := c.doReq(req)
+	if err != nil {
+		// Status 429, 499, 500 -- retry
+		// Status else fail
+		return "", err
+	}
+	defer resBody.Close()
+	resp := createSegmentResponse{}
+	err = json.NewDecoder(resBody).Decode(&resp)
+	return resp.OperationId, err
 }
 
-// ExportList returns a list of metadata on completed data export bundles.
-func (c *Client) ExportList(start time.Time) ([]ExportMeta, error) {
-	v := make(url.Values)
-	v.Add("start", fmt.Sprintf("%d", start.Unix()))
+func (c *Client) GetExportProgress(operationId string) (int, string, error) {
+	resp, err := c.getExportOperation(operationId)
+	if err != nil {
+		return 0, "", err
+	}
+	if resp.State == operationComplete {
+		return resp.EstimatedPctComplete, resp.Results.SearchExportId, nil
+	}
+	return resp.EstimatedPctComplete, "", nil
+}
 
-	req, err := http.NewRequest("GET", c.Config.ExportURL+"/export/list"+"?"+v.Encode(), nil)
+func (c *Client) GetExport(exportId string) (io.ReadCloser, error) {
+	url := fmt.Sprintf("%s/search/v1/exports/%s/results", c.Config.ApiURL, exportId)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-
 	body, err := c.doReq(req)
 	if err != nil {
 		return nil, err
 	}
 	defer body.Close()
 
-	var m map[string][]ExportMeta
-	if err := json.NewDecoder(body).Decode(&m); err != nil {
+	rsp := &getExportResultsResponse{}
+	if err := json.NewDecoder(body).Decode(&rsp); err != nil {
 		return nil, err
 	}
-	return m["exports"], nil
-}
 
-// ExportData represents data from the "/export/get" endpoint.
-//
-// For more details, see:
-//   http://help.fullstory.com/develop-rest/data-export-api
-type ExportData io.ReadCloser
-
-// ExportData returns the data export bundle specified by id.
-//
-// If the client's HTTP Transport has DisableCompression set to true, the
-// caller should treat the returned ExportData as gzipped JSON. Otherwise,
-// ExportData is JSON that has already been uncompressed.
-//
-// The caller is responsible for closing the returned ExportData if the returned
-// error is nil.
-func (c *Client) ExportData(id int, modifyReq ...func(r *http.Request)) (ExportData, error) {
-	v := make(url.Values)
-	v.Add("id", strconv.Itoa(id))
-
-	req, err := http.NewRequest("GET", c.Config.ExportURL+"/export/get"+"?"+v.Encode(), nil)
+	// Use a vanilla http client for downloading the stream since auth
+	// is built into the URL itself.
+	streamRsp, err := http.Get(rsp.Location)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, mr := range modifyReq {
-		mr(req)
+	if streamRsp.StatusCode != http.StatusOK {
+		return nil, StatusError{
+			Status:     streamRsp.Status,
+			StatusCode: streamRsp.StatusCode,
+			RetryAfter: time.Duration(getRetryAfter(streamRsp)) * time.Second,
+			Body:       nil,
+		}
 	}
-
-	return c.doReq(req)
+	return streamRsp.Body, nil
 }

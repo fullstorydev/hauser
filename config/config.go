@@ -10,8 +10,14 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// DefaultExportURL is the standard base URL for the fullstory.com API.
-const DefaultExportURL = "https://export.fullstory.com/api/v1"
+const (
+	// DefaultApiURL is the standard base URL for the fullstory.com API.
+	DefaultApiURL         = "https://api.fullstory.com"
+	DefaultExportDelay    = 24 * time.Hour
+	DefaultExportDuration = 1 * time.Hour
+	MinExportDuration     = 15 * time.Minute
+	MaxExportDuration     = 24 * time.Hour
+)
 
 type Provider string
 
@@ -26,18 +32,25 @@ type Config struct {
 	Warehouse            string
 	Provider             Provider
 	FsApiToken           string
+	ExportDuration       Duration
+	ExportDelay          Duration
 	AdditionalHttpHeader []Header
-	Backoff              duration
+	Backoff              Duration
 	BackoffStepsMax      int
-	CheckInterval        duration
-	TmpDir               string
-	ListExportLimit      int
-	GroupFilesByDay      bool
-	SaveAsJson           bool
-	StorageOnly          bool
+	// Deprecated
+	CheckInterval Duration
+	TmpDir        string
+	// Deprecated
+	ListExportLimit int
+	// Deprecated: use ExportDuration
+	GroupFilesByDay bool
+	SaveAsJson      bool
+	StorageOnly     bool
+	StartTime       time.Time
 
-	// for debug only; can point to localhost
-	ExportURL string
+	IncludeMobileAppsFields bool
+
+	ApiURL string
 
 	// aws: s3 + redshift
 	S3       S3Config
@@ -59,7 +72,7 @@ type Header struct {
 type S3Config struct {
 	Bucket  string
 	Region  string
-	Timeout duration
+	Timeout Duration
 	// Deprecated: Use `StorageOnly` option instead
 	S3Only bool
 }
@@ -89,20 +102,23 @@ type BigQueryConfig struct {
 	Dataset             string
 	ExportTable         string
 	SyncTable           string
-	PartitionExpiration duration
+	PartitionExpiration Duration
 }
 
-type duration struct {
+type Duration struct {
 	time.Duration
 }
 
 type LocalConfig struct {
-	SaveDir      string
-	StartTime    time.Time
+	SaveDir string
+	// Deprecated: Use `StartTime` in the base config instead
+	StartTime time.Time
+	// This forces the exports to start at the provided StartTime instead of using the
+	// any sync file that might exist.
 	UseStartTime bool
 }
 
-func (d *duration) UnmarshalText(text []byte) error {
+func (d *Duration) UnmarshalText(text []byte) error {
 	var err error
 	d.Duration, err = time.ParseDuration(string(text))
 	return err
@@ -120,17 +136,46 @@ func Load(filename string) (*Config, error) {
 		return nil, err
 	}
 
-	if err := Validate(&conf); err != nil {
+	if err := Validate(&conf, time.Now); err != nil {
 		return nil, err
 	}
 	return &conf, nil
 }
 
-func Validate(conf *Config) error {
+func Validate(conf *Config, getNow func() time.Time) error {
 	// Set any defaults.
-	if conf.ExportURL == "" {
-		conf.ExportURL = DefaultExportURL
+	if conf.ApiURL == "" {
+		conf.ApiURL = DefaultApiURL
 	}
+
+	if conf.ExportDuration.Duration == 0 {
+		if conf.GroupFilesByDay {
+			log.Println(`WARNING: The "GroupFilesByDay" option is deprecated. Please use "ExportDuration" instead.`)
+			conf.ExportDuration.Duration = 24 * time.Hour
+		} else {
+			log.Println(`INFO: "ExportDuration" not set in config. Defaulting to 1 hour`)
+			conf.ExportDuration.Duration = DefaultExportDuration
+		}
+	} else if conf.ExportDuration.Duration < MinExportDuration || conf.ExportDuration.Duration > MaxExportDuration {
+		return fmt.Errorf("ExportDuration '%s' out of range. The range of valid values is from %s to %s", conf.ExportDuration.Duration, MinExportDuration, MaxExportDuration)
+	} else if (24*time.Hour)%conf.ExportDuration.Duration != 0 {
+		// The Duration needs to fit evenly within a day so that database partitioning by day
+		// works correctly
+		return errors.New("ExportDuration must be an even fraction of 24 hours")
+	}
+
+	if conf.ExportDelay.Duration == 0 {
+		conf.ExportDelay.Duration = DefaultExportDelay
+	} else if conf.ExportDelay.Duration < time.Hour {
+		return errors.New(`"ExportDelay" configuration value is too small. Minimum value is 1 hour`)
+	}
+
+	// Ensure a sane start time and make sure it's in UTC
+	if conf.StartTime.IsZero() {
+		log.Println(`INFO: "StartTime" not set in config. Defaulting to 30 days in the past`)
+		conf.StartTime = getNow().UTC().Add(-1 * 24 * 30 * time.Hour)
+	}
+	conf.StartTime = conf.StartTime.UTC()
 
 	if conf.BigQuery.PartitionExpiration.Duration < time.Duration(0) {
 		return errors.New("BigQuery expiration value must be positive")

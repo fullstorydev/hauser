@@ -1,17 +1,38 @@
 FsApiToken = "<your FullStory API token>"
 Backoff = "30s"
 BackoffStepsMax = 8
-CheckInterval = "30m"
 TmpDir = "/tmp"
+
+# ExportDuration determines the time range for each export bundle. The max value is 24 hours.
+# If downloads are not completing due to timeouts, lower this value until the downloads
+# are able to complete.
+# Valid time units are "s", "m", "h" (seconds, minutes, hours).
+ExportDuration = "6h"
+
+# ExportDelay determines how long to wait before creating an export.
+# This delay is necessary because there is some latency between when an event is recorded
+# and when it is available and complete. 24 hours is the default, but is fairly conservative.
+# In many cases this can be reduced safely to 3 hours, but note that "swan song" events
+# may not make it into FullStory within those 3 hours.
+# Valid time units are "s", "m", "h" (seconds, minutes, hours).
+ExportDelay = "24h"
+
+# StartTime determines how far back to start exporting data if starting fresh.
+# This should be an timestamp like with the followin format: 2018-12-27T18:30:00Z.
+# If start time is empty, this will default to 30 days in the past.
+StartTime = ""
+
 # Valid provider values:
 #  * local: Used for downloading files to the local machine.
 #  * gcp: Google Cloud Provider (GCS and BigQuery)
 #  * aws: Amazon Web Services (S3 and Redshift)
 Provider="local"
-GroupFilesByDay = false
 # If true, data will only be uploaded to the corresponding Provider's storage mechanism.
 StorageOnly = false
 SaveAsJson = false
+
+# By default, these are not included since not every account has this feature.
+# IncludeMobileAppsFields = true
 
 [s3]
 # bucket that will be used to stage files into Redshift

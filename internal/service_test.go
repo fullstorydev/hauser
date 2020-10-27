@@ -27,47 +27,110 @@ func Ok(t *testing.T, err error, format string, a ...interface{}) {
 	if err != nil {
 		format += ": unexpected error: %s"
 		a = append(a, err)
-		t.Errorf(format, a...)
+		t.Fatalf(format, a...)
 	}
 }
 
 func TestHauser(t *testing.T) {
 
+	getNow = func() time.Time {
+		return time.Date(2020, 9, 1, 0, 0, 0, 0, time.UTC)
+	}
+	progressPollDuration = time.Millisecond
 	testCases := []struct {
 		name            string
 		testdata        string
 		outputDir       string
-		freqSetting     int32
+		initialColumns  []string
 		expectedBundles int
 		config          *config.Config
 	}{
 		{
-			name:            "base case",
-			testdata:        "../testing/testdata/raw.json",
-			outputDir:       "../testing/testdata/default",
-			freqSetting:     48,
-			expectedBundles: 5,
-			config:          &config.Config{},
-		},
-		{
-			name:            "group by day case",
-			testdata:        "../testing/testdata/raw.json",
-			outputDir:       "../testing/testdata/groupByDay",
-			freqSetting:     48,
+			name:      "base case",
+			testdata:  "../testing/testdata/raw.json",
+			outputDir: "../testing/testdata/default",
+			initialColumns: []string{
+				"EventCustomName",
+				"EventStart",
+				"EventType",
+				"EventTargetText",
+				"EventTargetSelectorTok",
+				"EventModFrustrated",
+				"EventModDead",
+				"EventModError",
+				"EventModSuspicious",
+				"IndvId",
+				"PageClusterId",
+				"PageUrl",
+				"PageDuration",
+				"PageActiveDuration",
+				"PageRefererUrl",
+				"PageLatLong",
+				"PageAgent",
+				"PageIp",
+				"PageBrowser",
+				"PageDevice",
+				"PageOperatingSystem",
+				"PageNumInfos",
+				"PageNumWarnings",
+				"PageNumErrors",
+				"SessionId",
+				"PageId",
+				"UserAppKey",
+				"UserEmail",
+				"UserDisplayName",
+				"UserId",
+				"CustomVars",
+				"LoadDomContentTime",
+				"LoadFirstPaintTime",
+				"LoadEventTime",
+			},
 			expectedBundles: 5,
 			config: &config.Config{
+				Provider:       config.GCProvider,
+				ExportDuration: config.Duration{Duration: 24 * time.Hour},
+				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		{
+			name:            "group by day case, fresh",
+			testdata:        "../testing/testdata/raw.json",
+			outputDir:       "../testing/testdata/groupByDay",
+			expectedBundles: 5,
+			config: &config.Config{
+				Provider:        config.GCProvider,
 				GroupFilesByDay: true,
+				StartTime:       time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},
 		},
 		{
 			name:            "storage only",
 			testdata:        "../testing/testdata/raw.json",
 			outputDir:       "../testing/testdata/json",
-			freqSetting:     48,
 			expectedBundles: 5,
 			config: &config.Config{
-				SaveAsJson:  true,
-				StorageOnly: true,
+				Provider:       config.LocalProvider,
+				SaveAsJson:     true,
+				StorageOnly:    true,
+				ExportDuration: config.Duration{Duration: 24 * time.Hour},
+				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		{
+			name:      "with weird columns",
+			testdata:  "../testing/testdata/raw.json",
+			outputDir: "../testing/testdata/existing",
+			initialColumns: []string{
+				"EventStart",
+				"PageAgent",
+				"EventTargetSelectorTok",
+				"CustomColumn",
+			},
+			expectedBundles: 5,
+			config: &config.Config{
+				Provider:       config.GCProvider,
+				ExportDuration: config.Duration{Duration: 24 * time.Hour},
+				StartTime:      time.Date(2020, 8, 26, 0, 0, 0, 0, time.UTC),
 			},
 		},
 	}
@@ -75,13 +138,15 @@ func TestHauser(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			fsClient := hausertest.NewMockDataExportClient(tc.freqSetting, tc.testdata)
+			fsClient := hausertest.NewMockDataExportClient(tc.testdata)
 			storage := hausertest.NewMockStorage()
 
 			var db *hausertest.MockDatabase
 			if !tc.config.StorageOnly {
-				db = hausertest.NewMockDatabase()
+				db = hausertest.NewMockDatabase(tc.initialColumns)
 			}
+
+			Ok(t, config.Validate(tc.config, getNow), "invalid config")
 
 			hauser := NewHauserService(tc.config, fsClient, storage, db)
 			err := hauser.Init(ctx)
@@ -93,12 +158,12 @@ func TestHauser(t *testing.T) {
 
 			numBundles := 0
 			for {
-				newBundles, err := hauser.ProcessNext(ctx)
+				timeToWait, err := hauser.ProcessNext(ctx)
 				Ok(t, err, "failed to process next bundles")
-				if newBundles == 0 {
+				if timeToWait > 0 {
 					break
 				}
-				numBundles += newBundles
+				numBundles++
 			}
 			testutils.Equals(t, tc.expectedBundles, numBundles, "wrong number of bundles processed")
 			testutils.Equals(t, tc.expectedBundles, len(storage.UploadedFiles), "unexpected number of upload files")
@@ -171,14 +236,19 @@ func TestGetRetryInfo(t *testing.T) {
 }
 
 func TestTransformExportJSONRecord(t *testing.T) {
+	defaultSchema := warehouse.MakeSchema(struct {
+		EventTargetText string
+		PageDuration    int64
+		CustomVars      string
+	}{})
 	testCases := []struct {
-		tableColumns []string
-		rec          map[string]interface{}
-		expResult    []string
+		schema    warehouse.Schema
+		rec       map[string]interface{}
+		expResult []string
 	}{
 		// no custom vars
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
+			schema: defaultSchema,
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
@@ -187,7 +257,7 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		},
 		// two custom vars
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
+			schema: defaultSchema,
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
@@ -198,7 +268,7 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		},
 		// missing column value for pageduration
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars"},
+			schema: defaultSchema,
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 			},
@@ -206,7 +276,10 @@ func TestTransformExportJSONRecord(t *testing.T) {
 		},
 		// additional columns in target table that are not in the export
 		{
-			tableColumns: []string{"eventtargettext", "pageduration", "customvars", "randomcolumnnotinexport"},
+			schema: append(defaultSchema, warehouse.WarehouseField{
+				DBName:             "RandomColumnNotInExport",
+				FullStoryFieldName: "",
+			}),
 			rec: map[string]interface{}{
 				"EventTargetText": "Heyo!",
 				"PageDuration":    42,
@@ -216,20 +289,22 @@ func TestTransformExportJSONRecord(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		result, err := TransformExportJSONRecord(warehouse.ValueToString, tc.tableColumns, tc.rec)
-		if err != nil {
-			t.Errorf("Unexpected err %s on test case %d", err, i)
-			continue
-		}
-		if len(result) != len(tc.expResult) {
-			t.Errorf("Incorrect length of result; expected %d, got %d on test case %d", len(result), len(tc.expResult), i)
-			continue
-		}
-		for j := range tc.expResult {
-			if !compareTransformedStrings(t, tc.expResult[j], result[j]) {
-				t.Errorf("Result mismatch; expected %s, got %s on test case %d, item %d", tc.expResult[j], result[j], i, j)
+		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
+
+			h := &HauserService{schema: tc.schema}
+			result, err := h.transformExportJSONRecord(warehouse.ValueToString, tc.rec)
+			if err != nil {
+				t.Errorf("Unexpected err %s on test case %d", err, i)
 			}
-		}
+			if len(result) != len(tc.expResult) {
+				t.Errorf("Incorrect length of result; expected %d, got %d on test case %d", len(result), len(tc.expResult), i)
+			}
+			for j := range tc.expResult {
+				if !compareTransformedStrings(t, tc.expResult[j], result[j]) {
+					t.Errorf("Result mismatch; expected %s, got %s on test case %d, item %d", tc.expResult[j], result[j], i, j)
+				}
+			}
+		})
 	}
 }
 
