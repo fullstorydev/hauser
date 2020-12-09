@@ -1,0 +1,4 @@
+[program:$FULLSTORY_ORGID]
+command=hauser -c "$HAUSER_WORKDIR/$FULLSTORY_ORGID/config.toml"
+redirect_stderr=true
+stdout_logfile=$HAUSER_WORKDIR/$FULLSTORY_ORGID/hauser.log
