@@ -112,6 +112,22 @@ FROM myexport
 WHERE JSON_EXTRACT_PATH_TEXT(CustomVars, 'acct_adminDisabled_bool') = 'false';
 ```
 
+## Dockerizing Hauser
+To add a specific `hauser` binary version to a Docker container (assuming that the base image is linux),
+simply add the following to the Dockerfile:
+
+```Dockerfile
+RUN curl -L >hauser.tar.gz https://github.com/fullstorydev/hauser/releases/download/v${HAUSER_VERSION}/hauser_${HAUSER_VERSION}_linux_x86_64.tar.gz \
+  && tar -xzvf hauser.tar.gz -C /usr/bin \
+  && rm hauser.tar.gz
+```
+Where `${HAUSER_VERSION}` is the desired release version.
+(This value can also be provided at build time with the [docker ARG command](https://docs.docker.com/engine/reference/builder/#arg).)
+
+For an example of a dockerized hauser solution that dynamically creates the build config files from a template,
+see [this recipe](./recipes/multi-hauser/README.md).
+
+
 ## Building from source
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.11 or higher.
 * **OPTIONAL**: Set a custom [GOPATH](https://github.com/golang/go/wiki/SettingGOPATH).
