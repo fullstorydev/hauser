@@ -22,9 +22,10 @@ const (
 type Provider string
 
 const (
-	LocalProvider Provider = "local"
-	AWSProvider   Provider = "aws"
-	GCProvider    Provider = "gcp"
+	LocalProvider        Provider = "local"
+	AWSProvider          Provider = "aws"
+	GCProvider           Provider = "gcp"
+	AWSSnowflakeProvider Provider = "awssnowflake"
 )
 
 type Config struct {
@@ -53,8 +54,9 @@ type Config struct {
 	ApiURL string
 
 	// aws: s3 + redshift
-	S3       S3Config
-	Redshift RedshiftConfig
+	S3        S3Config
+	Redshift  RedshiftConfig
+	Snowflake SnowflakeConfig
 
 	// gcloud: GCS + BigQuery
 	GCS      GCSConfig
@@ -80,6 +82,19 @@ type S3Config struct {
 type RedshiftConfig struct {
 	Host           string
 	Port           string
+	DB             string
+	User           string
+	Password       string
+	ExportTable    string
+	SyncTable      string
+	DatabaseSchema string
+	Credentials    string
+	VarCharMax     int
+	S3Region       string `toml:"-"`
+}
+
+type SnowflakeConfig struct {
+	Host           string
 	DB             string
 	User           string
 	Password       string
@@ -187,6 +202,8 @@ func Validate(conf *Config, getNow func() time.Time) error {
 			conf.Provider = LocalProvider
 		case "redshift":
 			conf.Provider = AWSProvider
+		case "snowflake":
+			conf.Provider = AWSProvider
 		case "bigquery":
 			conf.Provider = GCProvider
 		default:
@@ -216,6 +233,13 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		if !conf.StorageOnly {
 			// Redshift needs to know which region the storage is in. Make sure they match
 			conf.Redshift.S3Region = conf.S3.Region
+		}
+		conf.S3.S3Only = false
+	case AWSSnowflakeProvider:
+		conf.StorageOnly = conf.StorageOnly || conf.S3.S3Only
+
+		if !conf.StorageOnly {
+			conf.Snowflake.S3Region = conf.S3.Region
 		}
 		conf.S3.S3Only = false
 	case GCProvider:
