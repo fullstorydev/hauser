@@ -112,6 +112,21 @@ FROM myexport
 WHERE JSON_EXTRACT_PATH_TEXT(CustomVars, 'acct_adminDisabled_bool') = 'false';
 ```
 
+## Dockerizing Hauser
+To include Hauser in a Docker container, add the following to your Dockerfile.
+Note that the example below assumes the base image is linux.
+
+```Dockerfile
+RUN curl -L >hauser.tar.gz https://github.com/fullstorydev/hauser/releases/download/v${HAUSER_VERSION}/hauser_${HAUSER_VERSION}_linux_x86_64.tar.gz \
+  && tar -xzvf hauser.tar.gz -C /usr/bin \
+  && rm hauser.tar.gz
+```
+
+The `${HAUSER_VERSION}` can be provided at build time with the [docker ARG command](https://docs.docker.com/engine/reference/builder/#arg).
+You can find the latest version of Hauser on the [releases](https://github.com/fullstorydev/hauser/releases/latest) page.
+For a more complete example of using Hauser with docker, see [this recipe](./recipes/multi-hauser/README.md).
+
+
 ## Building from source
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.11 or higher.
 * **OPTIONAL**: Set a custom [GOPATH](https://github.com/golang/go/wiki/SettingGOPATH).

@@ -1,0 +1,16 @@
+FsApiToken = "$FULLSTORY_APIKEY"
+Backoff = "30s"
+BackoffStepsMax = 8
+TmpDir = "$HAUSER_WORKDIR/$FULLSTORY_ORGID/tmp"
+ExportDuration = "6h"
+ExportDelay = "$HAUSER_EXPORT_DELAY"
+Provider = "gcp"
+
+[gcs]
+Bucket = "<your_gcp_bucket>"
+
+[bigquery]
+Project = "<your_gcp_project>"
+Dataset = "<your_bigquery_dataset>"
+ExportTable = "fs_export_$FULLSTORY_ORGID"
+SyncTable = "fs_sync_$FULLSTORY_ORGID"
