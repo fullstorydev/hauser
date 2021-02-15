@@ -64,21 +64,29 @@ func (m *MockDataExportClient) collectJsonData(start, end time.Time, fields []st
 			} else {
 				recordToAdd := make(map[string]interface{}, len(m.data[i]))
 				for _, field := range fields {
-					if field == "user_*" {
+					switch field {
+					case "user_*":
 						// pick out all user vars
 						for fieldName, dat := range m.data[i] {
 							if strings.Index(fieldName, "user_") == 0 {
 								recordToAdd[fieldName] = dat
 							}
 						}
-					} else if field == "evt_*" {
+					case "evt_*":
 						// pick out all event vars
 						for fieldName, dat := range m.data[i] {
 							if strings.Index(fieldName, "evt_") == 0 {
 								recordToAdd[fieldName] = dat
 							}
 						}
-					} else {
+					case "page_*":
+						// pick out all the page vars
+						for fieldName, dat := range m.data[i] {
+							if strings.Index(fieldName, "page_") == 0 {
+								recordToAdd[fieldName] = dat
+							}
+						}
+					default:
 						if dat, ok := m.data[i][field]; ok {
 							recordToAdd[field] = dat
 						}
