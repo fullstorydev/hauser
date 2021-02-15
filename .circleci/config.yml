@@ -3,10 +3,27 @@
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
 jobs:
-  build:
+  build_and_test:
     docker:
       - image: circleci/golang:1.14
     working_directory: /go/src/github.com/fullstorydev/hauser
     steps:
       - checkout
       - run: make ci
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build_and_test
+  weekly:
+    triggers:
+    - schedule:
+        # Monday at midnight
+        cron: "0 0 * * 1"
+        filters:
+          branches:
+            only:
+              - master
+    jobs:
+      - build_and_test
