@@ -61,6 +61,7 @@ type MobileFields struct {
 var wildcardFields = []string{
 	"user_*",
 	"evt_*",
+	"page_*",
 }
 
 // syncTable represents all the fields that should appear in the table used to track which bundles have been synced.
