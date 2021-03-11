@@ -46,6 +46,9 @@ func (w *LocalDisk) SaveSyncPoint(ctx context.Context, endTime time.Time) error 
 
 func (w *LocalDisk) SaveFile(_ context.Context, name string, reader io.Reader) (string, error) {
 	filename := filepath.Join(w.conf.SaveDir, name)
+	if err := os.MkdirAll(filepath.Dir(filename), 0777); err != nil {
+		return "", err
+	}
 	f, err := os.Create(filename)
 	if err != nil {
 		return "", err

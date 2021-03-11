@@ -31,6 +31,12 @@ Provider="local"
 StorageOnly = false
 SaveAsJson = false
 
+# FilePrefix can be used to specify a prefix for each of the files that are created.
+# For example, if using GCS or S3, you can use this setting to organizer your hauser uploads
+# into a "folder", such as "hauser-uploads/". In this case, the trailing slash is necessary
+# for GCS/S3 to recognize them as "folders".
+FilePrefix = ""
+
 # By default, these are not included since not every account has this feature.
 # IncludeMobileAppsFields = true
 
