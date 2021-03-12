@@ -125,7 +125,9 @@ func (h *HauserService) LoadBundles(ctx context.Context, filename string, startT
 	}
 	defer f.Close()
 
-	_, objName := path.Split(filename)
+	_, fName := path.Split(filename)
+	objName := fmt.Sprintf("%s%s", h.config.FilePrefix, fName)
+
 	objRef, err := h.storage.SaveFile(ctx, objName, f)
 	if err != nil {
 		return fmt.Errorf("failed to save file: %s", err)
@@ -325,13 +327,18 @@ func (h *HauserService) ProcessNext(ctx context.Context) (time.Duration, error) 
 
 	if h.config.SaveAsJson {
 		// Short circuit since we don't support loading json into the database
-		if _, err := h.storage.SaveFile(ctx, fmt.Sprintf("%d.json", lastSyncedRecord.Unix()), unzipped); err != nil {
+		fname := fmt.Sprintf("%s%d.json", h.config.FilePrefix, lastSyncedRecord.Unix())
+		if _, err := h.storage.SaveFile(ctx, fname, unzipped); err != nil {
 			return 0, err
 		}
 		return 0, h.storage.SaveSyncPoint(ctx, nextEndTime)
 	}
 
-	filename := filepath.Join(h.config.TmpDir, fmt.Sprintf("%d.csv", lastSyncedRecord.Unix()))
+	filename := filepath.Join(h.config.TmpDir, fmt.Sprintf("%s%d.csv", h.config.FilePrefix, lastSyncedRecord.Unix()))
+	if err := os.MkdirAll(filepath.Dir(filename), 0777); err != nil {
+		log.Printf("failed to create subdirectories")
+		return 0, err
+	}
 	outfile, err := os.Create(filename)
 	if err != nil {
 		log.Printf("Failed to create tmp csv file: %s", err)

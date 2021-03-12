@@ -52,6 +52,8 @@ type Config struct {
 
 	ApiURL string
 
+	FilePrefix string
+
 	// aws: s3 + redshift
 	S3       S3Config
 	Redshift RedshiftConfig
