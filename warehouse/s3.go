@@ -91,6 +91,10 @@ func (s *S3Storage) GetFileReference(name string) string {
 	return fmt.Sprintf("s3://%s/%s", bucket, key)
 }
 
+func (s *S3Storage) GetFilePrefix() string {
+	return s.conf.FilePrefix
+}
+
 func (s *S3Storage) newSession() *session.Session {
 	return session.Must(session.NewSession(aws.NewConfig().WithRegion(s.conf.Region)))
 }

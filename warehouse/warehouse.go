@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -30,6 +31,7 @@ type Storage interface {
 	ReadFile(ctx context.Context, name string) (io.Reader, error)
 	DeleteFile(ctx context.Context, name string) error
 	GetFileReference(name string) string
+	GetFilePrefix() string
 }
 
 type Database interface {
@@ -76,7 +78,8 @@ type SyncViaStorageMixin struct {
 var _ Syncable = (*SyncViaStorageMixin)(nil)
 
 func (s SyncViaStorageMixin) LastSyncPoint(ctx context.Context) (time.Time, error) {
-	r, err := s.storage.ReadFile(ctx, timestampFile)
+	fn := filepath.Join(s.storage.GetFilePrefix(), timestampFile)
+	r, err := s.storage.ReadFile(ctx, fn)
 	if err != nil {
 		if err == ErrFileNotFound {
 			// This is alright, we just haven't created one yet. Return the zero time value.
@@ -98,6 +101,7 @@ func (s SyncViaStorageMixin) SaveSyncPoint(ctx context.Context, endTime time.Tim
 	}
 	t := endTime.UTC().Format(time.RFC3339)
 	r := bytes.NewReader([]byte(t))
-	_, err := s.storage.SaveFile(ctx, timestampFile, r)
+	fn := filepath.Join(s.storage.GetFilePrefix(), timestampFile)
+	_, err := s.storage.SaveFile(ctx, fn, r)
 	return err
 }

@@ -71,7 +71,12 @@ type Header struct {
 	Value string
 }
 
+type StorageConfig struct {
+	FilePrefix string `toml:"-"`
+}
+
 type S3Config struct {
+	StorageConfig
 	Bucket  string
 	Region  string
 	Timeout Duration
@@ -94,6 +99,7 @@ type RedshiftConfig struct {
 }
 
 type GCSConfig struct {
+	StorageConfig
 	Bucket string
 	// Deprecated: Use `StorageOnly` option at the main level
 	GCSOnly bool
@@ -112,6 +118,7 @@ type Duration struct {
 }
 
 type LocalConfig struct {
+	StorageConfig
 	SaveDir string
 	// Deprecated: Use `StartTime` in the base config instead
 	StartTime time.Time
@@ -212,6 +219,7 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		log.Println(`WARNING: The "local" provider only supports "StorageOnly = true".
           This value will be ignored in your configuration file.`)
 		conf.StorageOnly = true
+		conf.Local.FilePrefix = conf.FilePrefix
 	case AWSProvider:
 		conf.StorageOnly = conf.StorageOnly || conf.S3.S3Only
 
@@ -220,9 +228,11 @@ func Validate(conf *Config, getNow func() time.Time) error {
 			conf.Redshift.S3Region = conf.S3.Region
 		}
 		conf.S3.S3Only = false
+		conf.S3.FilePrefix = conf.FilePrefix
 	case GCProvider:
 		conf.StorageOnly = conf.StorageOnly || conf.GCS.GCSOnly
 		conf.GCS.GCSOnly = false
+		conf.GCS.FilePrefix = conf.FilePrefix
 	}
 	return nil
 }
