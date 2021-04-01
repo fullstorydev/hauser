@@ -41,8 +41,14 @@ func MakeDatabase(_ context.Context, conf *config.Config) warehouse.Database {
 	case config.LocalProvider:
 		log.Fatalf("cannot initialize database for local provider")
 	case config.AWSProvider:
+		if conf.Snowflake.ExportTable != "" {
+			return warehouse.NewSnowflake(&conf.Snowflake)
+		}
 		return warehouse.NewRedshift(&conf.Redshift)
 	case config.GCProvider:
+		if conf.Snowflake.ExportTable != "" {
+			return warehouse.NewSnowflake(&conf.Snowflake)
+		}
 		return warehouse.NewBigQuery(&conf.BigQuery)
 	default:
 		log.Fatalf("unknown provider type: %s", conf.Provider)

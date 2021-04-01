@@ -40,7 +40,7 @@ func (s *S3Storage) SaveFile(ctx context.Context, name string, reader io.Reader)
 	ctx, cancelFn := context.WithTimeout(ctx, s.conf.Timeout.Duration)
 	defer cancelFn()
 
-	bucket, key := s.getBucketAndKey(name)
+	bucket, key := getBucketAndKey(s.conf.Bucket, name)
 	uploader := s3manager.NewUploader(s.newSession())
 	_, err := uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(bucket),
@@ -54,7 +54,7 @@ func (s *S3Storage) ReadFile(ctx context.Context, name string) (io.Reader, error
 	ctx, cancelFn := context.WithTimeout(ctx, s.conf.Timeout.Duration)
 	defer cancelFn()
 
-	bucket, key := s.getBucketAndKey(name)
+	bucket, key := getBucketAndKey(s.conf.Bucket, name)
 	client := s3.New(s.newSession())
 	out, err := client.GetObjectWithContext(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
@@ -73,7 +73,7 @@ func (s *S3Storage) DeleteFile(ctx context.Context, name string) error {
 	ctx, cancelFn := context.WithTimeout(ctx, s.conf.Timeout.Duration)
 	defer cancelFn()
 
-	bucket, key := s.getBucketAndKey(name)
+	bucket, key := getBucketAndKey(s.conf.Bucket, name)
 	client := s3.New(s.newSession())
 	_, err := client.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
@@ -87,7 +87,7 @@ func (s *S3Storage) DeleteFile(ctx context.Context, name string) error {
 }
 
 func (s *S3Storage) GetFileReference(name string) string {
-	bucket, key := s.getBucketAndKey(name)
+	bucket, key := getBucketAndKey(s.conf.Bucket, name)
 	return fmt.Sprintf("s3://%s/%s", bucket, key)
 }
 
@@ -99,8 +99,8 @@ func (s *S3Storage) newSession() *session.Session {
 	return session.Must(session.NewSession(aws.NewConfig().WithRegion(s.conf.Region)))
 }
 
-func (s *S3Storage) getBucketAndKey(objName string) (string, string) {
-	bucketParts := strings.Split(s.conf.Bucket, "/")
+func getBucketAndKey(bucket string, objName string) (string, string) {
+	bucketParts := strings.Split(bucket, "/")
 	bucketName := bucketParts[0]
 	keyPath := strings.Trim(strings.Join(bucketParts[1:], "/"), "/")
 	key := strings.Trim(fmt.Sprintf("%s/%s", keyPath, objName), "/")

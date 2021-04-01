@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -62,6 +63,9 @@ type Config struct {
 	GCS      GCSConfig
 	BigQuery BigQueryConfig
 
+	// Snowflake can be used with either aws or gcp
+	Snowflake SnowflakeConfig
+
 	// local filesystem: Local
 	Local LocalConfig
 }
@@ -84,6 +88,18 @@ type S3Config struct {
 	S3Only bool
 }
 
+type SQLConfig struct {
+	Host           string
+	Port           string
+	DB             string
+	User           string
+	Password       string
+	ExportTable    string
+	SyncTable      string
+	DatabaseSchema string
+	Credentials    string
+}
+
 type RedshiftConfig struct {
 	Host           string
 	Port           string
@@ -96,6 +112,24 @@ type RedshiftConfig struct {
 	Credentials    string
 	VarCharMax     int
 	S3Region       string `toml:"-"`
+}
+
+type SnowflakeConfig struct {
+	// Connection Parameters
+	// See https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Connection_String
+	User      string
+	Password  string
+	Account   string
+	Database  string
+	Schema    string
+	Warehouse string
+	Role      string
+
+	// Loading Parameters
+	FileFormatName string
+	StageName      string
+	ExportTable    string
+	SyncTable      string
 }
 
 type GCSConfig struct {
@@ -225,10 +259,25 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		}
 		conf.S3.S3Only = false
 		conf.S3.FilePrefix = conf.FilePrefix
+
+		if !conf.StorageOnly && conf.Redshift.ExportTable != "" && conf.Snowflake.ExportTable != "" {
+			return fmt.Errorf("cannot provide configuration for both Redshift and Snowflake")
+		}
 	case GCProvider:
 		conf.StorageOnly = conf.StorageOnly || conf.GCS.GCSOnly
 		conf.GCS.GCSOnly = false
 		conf.GCS.FilePrefix = conf.FilePrefix
+
+		if !conf.StorageOnly && conf.BigQuery.ExportTable != "" && conf.Snowflake.ExportTable != "" {
+			return fmt.Errorf("cannot provide configuration for both BigQuery and Snowflake")
+		}
+	}
+
+	// Snowflake default to uppercase for table names. Normalize here.
+	if conf.Snowflake.ExportTable != "" {
+		conf.Snowflake.ExportTable = strings.ToUpper(conf.Snowflake.ExportTable)
+		conf.Snowflake.SyncTable = strings.ToUpper(conf.Snowflake.SyncTable)
+		conf.Snowflake.Schema = strings.ToUpper(conf.Snowflake.Schema)
 	}
 
 	if conf.SaveAsJson && !(conf.Provider == "local" || conf.StorageOnly) {
