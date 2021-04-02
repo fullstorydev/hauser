@@ -59,6 +59,10 @@ func (g *GCSStorage) GetFileReference(name string) string {
 	return fmt.Sprintf("gs://%s/%s", g.config.Bucket, name)
 }
 
+func (g *GCSStorage) GetFilePrefix() string {
+	return g.config.FilePrefix
+}
+
 func (g *GCSStorage) bucket() *storage.BucketHandle {
 	return g.gcsClient.Bucket(g.config.Bucket)
 }

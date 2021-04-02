@@ -76,3 +76,7 @@ func (w *LocalDisk) ReadFile(_ context.Context, name string) (io.Reader, error) 
 func (w *LocalDisk) GetFileReference(name string) string {
 	return filepath.Join(w.conf.SaveDir, name)
 }
+
+func (w *LocalDisk) GetFilePrefix() string {
+	return w.conf.FilePrefix
+}

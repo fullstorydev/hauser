@@ -15,6 +15,7 @@ type MockStorage struct {
 	Syncs         []time.Time
 	UploadedFiles map[string][]byte
 	DeletedFiles  []string
+	FilePrefix    string
 }
 
 var _ warehouse.Storage = (*MockStorage)(nil)
@@ -24,6 +25,7 @@ func NewMockStorage() *MockStorage {
 		Syncs:         nil,
 		UploadedFiles: make(map[string][]byte),
 		DeletedFiles:  nil,
+		FilePrefix:    "prefix/",
 	}
 }
 
@@ -66,4 +68,8 @@ func (m *MockStorage) DeleteFile(_ context.Context, path string) error {
 
 func (m *MockStorage) GetFileReference(name string) string {
 	return fmt.Sprintf("mock://%s", name)
+}
+
+func (m *MockStorage) GetFilePrefix() string {
+	return m.FilePrefix
 }
