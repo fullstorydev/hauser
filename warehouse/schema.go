@@ -48,6 +48,9 @@ type BaseExportFields struct {
 	LoadDomContentTime  int64
 	LoadEventTime       int64
 	LoadFirstPaintTime  int64
+	ReqUrl              string
+	ReqMethod           string
+	ReqStatus           int64
 	CustomVars          string
 }
 
