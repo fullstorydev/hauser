@@ -7,58 +7,69 @@ import (
 )
 
 type BaseExportFields struct {
-	IndvId              int64
-	UserId              int64
-	SessionId           int64
-	PageId              int64
-	UserCreated         time.Time
-	UserAppKey          string
-	UserDisplayName     string
-	UserEmail           string
-	EventStart          time.Time
-	EventType           string
-	EventCustomName     string
-	EventTargetText     string
-	EventTargetSelector string
-	EventModFrustrated  int64
-	EventModDead        int64
-	EventModError       int64
-	EventModSuspicious  int64
-	SessionStart        time.Time
-	PageStart           time.Time
-	PageDuration        int64
-	PageActiveDuration  int64
-	PageUrl             string
-	PageRefererUrl      string
-	PageIp              string
-	PageLatLong         string
-	PageUserAgent       string
-	PageBrowser         string
-	PageDevice          string
-	PagePlatform        string
-	PageOperatingSystem string
-	PageScreenWidth     int64
-	PageScreenHeight    int64
-	PageViewportWidth   int64
-	PageViewportHeight  int64
-	PageNumInfos        int64
-	PageNumWarnings     int64
-	PageNumErrors       int64
-	PageClusterId       int64
-	LoadDomContentTime  int64
-	LoadEventTime       int64
-	LoadFirstPaintTime  int64
-	ReqUrl              string
-	ReqMethod           string
-	ReqStatus           int64
-	CustomVars          string
+	IndvId                    int64
+	UserId                    int64
+	SessionId                 int64
+	PageId                    int64
+	UserCreated               time.Time
+	UserAppKey                string
+	UserDisplayName           string
+	UserEmail                 string
+	EventStart                time.Time
+	EventType                 string
+	EventSubType              string
+	EventCustomName           string
+	EventTargetText           string
+	EventTargetSelector       string
+	EventPageOffset           int64
+	EventSessionOffset        int64
+	EventModFrustrated        int64
+	EventModDead              int64
+	EventModError             int64
+	EventModSuspicious        int64
+	EventWebSourceFileUrl     string
+	SessionStart              time.Time
+	PageStart                 time.Time
+	PageDuration              int64
+	PageActiveDuration        int64
+	PageUrl                   string
+	PageRefererUrl            string
+	PageIp                    string
+	PageLatLong               string
+	PageUserAgent             string
+	PageBrowser               string
+	PageDevice                string
+	PagePlatform              string
+	PageOperatingSystem       string
+	PageScreenWidth           int64
+	PageScreenHeight          int64
+	PageViewportWidth         int64
+	PageViewportHeight        int64
+	PageNumInfos              int64
+	PageNumWarnings           int64
+	PageNumErrors             int64
+	PageClusterId             int64
+	PageMaxScrollDepthPercent int64
+	LoadDomContentTime        int64
+	LoadEventTime             int64
+	LoadFirstPaintTime        int64
+	ReqUrl                    string
+	ReqMethod                 string
+	ReqStatus                 int64
+	CustomVars                string
 }
 
 // Mobile Apps fields will not be available for accounts that do not have
 // the feature.
 type MobileFields struct {
-	AppName        string
-	AppPackageName string
+	AppName               string
+	AppPackageName        string
+	AppDeviceModel        string
+	AppDeviceVendor       string
+	AppVersion            string
+	AppOsVersion          string
+	AppViewName           string
+	EventMobileSourceFile string
 }
 
 var wildcardFields = []string{
