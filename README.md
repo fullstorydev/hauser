@@ -1,6 +1,7 @@
 # hauser
 
 [![CircleCI](https://circleci.com/gh/fullstorydev/hauser.svg?style=svg)](https://circleci.com/gh/fullstorydev/hauser)
+[![Go Report Card](https://goreportcard.com/badge/github.com/fullstorydev/hauser)](https://goreportcard.com/report/github.com/fullstorydev/hauser)
 
 `hauser` is a service to download FullStory Data Export files and load them into storage.
 Currently, Data Export files can be saved to local disk, S3, Redshift, GCS, and BigQuery.
