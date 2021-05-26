@@ -2,7 +2,7 @@ dev_build_version=$(shell git describe --tags --always --dirty)
 # to_check is all code in this repo that we want to run checks on
 # (it is all Go code in here, but intentionally excludes the
 # vendor folder contents)
-dirs_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type d | grep -vE '\./\.|vendor|dist|recipes')
+dirs_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type d | grep -vE '\./\.|vendor|dist|recipes|releasing')
 files_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type f -name '*.go')
 all_to_check=$(files_to_check) $(dirs_to_check)
 
@@ -33,6 +33,12 @@ install:
 release:
 	$(INSTALLTOOL) github.com/goreleaser/goreleaser
 	goreleaser --rm-dist
+
+.PHONY: docker
+docker:
+	@echo $(dev_build_version) > VERSION
+	docker build -t fullstorydev/hauser:$(dev_build_version) .
+	@rm VERSION
 
 .PHONY: checkgofmt
 checkgofmt:
