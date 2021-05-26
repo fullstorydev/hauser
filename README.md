@@ -117,7 +117,9 @@ WHERE JSON_EXTRACT_PATH_TEXT(CustomVars, 'acct_adminDisabled_bool') = 'false';
 ```
 
 ## Dockerizing Hauser
-To include Hauser in a Docker container, add the following to your Dockerfile.
+A minimal docker image can be found on docker hub at https://hub.docker.com/r/fullstorydev/hauser
+
+Alternatively, to include the prebuilt Hauser binary in a Docker container, add the following to your Dockerfile.
 Note that the example below assumes the base image is linux.
 
 ```Dockerfile
