@@ -1,8 +1,9 @@
 FROM golang:1.13-alpine as builder
 MAINTAINER FullStory Engineering
 
-# create non-priveleged group and user
-RUN addgroup -S hauser && adduser -S hauser -G hauser
+# create non-priveleged group and user and an owned directory
+RUN addgroup -S hauser && adduser -S hauser -G hauser && \
+ mkdir /hauser && chown -R hauser:hauser /hauser
 
 WORKDIR /tmp/fullstorydev/hauser
 COPY VERSION *.go go.* /tmp/fullstorydev/hauser/
@@ -16,16 +17,17 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
 ENV GO111MODULE=on
-RUN go build -o /hauser \
+RUN go build -o /bin/hauser \
     -ldflags "-w -extldflags \"-static\" -X \"main.version=$(cat VERSION)\"" \
     .
 
-FROM alpine:3.13.5
-WORKDIR /hauser
-RUN addgroup -S hauser && adduser -S hauser -G hauser && chown -R hauser:hauser /hauser
+FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /hauser /bin/hauser
+COPY --from=builder /etc/group /etc/group
+COPY --from=builder /bin/hauser /bin/hauser
+COPY --from=builder --chown=hauser /hauser /hauser
+WORKDIR /hauser
 USER hauser
 
 ENTRYPOINT ["/bin/hauser"]
