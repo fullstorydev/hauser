@@ -20,8 +20,9 @@ RUN go build -o /hauser \
     -ldflags "-w -extldflags \"-static\" -X \"main.version=$(cat VERSION)\"" \
     .
 
-FROM scratch
-WORKDIR /
+FROM alpine:3.13.5
+WORKDIR /hauser
+RUN addgroup -S hauser && adduser -S hauser -G hauser && chown -R hauser:hauser /hauser
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /hauser /bin/hauser
