@@ -71,6 +71,11 @@ func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (
 	if err != nil {
 		return "", err
 	}
+
+	if c.createRequestModifier != nil {
+		c.createRequestModifier(req)
+	}
+
 	resBody, err := c.doReq(req)
 	if err != nil {
 		// Status 429, 499, 500 -- retry
