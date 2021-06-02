@@ -45,16 +45,35 @@ type DataExportClient interface {
 
 // Client represents a HTTP client for making requests to the FullStory API.
 type Client struct {
-	HTTPClient *http.Client
-	Config     *config.Config
+	HTTPClient            *http.Client
+	Config                *config.Config
+	createRequestModifier func(r *http.Request)
+}
+
+type Option func(*Client)
+
+// WithCreateExportRequestModifier allows for a modification to the CreateExport API request.
+// This can be used to modify the request body to customize any of the request parameters.
+func WithCreateExportRequestModifier(rm func(r *http.Request)) Option {
+	return func(c *Client) {
+		c.createRequestModifier = rm
+	}
+}
+
+// WithHttpClient replaces the default API key-based http client. This option can be used,
+// for example, to customize the underlying transport.
+func WithHttpClient(httpClient *http.Client) Option {
+	return func(c *Client) {
+		c.HTTPClient = httpClient
+	}
 }
 
 var _ DataExportClient = (*Client)(nil)
 
 // NewClient returns a Client initialized with http.DefaultClient and the
 // supplied apiToken.
-func NewClient(config *config.Config) *Client {
-	return &Client{
+func NewClient(config *config.Config, opts ...Option) *Client {
+	c := &Client{
 		HTTPClient: &http.Client{
 			Transport: &APIKeyRoundTripper{
 				Key:               config.FsApiToken,
@@ -63,6 +82,10 @@ func NewClient(config *config.Config) *Client {
 		},
 		Config: config,
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // doReq performs the supplied HTTP request and returns the data in the response.
