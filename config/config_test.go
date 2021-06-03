@@ -140,7 +140,8 @@ func TestValidate(t *testing.T) {
 		{
 			name: "gcp backwards compat, storage only",
 			conf: &Config{
-				Warehouse: "bigquery",
+				Warehouse:  "bigquery",
+				SaveAsJson: true,
 				GCS: GCSConfig{
 					Bucket:  "bucket",
 					GCSOnly: true,
@@ -149,6 +150,7 @@ func TestValidate(t *testing.T) {
 			expected: &Config{
 				Provider:       "gcp",
 				StorageOnly:    true,
+				SaveAsJson:     true,
 				ApiURL:         DefaultApiURL,
 				ExportDuration: Duration{time.Hour},
 				ExportDelay:    Duration{24 * time.Hour},

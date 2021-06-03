@@ -209,10 +209,6 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		conf.Warehouse = ""
 	}
 
-	if conf.SaveAsJson && conf.Provider != "local" {
-		return fmt.Errorf("hauser doesn't currently support loading JSON into a database. Ensure SaveAsJson = false in .toml file")
-	}
-
 	switch conf.Provider {
 	case LocalProvider:
 		// The local provider only supports storage
@@ -233,6 +229,10 @@ func Validate(conf *Config, getNow func() time.Time) error {
 		conf.StorageOnly = conf.StorageOnly || conf.GCS.GCSOnly
 		conf.GCS.GCSOnly = false
 		conf.GCS.FilePrefix = conf.FilePrefix
+	}
+
+	if conf.SaveAsJson && !(conf.Provider == "local" || conf.StorageOnly) {
+		return fmt.Errorf("hauser doesn't currently support loading JSON into a database. Ensure SaveAsJson = false in .toml file")
 	}
 	return nil
 }
