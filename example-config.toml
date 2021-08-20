@@ -4,7 +4,7 @@ BackoffStepsMax = 8
 
 # TmpDir is a directory where the exported files are downloaded to before they are uploaded
 # to the warehouse destination. The hauser process will remove these files when it has finished
-# processing it.
+# processing them.
 TmpDir = "tmp"
 
 # ExportDuration determines the time range for each export bundle. The max value is 24 hours.
