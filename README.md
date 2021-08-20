@@ -116,12 +116,33 @@ FROM myexport
 WHERE JSON_EXTRACT_PATH_TEXT(CustomVars, 'acct_adminDisabled_bool') = 'false';
 ```
 
-## Dockerizing Hauser
-A minimal docker image can be found on docker hub at https://hub.docker.com/r/fullstorydev/hauser
+## Using hauser with Docker
+For platforms that support Docker, you can download an image from [docker hub](https://hub.docker.com/r/fullstorydev/hauser) that lets you run `hauser`:
 
-Alternatively, to include the prebuilt Hauser binary in a Docker container, add the following to your Dockerfile.
-Note that the example below assumes the base image is linux.
+```shell
+# Download image
+docker pull fullstorydev/hauser:latest
 
+# Assumes that your config.toml is in the current directory
+docker run --rm \
+  -v $(pwd)/config.toml:/config.toml \
+  fullstorydev/hauser:latest -c /config.toml
+```
+
+To include Hauser in a custom Docker container, add the following to your Dockerfile.
+Note that the example below assumes the desired image is linux.
+
+```Dockerfile
+FROM fullstorydev/hauser:latest as builder
+
+# Custom docker config ...
+FROM alpine:latest
+COPY --from=builder /bin/hauser /usr/bin/hauser
+
+# Entry point ...
+```
+
+Or you can download the release directly:
 ```Dockerfile
 RUN curl -L >hauser.tar.gz https://github.com/fullstorydev/hauser/releases/download/v${HAUSER_VERSION}/hauser_${HAUSER_VERSION}_linux_x86_64.tar.gz \
   && tar -xzvf hauser.tar.gz -C /usr/bin \

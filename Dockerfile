@@ -1,7 +1,7 @@
 FROM golang:1.13-alpine as builder
 MAINTAINER FullStory Engineering
 
-# create non-priveleged group and user and an owned directory
+# create non-privileged group and user and an owned directory
 RUN addgroup -S hauser && adduser -S hauser -G hauser && \
  mkdir /hauser && chown -R hauser:hauser /hauser
 
