@@ -22,9 +22,7 @@ ExportDuration = "6h"
 ExportDelay = "24h"
 
 # StartTime determines how far back to start exporting data if starting fresh.
-# This should be an timestamp like with the followin format: 2018-12-27T18:30:00Z.
-# If start time is empty, this will default to 30 days in the past.
-StartTime = ""
+StartTime = <Start time for data exports in the following format: 2018-12-27T18:30:00Z>
 
 # Valid provider values:
 #  * local: Used for downloading files to the local machine.
