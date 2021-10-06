@@ -23,6 +23,7 @@ SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://g
 1. Download the latest [release binary](https://github.com/fullstorydev/hauser/releases)
 2. Download the included `example-config.toml` file and customize it for your environment,
    including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
+   Your FullStory API key needs to have either the "Architect", or "Admin" permission level to create exports.
 3. Assuming the binary and updated config are in the current directory, run:
 ```bash
 ./hauser -c myconfig.toml
