@@ -38,6 +38,7 @@ type BaseExportFields struct {
 	PageLatLong               string
 	PageUserAgent             string
 	PageBrowser               string
+	PageBrowserVersion        string
 	PageDevice                string
 	PagePlatform              string
 	PageOperatingSystem       string
