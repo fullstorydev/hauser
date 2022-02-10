@@ -29,7 +29,7 @@ cd "$(dirname "$0")/.."
 $PREFIX git tag "$VERSION"
 # make sure GITHUB_TOKEN is exported, for the benefit of this next command
 export GITHUB_TOKEN
-#GO111MODULE=on $PREFIX make release
+$PREFIX make release
 # if that was successful, it could have touched go.mod and go.sum, so revert those
 $PREFIX git checkout go.mod go.sum
 
