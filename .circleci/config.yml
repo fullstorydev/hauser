@@ -5,7 +5,7 @@ version: 2
 jobs:
   build_and_test:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/fullstorydev/hauser
     steps:
       - checkout

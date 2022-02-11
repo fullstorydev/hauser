@@ -1,11 +1,4 @@
 dev_build_version=$(shell git describe --tags --always --dirty)
-# to_check is all code in this repo that we want to run checks on
-# (it is all Go code in here, but intentionally excludes the
-# vendor folder contents)
-dirs_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type d | grep -vE '\./\.|vendor|dist|recipes|releasing')
-files_to_check=$(shell find . -maxdepth 1 -mindepth 1 -type f -name '*.go')
-all_to_check=$(files_to_check) $(dirs_to_check)
-
 
 # TODO: run golint and errcheck, but only to catch *new* violations and
 # decide whether to change code or not (e.g. we need to be able to whitelist
@@ -14,8 +7,6 @@ all_to_check=$(files_to_check) $(dirs_to_check)
 # to fix some of the things they consider to be violations.
 .PHONY: ci
 ci: deps checkgofmt vet staticcheck ineffassign predeclared test
-
-INSTALLTOOL = GO111MODULE=on go install
 
 .PHONY: deps
 deps:
@@ -31,7 +22,7 @@ install:
 
 .PHONY: release
 release:
-	$(INSTALLTOOL) github.com/goreleaser/goreleaser
+	@go install github.com/goreleaser/goreleaser@v1.4.1
 	goreleaser --rm-dist
 
 .PHONY: docker
@@ -42,8 +33,8 @@ docker:
 
 .PHONY: checkgofmt
 checkgofmt:
-	gofmt -s -l $(all_to_check)
-	@if [ -n "$$(gofmt -s -l $(all_to_check))" ]; then \
+	gofmt -s -l .
+	@if [ -n "$$(gofmt -s -l .)" ]; then \
 		exit 1; \
 	fi
 
@@ -53,31 +44,31 @@ vet:
 
 .PHONY: staticcheck
 staticcheck:
-	$(INSTALLTOOL) honnef.co/go/tools/cmd/staticcheck
+	@go install honnef.co/go/tools/cmd/staticcheck@v0.2.1
 	staticcheck ./...
 
 .PHONY: ineffassign
 ineffassign:
-	$(INSTALLTOOL) github.com/gordonklaus/ineffassign
-	ineffassign $(all_to_check)
+	@go install github.com/gordonklaus/ineffassign@7953dde2c7bf
+	ineffassign .
 
 .PHONY: predeclared
 predeclared:
-	$(INSTALLTOOL) github.com/nishanths/predeclared
-	predeclared . $(dirs_to_check)
+	@go install github.com/nishanths/predeclared@86fad755b4d3
+	predeclared .
 
 # Intentionally omitted from CI, but target here for ad-hoc reports.
 .PHONY: golint
 golint:
-	$(INSTALLTOOL) golang.org/x/lint/golint
-	golint -min_confidence 0.9 -set_exit_status . $(dirs_to_check)
+	@go install golang.org/x/lint/golint@latest
+	golint -min_confidence 0.9 -set_exit_status ./...
 
 # Intentionally omitted from CI, but target here for ad-hoc reports.
 .PHONY: errcheck
 errcheck:
-	$(INSTALLTOOL) github.com/kisielk/errcheck
+	@go install github.com/kisielk/errcheck@latest
 	errcheck ./...
 
 .PHONY: test
 test:
-	go test -race . $(dirs_to_check)
+	go test -race ./...
