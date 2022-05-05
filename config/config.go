@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -143,6 +144,10 @@ func Load(filename string) (*Config, error) {
 
 	if _, err := toml.Decode(string(tomlData), &conf); err != nil {
 		return nil, err
+	}
+
+	if envToken := os.Getenv("FULLSTORY_API_TOKEN"); envToken != "" {
+		conf.FsApiToken = envToken
 	}
 
 	if err := Validate(&conf, time.Now); err != nil {
