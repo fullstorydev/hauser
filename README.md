@@ -30,6 +30,9 @@ SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://g
 
 ### Important Configuration Fields
 
+#### `FsApiToken`
+Your FullStory API Token. It can also be set through the `FULLSTORY_API_TOKEN` environment variable.
+
 #### `ExportDuration`
 Determines the time range for each export which ultimately determines the size of each exported file.
 The size of this file will be based on the amount of traffic that your FullStory account records within the
