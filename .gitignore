@@ -2,3 +2,5 @@ dist/
 hauser
 *.toml
 .idea
+!deploy/hauser
+!deploy/*.toml

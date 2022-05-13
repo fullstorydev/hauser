@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fullstory
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hauser
+  namespace: fullstory
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hauser
+  namespace: fullstory
+spec:
+  selector:
+    matchLabels:
+      app: hauser
+  template:
+    metadata:
+      labels:
+        app: hauser
+    spec:
+      serviceAccountName: hauser
+      containers:
+        - name: hauser
+          image: fullstorydev/hauser:latest
+          args:
+            - "-c=/config.toml"
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: fullstory-api-token
+                optional: true
+          volumeMounts:
+            - mountPath: /config.toml
+              subPath: config.toml
+              name: fullstory-config-volume
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 250m
+              memory: 250Mi
+      volumes:
+        - name: fullstory-config-volume
+          configMap:
+            name: fullstory-config
+            optional: true

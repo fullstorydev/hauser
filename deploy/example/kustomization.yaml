@@ -1,0 +1,16 @@
+namespace: fullstory
+
+resources:
+  - ../base
+
+configMapGenerator:
+  # configmap name needs to be exactly as bellow
+  - name: fullstory-config
+    files:
+      - config.toml=example-config.toml
+
+secretGenerator:
+  # secret name needs to be exactly as bellow
+  - name: fullstory-api-token
+    envs:
+      - .env
