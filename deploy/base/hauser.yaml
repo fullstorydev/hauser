@@ -30,7 +30,7 @@ spec:
       serviceAccountName: hauser
       containers:
         - name: hauser
-          image: fullstorydev/hauser:latest
+          image: hauser:latest
           args:
             - "-c=/config.toml"
           imagePullPolicy: Always

@@ -3,6 +3,11 @@ namespace: fullstory
 resources:
   - ../base
 
+images:
+  - name: hauser
+    newName: fullstory/hauser
+    newTag: 1.3.0
+
 configMapGenerator:
   # configmap name needs to be exactly as bellow
   - name: fullstory-config
