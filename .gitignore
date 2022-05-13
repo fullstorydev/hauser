@@ -3,4 +3,4 @@ hauser
 *.toml
 .idea
 !deploy/hauser
-!deploy/*.toml
+!deploy/**/*.toml
