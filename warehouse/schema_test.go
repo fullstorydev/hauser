@@ -46,9 +46,10 @@ var legacyColumns = []string{
 }
 
 var (
-	stringType = reflect.TypeOf("")
-	int64Type  = reflect.TypeOf(int64(0))
-	timeType   = reflect.TypeOf(time.Time{})
+	stringType  = reflect.TypeOf("")
+	int64Type   = reflect.TypeOf(int64(0))
+	float64Type = reflect.TypeOf(float64(0))
+	timeType    = reflect.TypeOf(time.Time{})
 )
 
 func TestSchema_ReconcileWithExisting(t *testing.T) {
@@ -103,6 +104,8 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"EventPageOffset", "EventPageOffset", int64Type},
 				{"EventSessionOffset", "EventSessionOffset", int64Type},
 				{"EventWebSourceFileUrl", "EventWebSourceFileUrl", stringType},
+				{"EventFirstInputDelay", "EventFirstInputDelay", int64Type},
+				{"EventCumulativeLayoutShift", "EventCumulativeLayoutShift", float64Type},
 				{"SessionStart", "SessionStart", timeType},
 				{"PageStart", "PageStart", timeType},
 				{"PageBrowserVersion", "PageBrowserVersion", stringType},
@@ -112,6 +115,7 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"PageViewportWidth", "PageViewportWidth", int64Type},
 				{"PageViewportHeight", "PageViewportHeight", int64Type},
 				{"PageMaxScrollDepthPercent", "PageMaxScrollDepthPercent", int64Type},
+				{"LoadLargestPaintTime", "LoadLargestPaintTime", int64Type},
 				{"ReqUrl", "ReqUrl", stringType},
 				{"ReqMethod", "ReqMethod", stringType},
 				{"ReqStatus", "ReqStatus", int64Type},
@@ -143,6 +147,8 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"EventModError", "EventModError", int64Type},
 				{"EventModSuspicious", "EventModSuspicious", int64Type},
 				{"EventWebSourceFileUrl", "EventWebSourceFileUrl", stringType},
+				{"EventFirstInputDelay", "EventFirstInputDelay", int64Type},
+				{"EventCumulativeLayoutShift", "EventCumulativeLayoutShift", float64Type},
 				{"SessionStart", "SessionStart", timeType},
 				{"PageStart", "PageStart", timeType},
 				{"PageDuration", "PageDuration", int64Type},
@@ -169,6 +175,7 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"LoadDomContentTime", "LoadDomContentTime", int64Type},
 				{"LoadEventTime", "LoadEventTime", int64Type},
 				{"LoadFirstPaintTime", "LoadFirstPaintTime", int64Type},
+				{"LoadLargestPaintTime", "LoadLargestPaintTime", int64Type},
 				{"ReqUrl", "ReqUrl", stringType},
 				{"ReqMethod", "ReqMethod", stringType},
 				{"ReqStatus", "ReqStatus", int64Type},
@@ -211,6 +218,8 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"EventModError", "EventModError", int64Type},
 				{"EventModSuspicious", "EventModSuspicious", int64Type},
 				{"EventWebSourceFileUrl", "EventWebSourceFileUrl", stringType},
+				{"EventFirstInputDelay", "EventFirstInputDelay", int64Type},
+				{"EventCumulativeLayoutShift", "EventCumulativeLayoutShift", float64Type},
 				{"SessionStart", "SessionStart", timeType},
 				{"PageStart", "PageStart", timeType},
 				{"PageDuration", "PageDuration", int64Type},
@@ -237,6 +246,7 @@ func TestSchema_ReconcileWithExisting(t *testing.T) {
 				{"LoadDomContentTime", "LoadDomContentTime", int64Type},
 				{"LoadEventTime", "LoadEventTime", int64Type},
 				{"LoadFirstPaintTime", "LoadFirstPaintTime", int64Type},
+				{"LoadLargestPaintTime", "LoadLargestPaintTime", int64Type},
 				{"ReqUrl", "ReqUrl", stringType},
 				{"ReqMethod", "ReqMethod", stringType},
 				{"ReqStatus", "ReqStatus", int64Type},
