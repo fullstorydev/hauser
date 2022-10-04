@@ -184,7 +184,9 @@ func TestHauser(t *testing.T) {
 				} else {
 					expected, err := ioutil.ReadFile(fname)
 					Ok(t, err, "failed to read expected output file")
-					testutils.Assert(t, bytes.Equal(expected, data), "uploaded file doesn't match expected")
+					if !bytes.Equal(expected, data) {
+						t.Fatalf("uploaded file doesn't match expected\nwant: %s\ngot:%s", string(expected), string(data))
+					}
 				}
 			}
 		})
