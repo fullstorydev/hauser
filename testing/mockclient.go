@@ -44,7 +44,7 @@ func NewMockDataExportClient(datafile string) *MockDataExportClient {
 			panic(fmt.Sprintf("failed to read json: %s", err))
 		}
 
-		sort.Slice(data, func(i int, j int) bool {
+		sort.SliceStable(data, func(i int, j int) bool {
 			return mustParseEventStartTime(data[i]).Before(mustParseEventStartTime(data[j]))
 		})
 	}
