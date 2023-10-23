@@ -14,6 +14,7 @@ import (
 const (
 	// DefaultApiURL is the standard base URL for the fullstory.com API.
 	DefaultApiURL         = "https://api.fullstory.com"
+	DefaultSegmentId      = "everyone"
 	DefaultExportDelay    = 24 * time.Hour
 	DefaultExportDuration = 1 * time.Hour
 	MinExportDuration     = 15 * time.Minute
@@ -48,6 +49,9 @@ type Config struct {
 	SaveAsJson      bool
 	StorageOnly     bool
 	StartTime       time.Time
+
+	// The segment to export. Defaults to the "everyone" segment, which will export all data.
+	SegmentId string
 
 	IncludeMobileAppsFields bool
 
@@ -160,6 +164,10 @@ func Validate(conf *Config, getNow func() time.Time) error {
 	// Set any defaults.
 	if conf.ApiURL == "" {
 		conf.ApiURL = DefaultApiURL
+	}
+
+	if conf.SegmentId == "" {
+		conf.SegmentId = DefaultSegmentId
 	}
 
 	if conf.ExportDuration.Duration == 0 {
