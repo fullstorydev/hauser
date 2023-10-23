@@ -49,7 +49,7 @@ type getExportResultsResponse struct {
 
 func (c *Client) CreateExport(start time.Time, end time.Time, fields []string) (string, error) {
 	params := createParams{
-		SegmentId: "everyone",
+		SegmentId: c.Config.SegmentId,
 		Type:      exportType_Event,
 		Format:    exportFormat_Json,
 		// Specify a segment time range with empty values to indicate "All Time"
