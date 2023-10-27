@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: $SERVICE_NAME
+  labels:
+    app: hauser
+  annotations:
+    iam.gke.io/gcp-service-account: ${SERVICE_NAME}@${GOOGLE_PROJECT}.iam.gserviceaccount.com
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hauser
+  annotations:
+    kubernetes.io/service-account.name: "${SERVICE_NAME}"
+type: kubernetes.io/service-account-token
+stringData:
+  "config.toml": |
+    FsApiToken = "${FS_API_KEY}"
+    ApiURL = "https://api.fullstory.com"
+    Backoff = "30s"
+    BackoffStepsMax = 8
+    CheckInterval = "30m"
+    ExportDuration = "24h"
+    Provider = "gcp"
+    FilePrefix = "${ORG_ID}/"
+
+    [gcs]
+    Bucket = "${GCS_BUCKET}"
+
+    [bigquery]
+    Project = "${GOOGLE_PROJECT}"
+    Dataset = "${BIGQUERY_DATASET}"
+    ExportTable = "${ORG_ID}_export"
+    SyncTable = "${ORG_ID}_sync"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hauser
+  labels:
+    app: hauser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hauser
+  template:
+    metadata:
+      labels:
+        app: hauser
+    spec:
+      serviceAccountName: ${SERVICE_NAME}
+      containers:
+      - args:
+        - -c
+        - /secrets/hauser/config.toml
+        image: fullstorydev/hauser:${HAUSER_VERSION}
+        name: hauser
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100M
+        volumeMounts:
+        - mountPath: /secrets/hauser
+          name: hauser
+          readOnly: true
+      volumes:
+      - name: hauser
+        secret:
+          secretName: hauser
