@@ -2,8 +2,11 @@ FsApiToken = "<your FullStory API token>"
 Backoff = "30s"
 BackoffStepsMax = 8
 
-# SegmentId is the string identifier for the segment you want to use with Hauser. 
-SegmentId = "<your segment id>"
+# SegmentId (optional) is the string identifier for the segment you want to use with Hauser.
+# Defaults to the "Everyone" segment. If you wish to sync a different segment, uncomment the
+# line below and provide the ID you would like to use. See the list segment endpoint to get
+# a list of IDs: https://developer.fullstory.com/server/v1/segments/list-segments/
+# SegmentId = "alice@example.com:12444435241"
 
 # TmpDir is a directory where the exported files are downloaded to before they are uploaded
 # to the warehouse destination. The hauser process will remove these files when it has finished

@@ -66,6 +66,13 @@ At this point, `hauser` will perform the process approximately every `ExportDura
 When using a database, it uses the `SyncTable` to keep track of what export files have been processed, and will restart from the last known sync point.
 For a `StorageOnly` process, it will create a file called `.sync.hauser` that will be used as a checkpoint.
 
+### Syncing Specific Segments
+_Note: this field is optional and should only be set if syncing a specific segment._
+
+By default `hauser` will sync the "Everyone" segment. If you would rather sync a specific segment, you can specify a value by setting the `SegmentId` config option. You can use the [list segment endpoint](https://developer.fullstory.com/server/v1/segments/list-segments/) to get a list segment endpoint to get a list of IDs of segments in your org.
+
+Alternatively, the segment's URL in FullStory will contain the segment's ID. For example, a segment with the following URL `https://app.fullstory.com/ui/ABCD/segments/alice@example.com:12444435241/people/0` has a segment ID of `alice@example.com:12444435241`. You would then add `SegmentId = "alice@example.com:12444435241"` to your toml.
+
 ### Amazon Web Services Notes
 _Currently, only S3 and Redshift are supported for this provider._
 
@@ -155,7 +162,6 @@ RUN curl -L >hauser.tar.gz https://github.com/fullstorydev/hauser/releases/downl
 The `${HAUSER_VERSION}` can be provided at build time with the [docker ARG command](https://docs.docker.com/engine/reference/builder/#arg).
 You can find the latest version of Hauser on the [releases](https://github.com/fullstorydev/hauser/releases/latest) page.
 For a more complete example of using Hauser with docker, see [this recipe](./recipes/multi-hauser/README.md).
-
 
 ## Building from source
 * Make sure you have [installed](https://golang.org/doc/install) Go 1.11 or higher.
