@@ -2,6 +2,9 @@ FsApiToken = "<your FullStory API token>"
 Backoff = "30s"
 BackoffStepsMax = 8
 
+# SegmentId is the string identifier for the segment you want to use with Hauser. 
+SegmentId = "<your segment id>"
+
 # TmpDir is a directory where the exported files are downloaded to before they are uploaded
 # to the warehouse destination. The hauser process will remove these files when it has finished
 # processing them.
