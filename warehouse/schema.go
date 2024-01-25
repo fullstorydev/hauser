@@ -34,6 +34,7 @@ type BaseExportFields struct {
 	PageStart                  time.Time
 	PageDuration               int64
 	PageActiveDuration         int64
+	PageName                   string
 	PageUrl                    string
 	PageRefererUrl             string
 	PageIp                     string
