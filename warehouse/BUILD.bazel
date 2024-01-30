@@ -1,0 +1,48 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "warehouse",
+    srcs = [
+        "bigquery.go",
+        "gcs.go",
+        "localdisk.go",
+        "redshift.go",
+        "s3.go",
+        "schema.go",
+        "warehouse.go",
+    ],
+    importpath = "hauser/warehouse",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_aws_aws_sdk_go//aws",
+        "@com_github_aws_aws_sdk_go//aws/awserr",
+        "@com_github_aws_aws_sdk_go//aws/session",
+        "@com_github_aws_aws_sdk_go//service/s3",
+        "@com_github_aws_aws_sdk_go//service/s3/s3manager",
+        "@com_github_fullstorydev_hauser//config",
+        "@com_github_lib_pq//:pq",
+        "@com_google_cloud_go_bigquery//:bigquery",
+        "@com_google_cloud_go_storage//:storage",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":warehouse",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "warehouse_test",
+    srcs = [
+        "bigquery_test.go",
+        "redshift_test.go",
+        "schema_test.go",
+    ],
+    embed = [":warehouse"],
+    deps = [
+        "@com_github_fullstorydev_hauser//config",
+        "@com_github_fullstorydev_hauser//testing/testutils",
+        "@com_google_cloud_go_bigquery//:bigquery",
+    ],
+)
