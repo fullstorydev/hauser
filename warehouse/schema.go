@@ -27,10 +27,13 @@ type BaseExportFields struct {
 	EventModDead               int64
 	EventModError              int64
 	EventModSuspicious         int64
+	EventVarErrorKind          string
+	EventVarFields             string
 	EventWebSourceFileUrl      string
 	EventFirstInputDelay       int64
 	EventCumulativeLayoutShift float64
 	SessionStart               time.Time
+	PageName                   string
 	PageStart                  time.Time
 	PageDuration               int64
 	PageActiveDuration         int64
@@ -48,6 +51,8 @@ type BaseExportFields struct {
 	PageScreenHeight           int64
 	PageViewportWidth          int64
 	PageViewportHeight         int64
+	PageNumEvents              int32
+	PageNumDerivedEvents       int32
 	PageNumInfos               int64
 	PageNumWarnings            int64
 	PageNumErrors              int64
