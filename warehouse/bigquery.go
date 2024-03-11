@@ -17,6 +17,8 @@ var (
 		reflect.TypeOf(int64(0)):    bigquery.IntegerFieldType,
 		reflect.TypeOf(""):          bigquery.StringFieldType,
 		reflect.TypeOf(time.Time{}): bigquery.TimestampFieldType,
+		reflect.TypeOf(float64(0)):  bigquery.FloatFieldType,
+		reflect.TypeOf(int32(0)):    bigquery.IntegerFieldType,
 	}
 )
 
