@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/fullstorydev/hauser/config"
+	"github.com/fullstorydev/hauser/testing/testutils"
 )
 
 func makeConf(databaseSchema string) *config.RedshiftConfig {
@@ -12,6 +13,14 @@ func makeConf(databaseSchema string) *config.RedshiftConfig {
 		VarCharMax:     20,
 		ExportTable:    "exportTable",
 		SyncTable:      "syncTable",
+	}
+}
+
+func TestRedshiftSchema(t *testing.T) {
+	fs := MakeSchema(BaseExportFields{}, MobileFields{})
+	for _, field := range fs {
+		_, ok := redshiftSchemaMap[field.FieldType]
+		testutils.Assert(t, ok, "field type %v not found in redshiftSchemaMap", field.FieldType)
 	}
 }
 

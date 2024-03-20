@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/bigquery"
+	"github.com/fullstorydev/hauser/testing/testutils"
 )
 
 func TestGetMissingFields(t *testing.T) {
@@ -74,5 +75,13 @@ func TestGetMissingFields(t *testing.T) {
 		if got := wh.GetMissingFields(testCase.hauserSchema, testCase.tableSchema); len(got) != testCase.missingFields {
 			t.Errorf("Expected %d missing fields, got %d", testCase.missingFields, len(got))
 		}
+	}
+}
+
+func TestBigquerySchema(t *testing.T) {
+	fs := MakeSchema(BaseExportFields{}, MobileFields{})
+	for _, field := range fs {
+		_, ok := bigQueryTypeMap[field.FieldType]
+		testutils.Assert(t, ok, "field type %v not found in bigQueryTypeMap", field.FieldType)
 	}
 }

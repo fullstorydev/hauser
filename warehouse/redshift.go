@@ -25,6 +25,8 @@ var (
 		reflect.TypeOf(int64(0)):    "BIGINT",
 		reflect.TypeOf(""):          "VARCHAR(max)",
 		reflect.TypeOf(time.Time{}): "TIMESTAMP",
+		reflect.TypeOf(float64(0)):  "FLOAT",
+		reflect.TypeOf(int32(0)):    "INTEGER",
 	}
 )
 
