@@ -3,7 +3,7 @@
 [![CircleCI](https://circleci.com/gh/fullstorydev/hauser.svg?style=svg)](https://circleci.com/gh/fullstorydev/hauser)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fullstorydev/hauser)](https://goreportcard.com/report/github.com/fullstorydev/hauser)
 
-`hauser` is a service to download FullStory Data Export files and load them into storage.
+`hauser` is a service to download Fullstory Data Export files and load them into storage.
 Currently, Data Export files can be saved to local disk, S3, Redshift, GCS, and BigQuery.
 (Others are easy to add -- pull requests welcome.)
 
@@ -16,13 +16,13 @@ SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://g
 </p>
 
 <p align="center">
-  <img width="414" src="fullstory_logo_color.png" alt="fullstory logo"/>
+  <img width="414" src="doc/img/fs-logo-2024-clr.png" alt="fullstory logo"/>
 </p>
 
 ## Quick Start
 1. Download the latest [release binary](https://github.com/fullstorydev/hauser/releases)
 2. Download the included `example-config.toml` file and customize it for your environment,
-   including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
+   including your Fullstory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
 3. Assuming the binary and updated config are in the current directory, run:
 ```bash
 ./hauser -c myconfig.toml
@@ -31,11 +31,11 @@ SQL recipes for Data Export analysis are in the [Data Export Cookbook](https://g
 ### Important Configuration Fields
 
 #### `FsApiToken`
-Your FullStory API Token. It can also be set through the `FULLSTORY_API_TOKEN` environment variable.
+Your Fullstory API Token. It can also be set through the `FULLSTORY_API_TOKEN` environment variable.
 
 #### `ExportDuration`
 Determines the time range for each export which ultimately determines the size of each exported file.
-The size of this file will be based on the amount of traffic that your FullStory account records within the
+The size of this file will be based on the amount of traffic that your Fullstory account records within the
 specified duration.
 The default is 1 hour, but if a different file size is desirable, this can be modified to meet your specific needs. The
 max duration is 24 hours.
@@ -50,11 +50,11 @@ events from "[swan songs]" may not be available.
 Determines the datetime that should be used a starting point for creating the exports.
 This value is only used when starting with a fresh database/storage instance (i.e. `hauser` hasn't been used with the specified warehouse).
 If you would like to export all the data that is currently within retention, set this to the date of the oldest possible
-session start. For example, if your FullStory account has 3 months of retention, and today is October 20th, 2020, set `StartTime`
+session start. For example, if your Fullstory account has 3 months of retention, and today is October 20th, 2020, set `StartTime`
 to `2020-7-20T00:00:00Z` to include the oldest data for your account.
 
 ## How It Works
-`hauser` will use FullStory's [segment export API] to create exports
+`hauser` will use Fullstory's [segment export API] to create exports
 of the `everyone` segment. When the export has completed (see [Operations API](https://developer.fullstory.com/get-operation)),
 `hauser` will download the file, perform some light transformation for [custom user vars](http://help.fullstory.com/develop-js/setuservars?from_search=17717406)
 , and load the data into the warehouse.
@@ -106,7 +106,7 @@ If schema changes are made, `hauser` will have to be restarted so it is aware of
 If the export table contains columns that aren't part of the export, `hauser` will insert null values for those columns when it inserts new records.
 Note: In order for `hauser` to successfully insert records, any added columns must be nullable.
 
-If FullStory adds fields to the export, a new version of hauser will need to be downloaded to pick up the new fields.
+If Fullstory adds fields to the export, a new version of hauser will need to be downloaded to pick up the new fields.
 If a backfill of the fields is desired, you can create a one-off export of just the new fields by using the [segment export API].
 
 ## Working with Custom Vars
@@ -166,7 +166,7 @@ For a more complete example of using Hauser with docker, see [this recipe](./rec
         - Type `go version` in the VM's command line to find its `GOOS` and `GOARCH` values.
         - Example (Amazon EC2 Linux): `go1.11.5 linux/amd64` is `GOOS=linux GOARCH=amd64`
         - The list of valid `GOOS` and `GOARCH` values can be found [here](https://golang.org/doc/install/source#environment).
-* Copy the included `example-config.toml` file and customize it for your environment, including your FullStory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
+* Copy the included `example-config.toml` file and customize it for your environment, including your Fullstory API key, warehouse host, and credentials. AWS credentials (for S3) come from your local environment.
 * Run it...
     * **NOTE**: `go get` downloads and installs the hauser package in your `GOPATH`, not the local directory in which you call the command.
     * If you did _NOT_ set a custom `GOPATH`...
@@ -183,4 +183,4 @@ ln -s ../../pre-commit.sh .git/hooks/pre-commit
 ```
 
 [segment export API]: http://developer.fullstory.com/create-segment-export
-[swan songs]: https://help.fullstory.com/hc/en-us/articles/360048109714-Swan-songs-How-FullStory-records-sessions-that-end-unexpectedly
+[swan songs]: https://help.fullstory.com/hc/en-us/articles/360048109714-Swan-songs-How-Fullstory-records-sessions-that-end-unexpectedly
