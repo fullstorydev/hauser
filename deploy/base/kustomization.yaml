@@ -1,0 +1,4 @@
+namespace: fullstory
+
+resources:
+  - hauser.yaml

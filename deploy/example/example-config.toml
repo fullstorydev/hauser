@@ -1,0 +1,87 @@
+#FsApiToken = "<your FullStory API token>"
+Backoff = "30s"
+BackoffStepsMax = 8
+
+# TmpDir is a directory where the exported files are downloaded to before they are uploaded
+# to the warehouse destination. The hauser process will remove these files when it has finished
+# processing them.
+TmpDir = "tmp"
+
+# ExportDuration determines the time range for each export bundle. The max value is 24 hours.
+# If downloads are not completing due to timeouts, lower this value until the downloads
+# are able to complete.
+# Valid time units are "s", "m", "h" (seconds, minutes, hours).
+ExportDuration = "6h"
+
+# ExportDelay determines how long to wait before creating an export.
+# This delay is necessary because there is some latency between when an event is recorded
+# and when it is available and complete. 24 hours is the default, but is fairly conservative.
+# In many cases this can be reduced safely to 3 hours, but note that "swan song" events
+# may not make it into FullStory within those 3 hours.
+# Valid time units are "s", "m", "h" (seconds, minutes, hours).
+ExportDelay = "24h"
+
+# StartTime determines how far back to start exporting data if starting fresh.
+# This should be an timestamp like with the followin format: 2018-12-27T18:30:00Z.
+# If start time is empty, this will default to 30 days in the past.
+StartTime = ""
+
+# Valid provider values:
+#  * local: Used for downloading files to the local machine.
+#  * gcp: Google Cloud Provider (GCS and BigQuery)
+#  * aws: Amazon Web Services (S3 and Redshift)
+Provider="local"
+# If true, data will only be uploaded to the corresponding Provider's storage mechanism.
+StorageOnly = false
+SaveAsJson = false
+
+# FilePrefix can be used to specify a prefix for each of the files that are created.
+# For example, if using GCS or S3, you can use this setting to organize your hauser uploads
+# into a "folder", such as "hauser-uploads/". In this case, the trailing slash is necessary
+# for GCS/S3 to recognize them as "folders".
+FilePrefix = ""
+
+# By default, these are not included since not every account has this feature.
+# IncludeMobileAppsFields = true
+
+[s3]
+# bucket that will be used to stage files into Redshift
+Bucket = ""
+# region of the above bucket
+Region = "us-east-2"
+# timeout for copying export files from the local machine to S3
+Timeout = "5m"
+
+[redshift]
+User = "<your user>"
+Password = "<password>"
+Host = "<redshift host details>.redshift.amazonaws.com"
+Port = "5439"
+DB = "dev"
+# the table where the export data will be written
+ExportTable = "fsexport"
+# metadata table that holds info on export history
+SyncTable   = "fssync"
+# IAM role associated with redshift
+Credentials = "aws_iam_role=arn:aws:iam::<...>"
+VarCharMax = 65535
+DatabaseSchema = "public"
+
+[gcs]
+Bucket = "<your bucket>"
+
+[bigquery]
+Project = "<your project>"
+Dataset = "<your dataset>"
+ExportTable = "fs_export"
+SyncTable = "fs_sync"
+# The amount of time after which the partitions will expire
+# Valid time units are "s", "m", "h" (seconds, minutes, hours).
+# For example, "720h" would expire the partitions after 30 days.
+# If this value is omitted or "0", then the partitions will not expire.
+PartitionExpiration = "0"
+
+[local]
+SaveDir = "<Path to your local folder to save files to>"
+StartTime = <Start time for data exports in the following format: 2018-12-27T18:30:00Z>
+UseStartTime = true
